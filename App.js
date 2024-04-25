@@ -11,6 +11,9 @@ import FamilyDetails from "./Screens/Employee/FamilyDetails";
 import OtherDetails from "./Screens/Employee/OtherDetails";
 import Uploads from "./Screens/Employee/Uploads";
 import Declaration from "./Screens/Employee/Declaration";
+import StartScreen from "./Screens/Employee/Start";
+import PlaceInputs from "./Components/Place";
+// import StartScreen from "./Screens/Employee/Start";
 
 const Stack = createNativeStackNavigator();
 const Tab = createMaterialTopTabNavigator();
@@ -34,9 +37,7 @@ function TopTab() {
       <Tab.Screen
         name="PersonalDetails"
         component={PersonalDetails}
-        options={{
-          ssTitle: "Personal Details",
-        }}
+        options={{ headerTitle: "PlaceInputs" }}
       />
       <Tab.Screen
         name="AcademicDetails"

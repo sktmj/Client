@@ -1,101 +1,193 @@
-// SignupScreen.js
-import React, { useState } from "react";
-import {
-  View,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  StyleSheet,
-} from "react-native";
-import { useNavigation } from "@react-navigation/native";
-
-export default function SignupScreen() {
-  const [name, setName] = useState("");
-  const [mobileNumber, setMobileNumber] = useState("");
+import React, { useState } from 'react';
+import { View, TextInput, TouchableOpacity, Alert, Text, StyleSheet } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+const SignUpScreen = () => {
+  const [mobileNo, setMobileNo] = useState('');
+  const [appName, setAppName] = useState('');
   const [otpSent, setOtpSent] = useState(false);
-  const navigation = useNavigation();
+  const [otp, setOTP] = useState('');
+  const [showUsernamePassword, setShowUsernamePassword] = useState(false);
+  const [userName, setUserName] = useState('');
+  const [password, setPassword] = useState('');
+  const Navigation = useNavigation()
 
-  const handleSendOTP = () => {
-    // Code to send OTP
-    setOtpSent(true); // For demonstration, assume OTP sent successfully
-  };
-  const handleClick = () => {
-    navigation.navigate("Login");
+  const handleSendOTP = async () => {
+    try {
+      const response = await fetch('http://10.0.2.2:3000/api/v1/auth/signUp', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ MobileNo: mobileNo, AppName: appName }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        setOtpSent(true);
+        Alert.alert('OTP sent successfully');
+      } else {
+        Alert.alert('Failed to send OTP');
+      }
+    } catch (error) {
+      console.error('Error sending OTP:', error);
+      Alert.alert('Failed to send OTP');
+    }
   };
 
+  const handleVerifyOTP = async () => {
+    try {
+      const response = await fetch('http://10.0.2.2:3000/api/v1/auth/verifyOTP', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ MobileNo: mobileNo, AppName: appName, EnteredOTP: otp, Passwrd: password }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        setShowUsernamePassword(true);
+        Alert.alert('OTP verified successfully');
+      } else {
+        Alert.alert('Failed to verify OTP');
+      }
+    } catch (error) {
+      console.error('Error verifying OTP:', error);
+      Alert.alert('Failed to verify OTP');
+    }
+  };
+
+  const handleSignup = async () => {
+    try {
+      const response = await fetch('http://10.0.2.2:3000/api/v1/auth/signUp', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ MobileNo: mobileNo, AppName: appName }), // Pass only MobileNo and AppName for now
+      });
+  
+      const data = await response.json();
+  
+      if (response.ok) {
+       Navigation.navigate("Login")
+        Alert.alert('Signup successful');
+      } else {
+        Alert.alert('Failed to signup');
+      }
+    } catch (error) {
+      console.error('Error signing up:', error);
+      Alert.alert('Failed to signup');
+    }
+  };
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Register</Text>
-      <View style={styles.inputContainer}>
-        <TextInput
-          style={styles.input}
-          placeholder="Applicant Name"
-          value={name}
-          onChangeText={setName}
-        />
-        <TextInput
-          style={styles.input}
-          placeholder="Mobile Number"
-          value={mobileNumber}
-          onChangeText={setMobileNumber}
-          keyboardType="phone-pad"
-        />
-      </View>
-      <TouchableOpacity style={styles.otpButton} onPress={handleSendOTP}>
-        <Text style={styles.buttonText}>
-          {otpSent ? "Resend OTP" : "Send OTP"}
-        </Text>
+      <TextInput
+        style={styles.input}
+        placeholder="Mobile Number"
+        value={mobileNo}
+        onChangeText={setMobileNo}
+        keyboardType="numeric"
+      />
+      <TextInput
+        style={styles.input}
+        placeholder="App Name"
+        value={appName}
+        onChangeText={setAppName}
+      />
+      {/* Send OTP Button */}
+      <TouchableOpacity
+        style={[styles.button, { backgroundColor: '#059A5F' }]} // Custom background color
+        onPress={handleSendOTP}
+        disabled={!mobileNo || !appName}
+      >
+        <Text style={styles.buttonText}>Send OTP</Text>
       </TouchableOpacity>
-      <TouchableOpacity style={styles.loginRedirect} onPress={handleClick}>
-        <Text style={styles.redirectText}>Already have an account? Login</Text>
-      </TouchableOpacity>
+
+      {otpSent && (
+        <>
+          {/* Enter OTP Input */}
+          <TextInput
+            style={styles.input}
+            placeholder="Enter OTP"
+            value={otp}
+            onChangeText={setOTP}
+            keyboardType="numeric"
+          />
+          {/* Verify OTP Button */}
+          <TouchableOpacity
+            style={[styles.button, { backgroundColor: '#059A5F' }]} // Custom background color
+            onPress={handleVerifyOTP}
+            disabled={!otp}
+          >
+            <Text style={styles.buttonText}>Verify OTP</Text>
+          </TouchableOpacity>
+        </>
+      )}
+
+      {showUsernamePassword && (
+        <>
+          {/* Username Input */}
+          <TextInput
+            style={styles.input}
+            placeholder="Username"
+            value={mobileNo} // Automatically filled with Mobile Number
+            editable={false} // User can't edit
+          />
+          {/* Password Input */}
+          <TextInput
+            style={styles.input}
+            placeholder="Password"
+            value={password}
+            onChangeText={setPassword}
+            secureTextEntry
+          />
+          {/* Signup Button */}
+          <TouchableOpacity
+            style={[styles.button, { backgroundColor: '#059A5F' }]} // Custom background color
+            onPress={handleSignup}
+            disabled={!password}
+          >
+            <Text style={styles.buttonText}>Signup</Text>
+          </TouchableOpacity>
+        </>
+      )}
     </View>
   );
-}
+};
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    backgroundColor: "#090920", //
+    justifyContent: 'center',
+    alignItems: 'center',
     paddingHorizontal: 20,
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: "bold",
-    marginBottom: 20,
-    color: "#fff", // White color
-  },
-  inputContainer: {
-    width: "100%",
-    marginBottom: 20,
+    backgroundColor: "#090920",
   },
   input: {
     borderWidth: 1,
-    borderColor: "#ccc",
-    borderRadius: 8,
-    padding: 12,
-    marginBottom: 12,
-    backgroundColor: "#fff", // White color
-  },
-  otpButton: {
-    backgroundColor: "#059A5F", // Navy Blue color
-    paddingVertical: 12,
-    paddingHorizontal: 20,
-    borderRadius: 8,
+    borderColor: '#ccc',
+    borderRadius: 5,
+    padding: 10,
+    marginBottom: 10,
+    width: '100%',
+    backgroundColor: "#fff"
   },
   buttonText: {
-    color: "#fff", // White color
+    color: '#fff',
     fontSize: 16,
-    fontWeight: "bold",
-    textAlign: "center",
+    fontWeight: 'bold',
   },
-  loginRedirect: {
-    marginTop: 20,
-  },
-  redirectText: {
-    color: "#fff", // White color
-    fontSize: 16,
+  button: {
+    width: '30%',
+    paddingVertical: 15,
+    alignItems: 'center',
+    borderRadius: 5,
+    marginTop: 10,
   },
 });
+
+export default SignUpScreen;

@@ -45,7 +45,7 @@ const WorkExperience = () => {
 
   const handleSaveAndProceed = () => {
     Navigation.navigate("FamilyDetails");
-    console.log("Data saved. Proceeding to the next page...");
+    console.log("");
   };
 
   return (
