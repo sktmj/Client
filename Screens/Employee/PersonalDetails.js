@@ -78,7 +78,7 @@ export default function PersonalDetailsForm() {
   useEffect(() => {
     checkAuthentication();
     fetchCountries();
-    fetchReligions();
+    fetchReligion();
   }, []);
 
   useEffect(() => {
@@ -152,12 +152,15 @@ export default function PersonalDetailsForm() {
     axios
       .get(`http://10.0.2.2:3000/api/v1/prsl/taluk/${districtId}`)
       .then((response) => {
-        console.log("Taluks Response:", response.data); // Add this line
-        // Set taluks state with response data
-        setTaluks(response.data);
+        const formattedTaluks = response.data.map((taluk) => ({
+          TalukId: taluk.TalukId,
+          TalukName: taluk.TalukName,
+        }));
+        setTaluks(formattedTaluks);
       })
       .catch((error) => console.error("Error fetching Taluks:", error));
-};
+  };
+
   const fetchCitiesByTaluk = (talukId) => {
     axios
       .get(`http://10.0.2.2:3000/api/v1/prsl/city/${talukId}`)
@@ -195,6 +198,7 @@ export default function PersonalDetailsForm() {
       } else if (response.ok) {
         const data = await response.json();
         console.log("Personal details updated successfully:", data);
+        Navigation.navigate("AcademicDetails")
       } else {
         console.error("Server error:", response.status, response.statusText);
         Alert.alert(
@@ -248,32 +252,50 @@ export default function PersonalDetailsForm() {
     hideDatePicker();
   };
 
-  const fetchReligions = () => {
+  const fetchReligion = () => {
     axios
       .get("http://10.0.2.2:3000/api/v1/prsl/getReligion")
       .then((response) => {
         setReligion(response.data);
       })
-      .catch((error) => console.error("Error fetching religions:", error));
+      .catch((error) => console.error("Error fetching Religion:", error));
   };
 
-  const fetchCastesByReligion = (religion) => {
-    console.log("Selected Religion:", religion); // Add this line
+  const fetchCasteByReligion = (religion_gid) => {
     axios
-      .get(`http://10.0.2.2:3000/api/v1/prsl/caste/${religion}`)
+      .get(`http://10.0.2.2:3000/api/v1/prsl/caste/${religion_gid}`)
       .then((response) => {
-        setCaste(response.data);
+        setCaste(response.data); // Set the caste state with the fetched caste data
       })
-      .catch((error) => console.error("Error fetching castes:", error));
+      .catch((error) => console.error("Error fetching Castes:", error));
   };
 
   useEffect(() => {
     if (selectedReligion) {
-      fetchCastesByReligion(selectedReligion); // Fetch castes when selected religion changes
+      fetchCasteByReligion(selectedReligion); // Fetch castes when selected religion changes
     }
-
-
   }, [selectedReligion]);
+
+  const handleChangeReligion = (field, value) => {
+    if (field === "Religion") {
+      setSelectedReligion(value); // Update selected religion state
+      setPersonalDetails((prevDetails) => ({
+        ...prevDetails,
+        Religion: value, // Update only the Religion field in personalDetails state
+      }));
+    } else if (field === "CasteId") {
+      setSelectedCaste(value); // Update selected caste state
+      setPersonalDetails((prevDetails) => ({
+        ...prevDetails,
+        CasteId: value, // Update only the CasteId field in personalDetails state
+      }));
+    } else {
+      setPersonalDetails((prevDetails) => ({
+        ...prevDetails,
+        [field]: value, // Update other fields without affecting religion and caste
+      }));
+    }
+  };
   return (
     <ScrollView style={styles.container}>
       <Text style={styles.sectionTitle}>Personal Details</Text>
@@ -376,45 +398,56 @@ export default function PersonalDetailsForm() {
           </View>
         )}
 
-<View style={styles.inputContainer}>
-  <Text>Select Religion:</Text>
-  <Picker
-    selectedValue={selectedReligion}
-    onValueChange={(itemValue) => {
-      setSelectedReligion(itemValue);
-      setSelectedCaste(""); // Reset selected caste when religion changes
-      fetchCastesByReligion(itemValue); // Fetch castes based on selected religion
-      handleChange("Religion", itemValue); // Update personal details state
-    }}
-  >
-    {religion.map((item, index) => (
-      <Picker.Item
-        key={index}
-        label={item.Religion}
-        value={item.Religion}
-      />
-    ))}
-  </Picker>
-</View>
+        <View style={styles.inputContainer}>
+          <Text>Select Religion:</Text>
+          <Picker
+            selectedValue={selectedReligion}
+            onValueChange={(itemValue) => {
+              setSelectedReligion(itemValue);
+              setSelectedCaste("");
+              fetchCasteByReligion(itemValue);
+              setPersonalDetails({ ...personalDetails, Religion: itemValue });
+            }}
+          >
+            <Picker.Item label="Select Religion" value="" />
+            {religion.map((religion, index) => (
+              <Picker.Item
+                key={`${religion.religion_gid}_${index}`}
+                label={religion.religion_name}
+                value={religion.religion_gid}
+              />
+            ))}
+          </Picker>
+        </View>
 
-<View style={styles.inputGroup}>
-  <Text>Select Caste:</Text>
-  <Picker
-    selectedValue={selectedCaste}
-    onValueChange={(itemValue) => {
-      setSelectedCaste(itemValue);
-      handleChange("CasteId", itemValue);
-    }}
-  >
-    {caste.map((item, index) => (
-      <Picker.Item
-        key={index}
-        label={item.Caste}
-        value={item.CasteId}
-      />
-    ))}
-  </Picker>
-</View>
+        <View style={styles.inputGroup}>
+          <Text>Select Caste:</Text>
+          <Picker
+            selectedValue={selectedCaste}
+            onValueChange={(itemValue) => {
+              setSelectedCaste(itemValue);
+              setPersonalDetails({
+                ...personalDetails,
+                CasteId: itemValue,
+              }); // Update personal details state
+            }}
+            enabled={caste.length > 0} // Disable picker if caste data is not fetched
+          >
+            <Picker.Item label="Select Caste" value="" />
+            {caste.map(
+              (
+                casteItem,
+                index // Corrected variable name from city to casteItem
+              ) => (
+                <Picker.Item
+                  key={`${casteItem.caste_gid}_${index}`}
+                  label={casteItem.caste_name} // Corrected property name to caste_name
+                  value={casteItem.caste_gid} // Corrected property name to caste_gid
+                />
+              )
+            )}
+          </Picker>
+        </View>
         <TextInput
           style={styles.input}
           placeholder="Native"
@@ -503,39 +536,51 @@ export default function PersonalDetailsForm() {
               />
             ))}
           </Picker>
-          <Text>Select Taluk:</Text>
-    
-<Picker
-  selectedValue={selectedTaluk}
-  onValueChange={(itemValue) => setSelectedTaluk(itemValue)}
->
-  <Picker.Item label="Select Taluk" value="" />
-  {taluks.map((taluk, index) => (
-    <Picker.Item
-      key={`${taluk.taluk_gid}_${index}`}
-      label={taluk.taluk_name}
-      value={taluk.taluk_gid}
-    />
-  ))}
-</Picker>
+          <View style={styles.inputContainer}>
+            <Text>Select Taluk:</Text>
+            <Picker
+              selectedValue={selectedTaluk}
+              onValueChange={(itemValue) => {
+                setSelectedTaluk(itemValue);
+                fetchCitiesByTaluk(itemValue); // Call fetchCitiesByTaluk when selected taluk changes
+                setPersonalDetails({
+                  ...personalDetails,
+                  ResTalukId: itemValue,
+                }); // Update personal details state
+              }}
+            >
+              <Picker.Item label="Select Taluk" value="" />
+              {taluks.map((taluk, index) => (
+                <Picker.Item
+                  key={`${taluk.TalukId}_${index}`}
+                  label={taluk.TalukName}
+                  value={taluk.TalukId}
+                />
+              ))}
+            </Picker>
 
-          <Text>Select City: </Text>
-          <Picker
-            selectedValue={selectedCity}
-            onValueChange={(itemValue) => {
-              setSelectedCity(itemValue);
-              setPersonalDetails({ ...personalDetails, ResCityId: itemValue }); // Update personal details state
-            }}
-          >
-            <Picker.Item label="Select City" value="" />
-            {cities.map((city, index) => (
-              <Picker.Item
-                key={`${city.city_gid}_${index}`}
-                label={city.city_name}
-                value={city.city_gid}
-              />
-            ))}
-          </Picker>
+            <Text>Select City:</Text>
+            <Picker
+              selectedValue={selectedCity}
+              onValueChange={(itemValue) => {
+                setSelectedCity(itemValue);
+                setPersonalDetails({
+                  ...personalDetails,
+                  ResCityId: itemValue,
+                }); // Update personal details state
+              }}
+              enabled={cities.length > 0} // Disable picker if cities are not fetched
+            >
+              <Picker.Item label="Select City" value="" />
+              {cities.map((city, index) => (
+                <Picker.Item
+                  key={`${city.city_gid}_${index}`}
+                  label={city.city_name}
+                  value={city.city_gid}
+                />
+              ))}
+            </Picker>
+          </View>
         </View>
         <TextInput
           style={styles.input}
@@ -573,45 +618,35 @@ export default function PersonalDetailsForm() {
               value={personalDetails.PerAddress1}
               onChangeText={(value) => handleChange("PerAddress1", value)}
             />
-
             <Text>Select Country:</Text>
-            <Picker
-              selectedValue={presentSelectedCountry}
-              onValueChange={(itemValue) => {
-                setPresentSelectedCountry(itemValue);
-                setPresentSelectedState("");
-                setPresentSelectedDistrict("");
-                setPresentSelectedTaluk("");
-                setPresentSelectedCity("");
-                fetchStatesByCountry(itemValue);
-                setPersonalDetails({
-                  ...personalDetails,
-                  PerCountryId: itemValue,
-                });
-              }}
-            >
-              <Picker.Item label="Select Country" value="" />
-              {countries.map((country, index) => (
-                <Picker.Item
-                  key={`${country.country_gid}_${index}`}
-                  label={country.country_name}
-                  value={country.country_gid}
-                />
-              ))}
-            </Picker>
-
+  <Picker
+    selectedValue={presentSelectedCountry}
+    onValueChange={(itemValue) => {
+      setPresentSelectedCountry(itemValue);
+      // Update other related state variables or perform any necessary actions
+    }}
+  >
+    <Picker.Item label="Select Country" value="" />
+    {countries.map((country, index) => (
+      <Picker.Item
+        key={`${country.country_gid}_${index}`}
+        label={country.country_name}
+        value={country.country_gid}
+      />
+    ))}
+  </Picker>
             {/* Repeat this pattern for other address fields */}
             {/* For brevity, I'll just show one */}
 
             <View style={styles.inputContainer}>
               <Text>Select State:</Text>
               <Picker
-                selectedValue={presentSelectedState}
+                selectedValue={selectedState}
                 onValueChange={(itemValue) => {
-                  setPresentSelectedState(itemValue);
-                  setPresentSelectedDistrict("");
-                  setPresentSelectedTaluk("");
-                  setPresentSelectedCity("");
+                  setSelectedState(itemValue);
+                  setSelectedDistrict("");
+                  setSelectedTaluk("");
+                  setSelectedCity("");
                   fetchDistrictsByState(itemValue);
                   setPersonalDetails({
                     ...personalDetails,
@@ -631,9 +666,9 @@ export default function PersonalDetailsForm() {
 
               <Text>Select District:</Text>
               <Picker
-                selectedValue={presentSelectedDistrict}
+                selectedValue={selectedDistrict}
                 onValueChange={(itemValue) => {
-                  setPresentSelectedDistrict(itemValue);
+                  setSelectedDistrict(itemValue);
                   fetchTaluksByDistrict(itemValue); // Fetch taluks based on selected district
                   setPersonalDetails({
                     ...personalDetails,
@@ -650,49 +685,51 @@ export default function PersonalDetailsForm() {
                   />
                 ))}
               </Picker>
+              <View style={styles.inputContainer}>
+                <Text>Select Taluk:</Text>
+                <Picker
+                  selectedValue={selectedTaluk}
+                  onValueChange={(itemValue) => {
+                    setSelectedTaluk(itemValue);
+                    fetchCitiesByTaluk(itemValue); // Call fetchCitiesByTaluk when selected taluk changes
+                    setPersonalDetails({
+                      ...personalDetails,
+                      PerTalukId: itemValue,
+                    }); // Update personal details state
+                  }}
+                >
+                  <Picker.Item label="Select Taluk" value="" />
+                  {taluks.map((taluk, index) => (
+                    <Picker.Item
+                      key={`${taluk.TalukId}_${index}`}
+                      label={taluk.TalukName}
+                      value={taluk.TalukId}
+                    />
+                  ))}
+                </Picker>
 
-              <Text>Select Taluk:</Text>
-              <Picker
-                selectedValue={presentSelectedTaluk}
-                onValueChange={(itemValue) => {
-                  setPresentSelectedTaluk(itemValue);
-                  fetchCitiesByTaluk(itemValue); // Fetch cities based on selected taluk
-                  setPersonalDetails({
-                    ...personalDetails,
-                    PerTalukId: itemValue,
-                  }); // Update personal details state
-                }}
-              >
-                <Picker.Item label="Select Taluk" value="" />
-                {taluks.map((taluk, index) => (
-                  <Picker.Item
-                    key={`${taluk.taluk_gid}_${index}`}
-                    label={taluk.taluk_name}
-                    value={taluk.taluk_gid}
-                  />
-                ))}
-              </Picker>
-
-              <Text>Select City: </Text>
-              <Picker
-                selectedValue={presentSelectedCity}
-                onValueChange={(itemValue) => {
-                  setPresentSelectedCity(itemValue);
-                  setPersonalDetails({
-                    ...personalDetails,
-                    PerCityId: itemValue,
-                  }); // Update personal details state
-                }}
-              >
-                <Picker.Item label="Select City" value="" />
-                {cities.map((city, index) => (
-                  <Picker.Item
-                    key={`${city.city_gid}_${index}`}
-                    label={city.city_name}
-                    value={city.city_gid}
-                  />
-                ))}
-              </Picker>
+                <Text>Select City:</Text>
+                <Picker
+                  selectedValue={selectedCity}
+                  onValueChange={(itemValue) => {
+                    setSelectedCity(itemValue);
+                    setPersonalDetails({
+                      ...personalDetails,
+                      PerCityId: itemValue,
+                    }); // Update personal details state
+                  }}
+                  enabled={cities.length > 0} // Disable picker if cities are not fetched
+                >
+                  <Picker.Item label="Select City" value="" />
+                  {cities.map((city, index) => (
+                    <Picker.Item
+                      key={`${city.city_gid}_${index}`}
+                      label={city.city_name}
+                      value={city.city_gid}
+                    />
+                  ))}
+                </Picker>
+              </View>
             </View>
 
             <TextInput

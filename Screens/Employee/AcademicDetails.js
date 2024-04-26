@@ -6,9 +6,9 @@ import {
   TouchableOpacity,
   View,
   StyleSheet,
+  Alert, // Import Alert for displaying messages
 } from "react-native";
-import { FontAwesome } from "@expo/vector-icons"; // Import FontAwesome from expo vector icons
-import { v4 as uuidv4 } from "uuid";
+import { FontAwesome } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 
 const AcademicDetails = () => {
@@ -71,9 +71,7 @@ const AcademicDetails = () => {
 
   const handleQualificationChange = (id, field, value) => {
     const updatedQualifications = qualifications.map((qualification) =>
-      qualification.id === id
-        ? { ...qualification, [field]: value }
-        : qualification
+      qualification.id === id ? { ...qualification, [field]: value } : qualification
     );
     setQualifications(updatedQualifications);
   };
@@ -105,9 +103,39 @@ const AcademicDetails = () => {
     setCourses(updatedCourses);
   };
 
-  const handleSaveAndProceed = () => {
-    Navigation.navigate("WorkExperience");
-    console.log("Data saved. Proceeding to the next page...");
+  const handleSaveAndProceed = async () => {
+    try {
+      // Prepare qualification data
+      const qualificationData = qualifications.map((qualification) => ({
+        ...qualification,
+        // Additional data if needed
+      }));
+
+      // Make API request to insert qualification data
+      const response = await fetch('http:10.0.2.2/api/v1/Qf/InsertQlCT', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(qualificationData),
+      });
+
+      if (response.ok) {
+        // Data inserted successfully
+        Alert.alert('Success', 'Data saved successfully', [
+          {
+            text: 'OK',
+            onPress: () => Navigation.navigate("WorkExperience"),
+          },
+        ]);
+      } else {
+        // Error inserting data
+        Alert.alert('Error', 'Failed to save data');
+      }
+    } catch (error) {
+      console.error('Error saving data:', error);
+      Alert.alert('Error', 'Failed to save data');
+    }
   };
 
   return (
