@@ -50,39 +50,39 @@ const WorkExperience = () => {
 
   return (
     <ScrollView style={{ padding: 20 }}>
-      <View>
-        <Text>Fresher?</Text>
+       {/* <View> 
+         <Text>Fresher?</Text>
         <TouchableOpacity onPress={() => toggleCheckbox(setIsFresher)}>
           <View style={{ flexDirection: "row", alignItems: "center" }}>
-            {isFresher ? (
+            {{isFresher ? (
               <FontAwesome name="check-square" size={24} color="black" />
             ) : (
               <FontAwesome name="square" size={24} color="black" />
-            )}
+            )} 
             <Text style={{ marginLeft: 10 }}>Fresher</Text>
           </View>
         </TouchableOpacity>
-      </View>
+      </View>  */}
 
-      {!isFresher && (
-        <>
+    
+       
           {/* Last Company Details */}
           <View>
-            <Text>Last Company Details</Text>
+            {/* <Text>Fresher</Text> */}
             <TouchableOpacity
-              onPress={() => toggleCheckbox(setShowLastCompanyFields)}
+              onPress={() => toggleCheckbox(setIsFresher)}
             >
               <View style={{ flexDirection: "row", alignItems: "center" }}>
-                {showLastCompanyFields ? (
+                {isFresher? (
                   <FontAwesome name="check-square" size={24} color="black" />
                 ) : (
                   <FontAwesome name="square" size={24} color="black" />
                 )}
-                <Text style={{ marginLeft: 10 }}>I'm currently working</Text>
+                <Text style={{ marginLeft: 10 }}>I'm Fresher</Text>
               </View>
             </TouchableOpacity>
 
-            {showLastCompanyFields && (
+            {isFresher && (
               <>
                 {renderTextInput("Organization Name")}
                 {renderTextInput("Designation")}
@@ -296,8 +296,7 @@ const WorkExperience = () => {
               Save and Proceed
             </Text>
           </TouchableOpacity>
-        </>
-      )}
+      
     </ScrollView>
   );
 };

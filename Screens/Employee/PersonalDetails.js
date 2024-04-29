@@ -198,7 +198,8 @@ export default function PersonalDetailsForm() {
       } else if (response.ok) {
         const data = await response.json();
         console.log("Personal details updated successfully:", data);
-        Navigation.navigate("AcademicDetails")
+        // Navigate to the next screen after successful submission
+        Navigation.navigate("AcademicDetails", { token }); // Replace "NextScreen" with the name of your next screen
       } else {
         console.error("Server error:", response.status, response.statusText);
         Alert.alert(
@@ -214,7 +215,6 @@ export default function PersonalDetailsForm() {
       );
     }
   };
-
   const showDatePicker = () => {
     setDatePickerVisibility(true);
   };

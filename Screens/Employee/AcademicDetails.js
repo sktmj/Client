@@ -1,307 +1,169 @@
-import React, { useState } from "react";
-import {
-  ScrollView,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
-  StyleSheet,
-  Alert, // Import Alert for displaying messages
-} from "react-native";
-import { FontAwesome } from "@expo/vector-icons";
-import { useNavigation } from "@react-navigation/native";
+import React, { useState, useEffect } from "react";
+import { ScrollView, Text, TextInput, TouchableOpacity, View, StyleSheet, Alert } from "react-native";
+import axios from "axios";
+import { Picker } from "@react-native-picker/picker";
+import Icon from "react-native-vector-icons/FontAwesome";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
-const AcademicDetails = () => {
-  const [qualifications, setQualifications] = useState([
-    {
-      id: 1,
-      qualification: "",
-      degree: "",
-      collegeName: "",
-      location: "",
-      percentage: "",
-      lastDegree: false,
-    },
-  ]);
+const AcademicDetails = ({ navigation }) => {
+  const [qualifications, setQualifications] = useState([]);
+  const [selectedQualification, setSelectedQualification] = useState(null);
+  const [colName, setColName] = useState("");
+  const [yearPass, setYearPass] = useState("");
+  const [percentage, setPercentage] = useState("");
+  const [degree, setDegree] = useState("");
+  const [lastDegree, setLastDegree] = useState(false);
+  const [location, setLocation] = useState("");
+  const [course, setCourse] = useState("");
+  const [institute, setInstitute] = useState("");
+  const [studYear, setStudYear] = useState("");
+  const [coursePercentage, setCoursePercentage] = useState("");
 
-  const [courses, setCourses] = useState([
-    {
-      id: 1,
-      courseName: "",
-      institutionName: "",
-      year: "",
-      percentage: "",
-    },
-  ]);
+  useEffect(() => {
+    fetchQualifications();
+  }, []);
 
-  const Navigation = useNavigation();
-
-  const [showQualifications, setShowQualifications] = useState(true);
-  const [showCourses, setShowCourses] = useState(true);
-
-  const addQualification = () => {
-    const newId = qualifications.length + 1;
-    setQualifications([
-      ...qualifications,
-      {
-        id: newId,
-        qualification: "",
-        degree: "",
-        collegeName: "",
-        location: "",
-        percentage: "",
-        lastDegree: false,
-      },
-    ]);
-  };
-
-  const addCourse = () => {
-    const newId = courses.length + 1;
-    setCourses([
-      ...courses,
-      {
-        id: newId,
-        courseName: "",
-        institutionName: "",
-        year: "",
-        percentage: "",
-      },
-    ]);
-  };
-
-  const handleQualificationChange = (id, field, value) => {
-    const updatedQualifications = qualifications.map((qualification) =>
-      qualification.id === id ? { ...qualification, [field]: value } : qualification
-    );
-    setQualifications(updatedQualifications);
-  };
-
-  const handleCourseChange = (id, field, value) => {
-    const updatedCourses = courses.map((course) =>
-      course.id === id ? { ...course, [field]: value } : course
-    );
-    setCourses(updatedCourses);
-  };
-
-  const handleToggleQualifications = () => {
-    setShowQualifications(!showQualifications);
-  };
-
-  const handleToggleCourses = () => {
-    setShowCourses(!showCourses);
-  };
-
-  const handleDeleteQualification = (id) => {
-    const updatedQualifications = qualifications.filter(
-      (qualification) => qualification.id !== id
-    );
-    setQualifications(updatedQualifications);
-  };
-
-  const handleDeleteCourse = (id) => {
-    const updatedCourses = courses.filter((course) => course.id !== id);
-    setCourses(updatedCourses);
-  };
-
-  const handleSaveAndProceed = async () => {
+  const fetchQualifications = async () => {
     try {
-      // Prepare qualification data
-      const qualificationData = qualifications.map((qualification) => ({
-        ...qualification,
-        // Additional data if needed
-      }));
+      const response = await axios.get("http://10.0.2.2:3000/api/v1/Qlf/qualification");
+      setQualifications(response.data);
+    } catch (error) {
+      console.error("Error fetching qualifications:", error.message);
+      Alert.alert("Error", "Failed to fetch qualifications");
+    }
+  };
 
-      // Make API request to insert qualification data
-      const response = await fetch('http:10.0.2.2/api/v1/Qf/InsertQlCT', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(qualificationData),
+  const handleAddQualificationAndCourse = async () => {
+    try {
+      // Add Qualification
+      const qualificationResponse = await axios.post("http://10.0.2.2:3000/api/v1/Qlf/InsertQlCT", {
+        QualId: selectedQualification,
+        ColName: colName,
+        YearPass: yearPass,
+        Percentage: parseFloat(percentage),
+        Degree: degree,
+        LastDegree: lastDegree ? "Y" : "N",
+        Location: location,
       });
 
-      if (response.ok) {
-        // Data inserted successfully
-        Alert.alert('Success', 'Data saved successfully', [
-          {
-            text: 'OK',
-            onPress: () => Navigation.navigate("WorkExperience"),
+      if (qualificationResponse.data.success) {
+        Alert.alert("Success", "Qualification added successfully");
+        // Now add Course
+        const token = await AsyncStorage.getItem("token");
+        const courseResponse = await axios.post("http://10.0.2.2:3000/api/v1/Qlf/courses", {
+          Course: course,
+          Institute: institute,
+          StudYear: studYear,
+          CrsPercentage: coursePercentage,
+        }, {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
           },
-        ]);
+        });
+
+        if (courseResponse.status === 200) {
+          Alert.alert("Success", "Course added successfully");
+          // Navigate to next screen or perform any other action
+        } else {
+          Alert.alert("Error", courseResponse.data.message);
+        }
       } else {
-        // Error inserting data
-        Alert.alert('Error', 'Failed to save data');
+        Alert.alert("Error", qualificationResponse.data.message);
       }
     } catch (error) {
-      console.error('Error saving data:', error);
-      Alert.alert('Error', 'Failed to save data');
+      console.error("Error adding qualification and course:", error.message);
+      Alert.alert("Error", "Failed to add qualification and course");
     }
   };
 
   return (
     <ScrollView style={styles.container}>
-      <TouchableOpacity onPress={handleToggleQualifications}>
-        <FontAwesome
-          name={showQualifications ? "check-square" : "square"}
-          size={24}
-          color="black"
-        />
-      </TouchableOpacity>
-      <Text style={styles.sectionToggle}>
-        {showQualifications ? "Hide Qualifications" : "Show Qualifications"}
-      </Text>
-      {showQualifications && (
-        <>
-          <Text style={styles.sectionTitle}>Qualifications</Text>
+      <Text style={styles.sectionTitle}>Add Qualification</Text>
+      <View style={styles.inputContainer}>
+        <Text>Select Qualification:</Text>
+        <Picker
+          selectedValue={selectedQualification}
+          onValueChange={(itemValue, itemIndex) => setSelectedQualification(itemValue)}
+        >
           {qualifications.map((qualification) => (
-            <View key={qualification.id}>
-              <Text style={styles.sectionTitle}>
-                Qualification {qualification.id}
-              </Text>
-              <TextInput
-                style={styles.input}
-                placeholder="Qualification"
-                value={qualification.qualification}
-                onChangeText={(value) =>
-                  handleQualificationChange(
-                    qualification.id,
-                    "qualification",
-                    value
-                  )
-                }
-              />
-              <TextInput
-                style={styles.input}
-                placeholder="Degree"
-                value={qualification.degree}
-                onChangeText={(value) =>
-                  handleQualificationChange(qualification.id, "degree", value)
-                }
-              />
-              <TextInput
-                style={styles.input}
-                placeholder="College Name"
-                value={qualification.collegeName}
-                onChangeText={(value) =>
-                  handleQualificationChange(
-                    qualification.id,
-                    "collegeName",
-                    value
-                  )
-                }
-              />
-              <TextInput
-                style={styles.input}
-                placeholder="Location"
-                value={qualification.location}
-                onChangeText={(value) =>
-                  handleQualificationChange(qualification.id, "location", value)
-                }
-              />
-              <TextInput
-                style={styles.input}
-                placeholder="Percentage"
-                value={qualification.percentage}
-                onChangeText={(value) =>
-                  handleQualificationChange(
-                    qualification.id,
-                    "percentage",
-                    value
-                  )
-                }
-              />
-              <View style={styles.checkboxContainer}>
-                {/* <CheckBox
-                  value={qualification.lastDegree}
-                  onValueChange={(value) => handleChange("lastDegree", value)}
-                /> */}
-                <Text style={styles.checkboxLabel}>Last Degree</Text>
-              </View>
-              {/* Other qualification fields */}
-              <TouchableOpacity
-                style={styles.deleteButton}
-                onPress={() => handleDeleteQualification(qualification.id)}
-              >
-                <Text style={styles.deleteButtonText}>Delete</Text>
-              </TouchableOpacity>
-            </View>
+            <Picker.Item key={qualification.QualificationId.toString()} label={qualification.QualificationName} value={qualification.QualificationId} />
           ))}
-          <TouchableOpacity style={styles.addButton} onPress={addQualification}>
-            <Text style={styles.addButtonText}>+ Add Qualification</Text>
-          </TouchableOpacity>
-        </>
-      )}
+        </Picker>
 
-      <TouchableOpacity onPress={handleToggleCourses}>
-        <FontAwesome
-          name={showCourses ? "check-square" : "square"}
-          size={24}
-          color="black"
+        <TextInput
+          style={styles.input}
+          placeholder="College Name"
+          value={colName}
+          onChangeText={setColName}
         />
-      </TouchableOpacity>
-      <Text style={styles.sectionToggle}>
-        {showCourses ? "Hide Courses" : "Show Courses"}
-      </Text>
-      {showCourses && (
-        <>
-          <Text style={styles.sectionTitle}>Courses</Text>
-          {courses.map((course) => (
-            <View key={course.id}>
-              <Text style={styles.sectionTitle}>
-                Course {course.id} Details
-              </Text>
-              <TextInput
-                style={styles.input}
-                placeholder="Course Name"
-                value={course.courseName}
-                onChangeText={(value) =>
-                  handleCourseChange(course.id, "courseName", value)
-                }
-              />
-              <TextInput
-                style={styles.input}
-                placeholder="Institution Name"
-                value={course.institutionName}
-                onChangeText={(value) =>
-                  handleCourseChange(course.id, "institutionName", value)
-                }
-              />
-              <TextInput
-                style={styles.input}
-                placeholder="Year"
-                value={course.year}
-                onChangeText={(value) =>
-                  handleCourseChange(course.id, "year", value)
-                }
-              />
-              <TextInput
-                style={styles.input}
-                placeholder="Percentage"
-                value={course.percentage}
-                onChangeText={(value) =>
-                  handleCourseChange(course.id, "percentage", value)
-                }
-              />
-              <TouchableOpacity
-                style={styles.deleteButton}
-                onPress={() => handleDeleteCourse(course.id)}
-              >
-                <Text style={styles.deleteButtonText}>Delete</Text>
-              </TouchableOpacity>
-            </View>
-          ))}
-          <TouchableOpacity style={styles.addButton} onPress={addCourse}>
-            <Text style={styles.addButtonText}>+ Add Course</Text>
-          </TouchableOpacity>
-        </>
-      )}
+        <TextInput
+          style={styles.input}
+          placeholder="Year of Passing"
+          value={yearPass}
+          onChangeText={setYearPass}
+        />
+        <TextInput
+          style={styles.input}
+          placeholder="Percentage"
+          value={percentage}
+          onChangeText={setPercentage}
+        />
+        <TextInput
+          style={styles.input}
+          placeholder="Degree"
+          value={degree}
+          onChangeText={setDegree}
+        />
+        <TouchableOpacity
+          style={styles.checkboxContainer}
+          onPress={() => setLastDegree(!lastDegree)}
+        >
+          <Icon name={lastDegree ? "check-square-o" : "square-o"} size={20} color="black" />
+          <Text style={{ marginLeft: 8 }}>Last Degree?</Text>
+        </TouchableOpacity>
+        <TextInput
+          style={styles.input}
+          placeholder="Location"
+          value={location}
+          onChangeText={setLocation}
+        />
+      </View>
 
-      <TouchableOpacity
-        style={styles.saveButton}
-        onPress={handleSaveAndProceed}
-      >
-        <Text style={styles.saveButtonText}>Save and Proceed</Text>
+      {/* Course Submission Section */}
+      <Text style={styles.sectionTitle}>Add Course Details</Text>
+      <View style={styles.inputContainer}>
+        <TextInput
+          style={styles.input}
+          placeholder="Course"
+          value={course}
+          onChangeText={setCourse}
+        />
+        <TextInput
+          style={styles.input}
+          placeholder="Institute"
+          value={institute}
+          onChangeText={setInstitute}
+        />
+        <TextInput
+          style={styles.input}
+          placeholder="Year of Study"
+          value={studYear}
+          onChangeText={setStudYear}
+        />
+        <TextInput
+          style={styles.input}
+          placeholder="Percentage"
+          value={coursePercentage}
+          onChangeText={setCoursePercentage}
+        />
+         <TouchableOpacity style={styles.addButton} onPress={handleAddQualificationAndCourse}>
+        <Text style={styles.addButtonText}>Submit</Text>
       </TouchableOpacity>
+      </View>
+
+      {/* Submit Button */}
+     
     </ScrollView>
   );
 };
@@ -318,11 +180,8 @@ const styles = StyleSheet.create({
     marginBottom: 10,
     color: "#333",
   },
-  sectionToggle: {
-    fontSize: 16,
-    color: "#0074D9",
-    marginBottom: 10,
-    marginLeft: 30, // Adjust the marginLeft to align with the sections
+  inputContainer: {
+    marginBottom: 12,
   },
   input: {
     borderWidth: 1,
@@ -332,38 +191,19 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   addButton: {
-    backgroundColor: "#333",
-    padding: 10,
+    backgroundColor: "#059A5F",
+    paddingVertical: 12,
+    paddingHorizontal: 16, // Adjusted for better visibility
     borderRadius: 8,
-    marginTop: 20,
     alignItems: "center",
   },
   addButtonText: {
     color: "#fff",
     fontSize: 16,
   },
-  deleteButton: {
-    backgroundColor: "#333",
-    padding: 10,
-    borderRadius: 8,
-    marginTop: 10,
+  checkboxContainer: {
+    flexDirection: "row",
     alignItems: "center",
-  },
-  deleteButtonText: {
-    color: "#fff",
-    fontSize: 16,
-  },
-  saveButton: {
-    backgroundColor: "#059A5F",
-    padding: 30,
-    borderRadius: 8,
-    marginTop: 20,
-    alignItems: "center",
-  },
-  saveButtonText: {
-    color: "white",
-    fontSize: 18,
-    fontWeight: "bold",
   },
 });
 

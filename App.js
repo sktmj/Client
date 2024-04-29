@@ -13,6 +13,8 @@ import Uploads from "./Screens/Employee/Uploads";
 import Declaration from "./Screens/Employee/Declaration";
 import StartScreen from "./Screens/Employee/Start";
 import PlaceInputs from "./Components/Place";
+import start from "./Screens/Employee/Start";
+
 // import StartScreen from "./Screens/Employee/Start";
 
 const Stack = createNativeStackNavigator();
@@ -42,12 +44,12 @@ function TopTab() {
       <Tab.Screen
         name="AcademicDetails"
         component={AcademicDetails}
-        options={{ headerTitle: "Academic Details" }}
+        options={{ headerTitle: "AcademicDetails" }}
       />
       <Tab.Screen
-        name="WorkExperience"
-        component={WorkExperience}
-        options={{ headerTitle: "WorkExperience" }}
+        name=" start"
+        component={start}
+        options={{ headerTitle: " start" }}
       />
       <Tab.Screen
         name="FamilyDetails"
