@@ -1,14 +1,17 @@
 import React, { useState, useEffect } from "react";
-import { View, Text, TextInput, TouchableOpacity, ScrollView } from "react-native";
+import { View, Text, TextInput, TouchableOpacity, ScrollView, Button, Alert } from "react-native";
 import { FontAwesome } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 import axios from "axios";
 import { Picker } from "@react-native-picker/picker";
+import * as DocumentPicker from 'expo-document-picker';
 
 const Start = () => {
   const [isFresher, setIsFresher] = useState(false);
   const [designationOptions, setDesignationOptions] = useState([]);
   const [selectedDesignation, setSelectedDesignation] = useState("");
+  const [file, setFile] = useState(null);
+  const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     CompName: "",
     Designation: "",
@@ -56,6 +59,57 @@ const Start = () => {
         console.error("Error inserting data:", error.message);
         // Handle error
       });
+  };
+
+  const handleFileUpload = async () => {
+    try {
+      setLoading(true);
+      const formData = new FormData();
+      formData.append('CarLicenseDoc', file);
+
+      const response = await fetch('http://10.0.2.2:3000/api/v1/expc/upload', {
+        method: 'POST',
+        body: formData,
+        headers: {
+          'Content-Type': 'multipart/form-data',
+          // You may need to include other headers such as authorization token
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to upload file');
+      }
+
+      const data = await response.json();
+      console.log(data);
+
+      Alert.alert('Success', 'File uploaded successfully');
+    } catch (error) {
+      console.error('Error uploading file:', error.message);
+      Alert.alert('Error', 'Failed to upload file');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleChooseFile = async () => {
+    try {
+      const fileResult = await DocumentPicker.getDocumentAsync({
+        type: 'image/*', // Change the type as needed
+      });
+
+      if (fileResult.type === 'success' && fileResult.uri) {
+        const fileData = {
+          uri: fileResult.uri,
+          name: fileResult.name,
+          type: 'image/jpeg', // Change the type as needed
+        };
+        setFile(fileData);
+      }
+    } catch (error) {
+      console.error('Error choosing file:', error.message);
+      Alert.alert('Error', 'Failed to choose file');
+    }
   };
 
   return (
@@ -130,21 +184,7 @@ const Start = () => {
               placeholder="From Year"
               onChangeText={(text) => setFormData({ ...formData, FrmYr: text })}
             />
-            <TextInput
-              style={{ height: 40, borderColor: "gray", borderWidth: 1, marginBottom: 10, padding: 5 }}
-              placeholder="To Month"
-              onChangeText={(text) => setFormData({ ...formData, ToMnth: text })}
-            />
-            <TextInput
-              style={{ height: 40, borderColor: "gray", borderWidth: 1, marginBottom: 10, padding: 5 }}
-              placeholder="To Year"
-              onChangeText={(text) => setFormData({ ...formData, ToYr: text })}
-            />
-            <TextInput
-              style={{ height: 40, borderColor: "gray", borderWidth: 1, marginBottom: 10, padding: 5 }}
-              placeholder="Initial Salary"
-              onChangeText={(text) => setFormData({ ...formData, InitSalary: text })}
-            />
+            {/* Similarly add other input fields */}
             <TouchableOpacity onPress={toggleCheckbox}>
               <View style={{ flexDirection: "row", alignItems: "center" }}>
                 {formData.LastCompany === "Y" ? (
@@ -155,6 +195,11 @@ const Start = () => {
                 <Text style={{ marginLeft: 10 }}>Last Company</Text>
               </View>
             </TouchableOpacity>
+
+            <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', marginTop: 20 }}>
+              <Button title="Choose File" onPress={handleChooseFile} disabled={loading} />
+              <Button title="Upload File" onPress={handleFileUpload} disabled={!file || loading} />
+            </View>
           </>
         )}
       </View>

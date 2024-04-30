@@ -1,304 +1,371 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
-  View,
+  ScrollView,
   Text,
   TextInput,
   TouchableOpacity,
-  ScrollView,
+  View,
+  StyleSheet,
+  Alert,
+  Button,
 } from "react-native";
+import axios from "axios";
+import { Picker } from "@react-native-picker/picker";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import * as DocumentPicker from "expo-document-picker";
+import Icon from "react-native-vector-icons/FontAwesome";
 import { FontAwesome } from "@expo/vector-icons";
-import { useNavigation } from "@react-navigation/native";
 
-const WorkExperience = () => {
+const WorkExperience = ({ navigation }) => {
   const [isFresher, setIsFresher] = useState(false);
-  const [showLastCompanyFields, setShowLastCompanyFields] = useState(true);
-  const [showCurrentCompanyFields, setShowCurrentCompanyFields] =
-    useState(false);
-  const [hasEPF, setHasEPF] = useState(false);
-  const [hasEmpRegNo, setHasEmpRegNo] = useState(false);
-  const [hasLicense, setHasLicense] = useState(false);
-  const [showLicenseUpload, setShowLicenseUpload] = useState(false);
-  const [licenseDocumentation, setLicenseDocumentation] = useState("");
-  const [workAllBranches, setWorkAllBranches] = useState(false);
-  const Navigation = useNavigation();
+  const [CompName, setCompName] = useState("");
+  const [designationOptions, setDesignationOptions] = useState([]);
+  const [selectedDesignation, setSelectedDesignation] = useState("");
+  const [LastSalary, setLastSalary] = useState(0); // Default to 0
+  const [RelieveReason, setRelieveReason] = useState("");
+  const [RefPerson, setRefPerson] = useState("");
+  const [PhoneNo, setPhoneNo] = useState(""); // Default to empty string
+  const [FrmMnth, setFrmMnth] = useState("");
+  const [FrmYr, setFrmYr] = useState("");
+  const [ToMnth, setToMnth] = useState("");
+  const [ToYr, setToYr] = useState("");
+  const [InitSalary, setInitSalary] = useState(0); // Default to 0
+  const [LastCompany, setLastCompany] = useState("");
+  const [WorkCompany, setWorkCompany] = useState("");
+  const [workRelieveReason, setWorkRelieveReason] = useState("");
+  const [EPFNO, setEPFNO] = useState("");
+  const [UANNO, setUANNO] = useState("");
+  const [RegExpExNo, setRegExpExNo] = useState("");
+  const [SalesExp, setSalesExp] = useState("");
+  const [HealthIssue, setHealthIssue] = useState("");
+  const [IsDriving, setIsDriving] = useState("");
+  const [LicenseNo, setLicenseNo] = useState("");
+  const [IsCompWrkHere, setIsCompWrkHere] = useState("");
+  const [CarLicense, setCarLicense] = useState("");
+  const [file, setFile] = useState(null);
+  const [loading, setLoading] = useState(false);
 
-  const renderTextInput = (placeholder) => (
-    <TextInput
-      style={{
-        height: 40,
-        borderColor: "gray",
-        borderWidth: 1,
-        marginBottom: 10,
-        padding: 5,
-      }}
-      placeholder={placeholder}
-    />
-  );
+  useEffect(() => {
+    fetchDesignationOptions();
+  }, []);
 
-  const toggleCheckbox = (state) => {
-    state((prevState) => !prevState);
+  const fetchDesignationOptions = async () => {
+    try {
+      const response = await axios.get(
+        "http://10.0.2.2:3000/api/v1/expc/designation"
+      );
+      setDesignationOptions(response.data);
+    } catch (error) {
+      console.error("Error fetching Designations: ", error.message);
+    }
   };
 
-  const handleLicenseUpload = (text) => {
-    setLicenseDocumentation(text);
+  const handlesubmit = async () => {
+    try {
+      // Add Qualification
+      const experienceResponse = await axios.post(
+        "http://10.0.2.2:3000/api/v1/expc/experience",
+        {
+          CompName,
+          Designation: selectedDesignation,
+          LastSalary: LastSalary,
+          RelieveReason: RelieveReason,
+          RefPerson: RefPerson,
+          PhoneNo: PhoneNo,
+          FrmMnth: FrmMnth,
+          FrmYr: FrmYr,
+          ToMnth: ToMnth,
+          ToYr: ToYr,
+          InitSalary: InitSalary,
+          LastCompany: LastCompany ? "Y" : "N",
+        }
+      );
+
+      if (experienceResponse.data.success) {
+        Alert.alert("Success", "experience added successfully");
+        // Now add Course
+        const token = await AsyncStorage.getItem("token");
+        const WorkExperieceResponse = await axios.post(
+          "http://10.0.2.2:3000/api/v1/expc/TotalExperience",
+          {
+            WorkCompany: WorkCompany,
+            RelieveReason: RelieveReason,
+            EPFNO: EPFNO,
+            UANNO: UANNO,
+            RegExpExNo: RegExpExNo,
+            SalesExp: SalesExp,
+            HealthIssue: HealthIssue,
+            IsDriving: IsDriving,
+            LicenseNo: LicenseNo,
+            IsCompWrkHere: IsCompWrkHere,
+            CarLicense: CarLicense ? "Y" : "N",
+          },
+          {
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+
+        if (WorkExperieceResponse.status === 200) {
+          Alert.alert("Success", "WorkExperience added successfully");
+          // Navigate to next screen or perform any other action
+        } else {
+          Alert.alert("Error", WorkExperieceResponse.data.message);
+        }
+      } else {
+        Alert.alert("Error", experienceResponse.data.message);
+      }
+    } catch (error) {
+      console.error(
+        "Error adding Experience and WorkExperience:",
+        error.message
+      );
+      Alert.alert("Error", "Failed to add Experience and WorkExperience");
+    }
   };
 
-  const handleSaveAndProceed = () => {
-    Navigation.navigate("FamilyDetails");
-    console.log("");
+  const handleFileUpload = async () => {
+    try {
+      setLoading(true);
+      const formData = new FormData();
+      formData.append("CarLicenseDoc", file);
+
+      const response = await fetch("http://10.0.2.2:3000/api/v1/expc/upload", {
+        method: "POST",
+        body: formData,
+        headers: {
+          "Content-Type": "multipart/form-data",
+          // You may need to include other headers such as authorization token
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to upload file");
+      }
+
+      const data = await response.json();
+      console.log(data);
+
+      Alert.alert("Success", "File uploaded successfully");
+    } catch (error) {
+      console.error("Error uploading file:", error.message);
+      Alert.alert("Error", "Failed to upload file");
+    } finally {
+      setLoading(false);
+    }
   };
 
+  const handleChooseFile = async () => {
+    try {
+      const fileResult = await DocumentPicker.getDocumentAsync({
+        type: "image/*", // Change the type as needed
+      });
+
+      if (fileResult.type === "success" && fileResult.uri) {
+        const fileData = {
+          uri: fileResult.uri,
+          name: fileResult.name,
+          type: "image/jpeg", // Change the type as needed
+        };
+        setFile(fileData);
+      }
+    } catch (error) {
+      console.error("Error choosing file:", error.message);
+      Alert.alert("Error", "Failed to choose file");
+    }
+  };
   return (
-    <ScrollView style={{ padding: 20 }}>
-       {/* <View> 
-         <Text>Fresher?</Text>
-        <TouchableOpacity onPress={() => toggleCheckbox(setIsFresher)}>
+    <ScrollView style={styles.container}>
+    
+      <View style={styles.inputContainer}>
+        <TouchableOpacity onPress={() => setIsFresher((prev) => !prev)}>
           <View style={{ flexDirection: "row", alignItems: "center" }}>
-            {{isFresher ? (
+            {isFresher ? (
               <FontAwesome name="check-square" size={24} color="black" />
             ) : (
               <FontAwesome name="square" size={24} color="black" />
-            )} 
-            <Text style={{ marginLeft: 10 }}>Fresher</Text>
+            )}
+            <Text style={{ marginLeft: 10 }}>I'm Fresher</Text>
           </View>
         </TouchableOpacity>
-      </View>  */}
 
-    
-       
-          {/* Last Company Details */}
-          <View>
-            {/* <Text>Fresher</Text> */}
-            <TouchableOpacity
-              onPress={() => toggleCheckbox(setIsFresher)}
-            >
-              <View style={{ flexDirection: "row", alignItems: "center" }}>
-                {isFresher? (
-                  <FontAwesome name="check-square" size={24} color="black" />
-                ) : (
-                  <FontAwesome name="square" size={24} color="black" />
-                )}
-                <Text style={{ marginLeft: 10 }}>I'm Fresher</Text>
-              </View>
-            </TouchableOpacity>
+        {!isFresher && (
+          <>
+            <View>
+              <TextInput
+                style={styles.input}
+                placeholder="Organizaion Name Name"
+                value={CompName}
+                onChangeText={setCompName}
+              />
+              <Text>Select Designation:</Text>
 
-            {isFresher && (
-              <>
-                {renderTextInput("Organization Name")}
-                {renderTextInput("Designation")}
-                {renderTextInput("From Month")}
-                {renderTextInput("From Year")}
-                {renderTextInput("To Month")}
-                {renderTextInput("To Year")}
-                {renderTextInput("Initial Salary")}
-                {renderTextInput("Last Salary")}
-                {renderTextInput("Relieve Reason")}
-                {renderTextInput("Contact Person")}
-                {renderTextInput("Contact Number")}
-                <TouchableOpacity
-                  onPress={() => toggleCheckbox(setShowLastCompanyFields)}
-                >
-                  <View style={{ flexDirection: "row", alignItems: "center" }}>
-                    {showLastCompanyFields ? (
-                      <FontAwesome
-                        name="check-square"
-                        size={24}
-                        color="black"
-                      />
-                    ) : (
-                      <FontAwesome name="square" size={24} color="black" />
-                    )}
-                    <Text style={{ marginLeft: 10 }}>
-                      This is my last company
-                    </Text>
-                  </View>
-                </TouchableOpacity>
-              </>
-            )}
-          </View>
+              {/* <Picker
+          selectedValue={selectedDesignation}
+          onValueChange={(itemValue, itemIndex) => setSelectedDesignation(itemValue)}
+        >
+          {designationOptions.map((option) => (
+            <Picker.Item key={option.DesignationId.toString()} label={option.DesignationName} value={option.DesignationId} />
+          ))}
+        </Picker> */}
 
-          {/* Current Company Details */}
-          <View style={{ marginTop: 20 }}>
-            <Text>Current Company Details</Text>
-            <TouchableOpacity
-              onPress={() => toggleCheckbox(setShowCurrentCompanyFields)}
-            >
-              <View style={{ flexDirection: "row", alignItems: "center" }}>
-                {showCurrentCompanyFields ? (
-                  <FontAwesome name="check-square" size={24} color="black" />
-                ) : (
-                  <FontAwesome name="square" size={24} color="black" />
-                )}
-                <Text style={{ marginLeft: 10 }}>I'm currently working</Text>
-              </View>
-            </TouchableOpacity>
-
-            {showCurrentCompanyFields && (
-              <>
-                {renderTextInput("Current Organization Name")}
-                {renderTextInput("Reason for Relieving")}
-                <TouchableOpacity
-                  onPress={() => toggleCheckbox(setShowCurrentCompanyFields)}
-                >
-                  <View style={{ flexDirection: "row", alignItems: "center" }}>
-                    {showCurrentCompanyFields ? (
-                      <FontAwesome
-                        name="check-square"
-                        size={24}
-                        color="black"
-                      />
-                    ) : (
-                      <FontAwesome name="square" size={24} color="black" />
-                    )}
-                    <Text style={{ marginLeft: 10 }}>
-                      This is my current company
-                    </Text>
-                  </View>
-                </TouchableOpacity>
-              </>
-            )}
-          </View>
-
-          {/* EPF */}
-          <View style={{ marginTop: 20 }}>
-            <Text>EPF?</Text>
-            <TouchableOpacity onPress={() => toggleCheckbox(setHasEPF)}>
-              <View style={{ flexDirection: "row", alignItems: "center" }}>
-                {hasEPF ? (
-                  <FontAwesome name="check-square" size={24} color="black" />
-                ) : (
-                  <FontAwesome name="square" size={24} color="black" />
-                )}
-                <Text style={{ marginLeft: 10 }}>Having EPF</Text>
-              </View>
-            </TouchableOpacity>
-
-            {hasEPF && (
-              <>
-                {renderTextInput("EPF Number")}
-                {renderTextInput("UAN Number")}
-              </>
-            )}
-          </View>
-
-          {/* EMP Reg No. */}
-          <View style={{ marginTop: 20 }}>
-            <Text>EMP Reg No.?</Text>
-            <TouchableOpacity onPress={() => toggleCheckbox(setHasEmpRegNo)}>
-              <View style={{ flexDirection: "row", alignItems: "center" }}>
-                {hasEmpRegNo ? (
-                  <FontAwesome name="check-square" size={24} color="black" />
-                ) : (
-                  <FontAwesome name="square" size={24} color="black" />
-                )}
-                <Text style={{ marginLeft: 10 }}>Having EMP Reg No.</Text>
-              </View>
-            </TouchableOpacity>
-
-            {hasEmpRegNo && renderTextInput("Emp Reg No.")}
-          </View>
-
-          {/* Textile / Jewellery Experience */}
-          <View style={{ marginTop: 20 }}>
-            <Text>Textile / Jewellery Experience</Text>
-            {renderTextInput("Textile / Jewellery Experience")}
-          </View>
-
-          {/* Any Health Issue */}
-          <View style={{ marginTop: 20 }}>
-            <Text>Any Health Issue?</Text>
-            {renderTextInput("Any Health Issue")}
-          </View>
-
-          {/* working all braches */}
-
-          <View style={{ marginTop: 20 }}>
-            <Text>Do you work all branches?</Text>
-            <TouchableOpacity
-              onPress={() => toggleCheckbox(setWorkAllBranches)}
-            >
-              <View style={{ flexDirection: "row", alignItems: "center" }}>
-                {workAllBranches ? (
-                  <FontAwesome name="check-square" size={24} color="black" />
-                ) : (
-                  <FontAwesome name="square" size={24} color="black" />
-                )}
-                <Text style={{ marginLeft: 10 }}>Work in all branches</Text>
-              </View>
-            </TouchableOpacity>
-          </View>
-
-          {/* Do you have License? */}
-          <View style={{ marginTop: 20 }}>
-            <Text>Do you have License?</Text>
-            <TouchableOpacity onPress={() => toggleCheckbox(setHasLicense)}>
-              <View style={{ flexDirection: "row", alignItems: "center" }}>
-                {hasLicense ? (
-                  <FontAwesome name="check-square" size={24} color="black" />
-                ) : (
-                  <FontAwesome name="square" size={24} color="black" />
-                )}
-                <Text style={{ marginLeft: 10 }}>Having License</Text>
-              </View>
-            </TouchableOpacity>
-
-            {hasLicense && renderTextInput("License Number")}
-            {hasLicense && (
-              <>
-                <Text>Ready to work all branches?</Text>
-                <TouchableOpacity
-                  onPress={() => toggleCheckbox(setShowLicenseUpload)}
-                >
-                  <View style={{ flexDirection: "row", alignItems: "center" }}>
-                    {showLicenseUpload ? (
-                      <FontAwesome
-                        name="check-square"
-                        size={24}
-                        color="black"
-                      />
-                    ) : (
-                      <FontAwesome name="square" size={24} color="black" />
-                    )}
-                    <Text style={{ marginLeft: 10 }}>Do you drive a car?</Text>
-                  </View>
-                </TouchableOpacity>
-
-                {showLicenseUpload && (
-                  <TextInput
-                    style={{
-                      height: 40,
-                      borderColor: "gray",
-                      borderWidth: 1,
-                      marginBottom: 10,
-                      padding: 5,
-                    }}
-                    placeholder="Upload License Documentation"
-                    value={licenseDocumentation}
-                    onChangeText={handleLicenseUpload}
+              <Picker
+                selectedValue={selectedDesignation}
+                onValueChange={(itemValue, itemIndex) =>
+                  setSelectedDesignation(itemValue)
+                }
+              >
+                <Picker.Item label="Select designation" value="" />
+                {designationOptions.map((option, index) => (
+                  <Picker.Item
+                    key={`${option.DesignationId}_${index}`}
+                    label={option.DesignationName}
+                    value={option.DesignationId}
                   />
-                )}
-              </>
-            )}
-          </View>
+                ))}
+              </Picker>
 
-          {/* Save and Proceed Button */}
-          <TouchableOpacity
-            style={{
-              backgroundColor: "#059A5F",
-              padding: 30,
-              borderRadius: 8,
-              marginTop: 20,
-              alignItems: "center",
-            }}
-            onPress={handleSaveAndProceed}
-          >
-            <Text style={{ color: "#fff", fontSize: 16 }}>
-              Save and Proceed
-            </Text>
-          </TouchableOpacity>
-      
+              <TextInput
+                style={styles.input}
+                placeholder="From-Month"
+                value={FrmMnth}
+                onChangeText={setFrmMnth}
+              />
+              <TextInput
+                style={styles.input}
+                placeholder="From-Year"
+                value={FrmYr}
+                onChangeText={setFrmYr}
+              />
+
+              <TextInput
+                style={styles.input}
+                placeholder="To-Month"
+                value={ToMnth}
+                onChangeText={setToMnth}
+              />
+
+              <TextInput
+                style={styles.input}
+                placeholder="To-Year"
+                value={ToYr}
+                onChangeText={setToYr}
+              />
+              <TextInput
+                style={styles.input}
+                placeholder="Initial-Salary"
+                value={InitSalary}
+                onChangeText={setInitSalary}
+              />
+
+              <TextInput
+                style={styles.input}
+                placeholder="Last-Salary"
+                value={LastSalary}
+                onChangeText={setLastSalary}
+              />
+
+              <TextInput
+                style={styles.input}
+                placeholder="Relieve-Reason"
+                value={RelieveReason}
+                onChangeText={setRelieveReason}
+              />
+
+              <TextInput
+                style={styles.input}
+                placeholder="Contact-Person"
+                value={RefPerson}
+                onChangeText={setRefPerson}
+              />
+
+              <TextInput
+                style={styles.input}
+                placeholder="Contact-Number"
+                value={PhoneNo}
+                onChangeText={setPhoneNo}
+              />
+
+              <TouchableOpacity
+                style={styles.checkboxContainer}
+                onPress={() => setLastCompany(!LastCompany)}
+              >
+                <Icon
+                  name={LastCompany ? "check-square-o" : "square-o"}
+                  size={20}
+                  color="black"
+                />
+                <Text style={{ marginLeft: 8 }}>Last Company?</Text>
+              </TouchableOpacity>
+            </View>
+          </>
+        )}
+
+     <Text style={styles.sectionTitle}>Current Working Company</Text>
+
+        <View
+          style={{
+            flex: 1,
+            justifyContent: "center",
+            alignItems: "center",
+            marginTop: 20,
+          }}
+        >
+          <Button
+            title="Choose File"
+            onPress={handleChooseFile}
+            disabled={loading}
+          />
+          <Button
+            title="Upload File"
+            onPress={handleFileUpload}
+            disabled={!file || loading}
+          />
+        </View>
+        {/* Add other input fields similarly */}
+        <TouchableOpacity style={styles.addButton} onPress={handlesubmit}>
+          <Text style={styles.addButtonText}>Insert</Text>
+        </TouchableOpacity>
+      </View>
     </ScrollView>
   );
 };
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    padding: 20,
+  },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: "bold",
+    marginTop: 20,
+    marginBottom: 10,
+    color: "#333",
+  },
+  inputContainer: {
+    marginBottom: 12,
+  },
+  input: {
+    borderWidth: 1,
+    borderColor: "#ccc",
+    borderRadius: 8,
+    padding: 12,
+    marginBottom: 12,
+  },
+  addButton: {
+    backgroundColor: "#059A5F",
+    paddingVertical: 12,
+    paddingHorizontal: 16, // Adjusted for better visibility
+    borderRadius: 8,
+    alignItems: "center",
+  },
+  addButtonText: {
+    color: "#fff",
+    fontSize: 16,
+  },
+});
 
 export default WorkExperience;
