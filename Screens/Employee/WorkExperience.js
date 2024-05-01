@@ -35,15 +35,22 @@ const WorkExperience = ({ navigation }) => {
   const [workRelieveReason, setWorkRelieveReason] = useState("");
   const [EPFNO, setEPFNO] = useState("");
   const [UANNO, setUANNO] = useState("");
-  const [RegExpExNo, setRegExpExNo] = useState("");
+  // const [RegExpExNo, setRegExpExNo] = useState("");
   const [SalesExp, setSalesExp] = useState("");
   const [HealthIssue, setHealthIssue] = useState("");
   const [IsDriving, setIsDriving] = useState("");
-  const [LicenseNo, setLicenseNo] = useState("");
+  // const [LicenseNo, setLicenseNo] = useState("");
   const [IsCompWrkHere, setIsCompWrkHere] = useState("");
+  
   const [CarLicense, setCarLicense] = useState("");
   const [file, setFile] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [epfNoVisible, setEpfNoVisible] = useState(false);
+const [epfNo, setEpfNo] = useState("");
+const [regExpExNoVisible, setRegExpExNoVisible] = useState(false);  
+const [regExpExNo, setRegExpExNo] = useState("");
+const [licenseNoVisible, setLicenseNoVisible] = useState(false);
+const [licenseNo, setLicenseNo] = useState("");
 
   useEffect(() => {
     fetchDesignationOptions();
@@ -69,7 +76,7 @@ const WorkExperience = ({ navigation }) => {
           CompName,
           Designation: selectedDesignation,
           LastSalary: LastSalary,
-          RelieveReason: RelieveReason,
+          RelieveReason:workRelieveReason,
           RefPerson: RefPerson,
           PhoneNo: PhoneNo,
           FrmMnth: FrmMnth,
@@ -90,14 +97,14 @@ const WorkExperience = ({ navigation }) => {
           {
             WorkCompany: WorkCompany,
             RelieveReason: RelieveReason,
-            EPFNO: EPFNO,
+            EPFNO: epfNo,
             UANNO: UANNO,
-            RegExpExNo: RegExpExNo,
+            RegExpExNo: regExpExNo,
             SalesExp: SalesExp,
             HealthIssue: HealthIssue,
-            IsDriving: IsDriving,
-            LicenseNo: LicenseNo,
-            IsCompWrkHere: IsCompWrkHere,
+            IsDriving: IsDriving ? "Y" : "N",
+            LicenseNo: licenseNo,
+            IsCompWrkHere: IsCompWrkHere ? "Y" : "N",
             CarLicense: CarLicense ? "Y" : "N",
           },
           {
@@ -110,7 +117,7 @@ const WorkExperience = ({ navigation }) => {
 
         if (WorkExperieceResponse.status === 200) {
           Alert.alert("Success", "WorkExperience added successfully");
-          // Navigate to next screen or perform any other action
+          navigation.navigate("FamilyDetails")
         } else {
           Alert.alert("Error", WorkExperieceResponse.data.message);
         }
@@ -176,6 +183,25 @@ const WorkExperience = ({ navigation }) => {
       Alert.alert("Error", "Failed to choose file");
     }
   };
+  const handleCheckboxToggle = (fieldName) => {
+    switch (fieldName) {
+      case "EPFNO":
+        setEpfNoVisible(!epfNoVisible);
+        break;
+      case "RegExpExNo":
+        setRegExpExNoVisible(!regExpExNoVisible);
+        break;
+      case "LicenseNo":
+        setLicenseNoVisible(!licenseNoVisible);
+        break;
+      case "IsDriving": // Add this case
+        setIsDriving(!IsDriving); // Toggle the state value
+        break;
+      default:
+        break;
+    }
+  };
+
   return (
     <ScrollView style={styles.container}>
     
@@ -253,19 +279,20 @@ const WorkExperience = ({ navigation }) => {
                 value={ToYr}
                 onChangeText={setToYr}
               />
-              <TextInput
-                style={styles.input}
-                placeholder="Initial-Salary"
-                value={InitSalary}
-                onChangeText={setInitSalary}
-              />
+               <TextInput
+          style={styles.input}
+           placeholder="Initial-Salary"
+            value={InitSalary.toString()} // Convert to string
+            onChangeText={setInitSalary}
+               />
 
-              <TextInput
-                style={styles.input}
-                placeholder="Last-Salary"
-                value={LastSalary}
-                onChangeText={setLastSalary}
-              />
+
+           <TextInput
+          style={styles.input}
+          placeholder="Last-Salary"
+             value={LastSalary.toString()} // Convert to string
+            onChangeText={setLastSalary}
+               />
 
               <TextInput
                 style={styles.input}
@@ -302,8 +329,132 @@ const WorkExperience = ({ navigation }) => {
             </View>
           </>
         )}
-
+  <View>
      <Text style={styles.sectionTitle}>Current Working Company</Text>
+     <TextInput
+                style={styles.input}
+                placeholder="Current Working Company"
+                value={WorkCompany}
+                onChangeText={setWorkCompany}
+              />
+ <TextInput
+                style={styles.input}
+                placeholder="Reason for Relieving"
+                value={workRelieveReason}
+                onChangeText={setWorkRelieveReason}
+              />
+   
+  {/* Checkbox for EPNNO */}
+  <TouchableOpacity
+    style={styles.checkboxContainer}
+    onPress={() => handleCheckboxToggle("EPFNO")}
+  >
+     <Text style={{ marginLeft: 8 }}>Having EPF ?</Text>
+    <Icon
+      name={epfNoVisible ? "check-square-o" : "square-o"}
+      size={20}
+      color="black"
+    />
+   
+  </TouchableOpacity>
+  {/* Input field for EPNNO */}
+  {epfNoVisible && (
+    <TextInput
+      style={styles.input}
+      placeholder="Enter EPF NO"
+      value={epfNo}
+      onChangeText={setEpfNo}
+    />
+  )}
+         <TextInput
+                style={styles.input}
+                placeholder="UAN NO"
+                value={UANNO}
+                onChangeText={setUANNO}
+              />
+
+<TouchableOpacity
+    style={styles.checkboxContainer}
+    onPress={() => handleCheckboxToggle("RegExpExNo")}
+  >
+    <Icon
+      name={regExpExNoVisible ? "check-square-o" : "square-o"}
+      size={20}
+      color="black"
+    />
+    <Text style={{ marginLeft: 8 }}>RegExpExNo</Text>
+  </TouchableOpacity>
+  {/* Input field for RegExpExNo */}
+  {regExpExNoVisible && (
+    <TextInput
+      style={styles.input}
+      placeholder="Enter RegExpExNo"
+      value={regExpExNo}
+      onChangeText={setRegExpExNo}
+    />
+  )}
+  <TextInput
+                style={styles.input}
+                placeholder="Textile / Jewellery Experience"
+                value={SalesExp}
+                onChangeText={setSalesExp}              />
+
+<TextInput
+                style={styles.input}
+                placeholder="Any Health Issue"
+                value={HealthIssue}
+                onChangeText={setHealthIssue}              />
+
+  {/* Checkbox for LicenseNo */}
+  <View>
+  {/* Checkbox for IsDriving */}
+  <TouchableOpacity
+    style={styles.checkboxContainer}
+    onPress={() => {
+      setIsDriving(!IsDriving);
+      // Toggle visibility of input field based on IsDriving
+      if (!IsDriving) {
+        setLicenseNoVisible(true);
+      } else {
+        setLicenseNoVisible(false);
+      }
+    }}
+  >
+    <Icon
+      name={IsDriving ? "check-square-o" : "square-o"}
+      size={20}
+      color="black"
+    />
+    <Text style={{ marginLeft: 8 }}>IsDriving</Text>
+  </TouchableOpacity>
+  
+  {/* Input field for LicenseNo */}
+  {licenseNoVisible && (
+    <TextInput
+      style={styles.input}
+      placeholder="Enter LicenseNo"
+      value={licenseNo}
+      onChangeText={(text) => setLicenseNo(text)}
+    />
+  )}
+</View>
+  {/* Checkbox for IsCompWrkHere */}
+  <View>
+  {/* Checkbox for IsCompWrkHere */}
+  <TouchableOpacity
+    style={styles.checkboxContainer}
+    onPress={() => setIsCompWrkHere(!IsCompWrkHere)}
+  >
+    <Icon
+      name={IsCompWrkHere ? "check-square-o" : "square-o"}
+      size={20}
+      color="black"
+    />
+    <Text style={{ marginLeft: 8 }}>IsCompWrkHere</Text>
+  </TouchableOpacity>
+</View>
+  
+</View>
 
         <View
           style={{
@@ -313,6 +464,7 @@ const WorkExperience = ({ navigation }) => {
             marginTop: 20,
           }}
         >
+          <Text style={{ marginLeft:1,right:130,top:50 }}>License Document : </Text>
           <Button
             title="Choose File"
             onPress={handleChooseFile}

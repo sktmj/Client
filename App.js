@@ -52,9 +52,9 @@ function TopTab() {
         options={{ headerTitle: "WorkExperience" }}
       />
       <Tab.Screen
-        name="FamilyDetails"
-        component={FamilyDetails}
-        options={{ headerTitle: "FamilyDetails" }}
+        name="start"
+        component={start}
+        options={{ headerTitle: "start" }}
       />
       <Tab.Screen
         name="OtherDetails"
