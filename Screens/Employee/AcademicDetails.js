@@ -36,6 +36,7 @@ const AcademicDetails = ({ navigation }) => {
   const handleAddQualificationAndCourse = async () => {
     try {
       // Add Qualification
+ 
       const qualificationResponse = await axios.post("http://10.0.2.2:3000/api/v1/Qlf/InsertQlCT", {
         QualId: selectedQualification,
         ColName: colName,
