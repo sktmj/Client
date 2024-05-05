@@ -8,13 +8,131 @@ import {
   TouchableOpacity,
   ScrollView,
   Image,
+  Button,
 } from "react-native";
-
+import * as DocumentPicker from "expo-document-picker";
 const Uploads = ({ navigation }) => {
   const [profilePicture, setProfilePicture] = useState(null);
   const [mobilePicture, setMobilePicture] = useState(null);
   const [resume, setResume] = useState(null);
+  const [loading, setLoading] = useState(false);
   const Navigation = useNavigation();
+
+  const handleFileUpload = async () => {
+    try {
+      setLoading(true);
+      const formData = new FormData();
+      formData.append("Pic", file);
+      const token = await AsyncStorage.getItem("token");
+      const response = await fetch("http://10.0.2.2:3000/api/v1/uploads/profilepic", {
+        method: "POST",
+        body: formData,
+        headers: {
+          "Content-Type": "multipart/form-data",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to upload file");
+      }
+
+      const data = await response.json();
+      console.log(data);
+
+      Alert.alert("Success", "File uploaded successfully");
+    } catch (error) {
+      console.error("Error uploading file:", error.message);
+      Alert.alert("Error", "Failed to upload file");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleMobilepic = async () => {
+    try {
+      setLoading(true);
+      const formData = new FormData();
+      formData.append("MobilePic", file);
+      const token = await AsyncStorage.getItem("token");
+      const response = await fetch("http://10.0.2.2:3000/api/v1/uploads/mobilepic", {
+        method: "POST",
+        body: formData,
+        headers: {
+          "Content-Type": "multipart/form-data",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to upload file");
+      }
+
+      const data = await response.json();
+      console.log(data);
+
+      Alert.alert("Success", "File uploaded successfully");
+    } catch (error) {
+      console.error("Error uploading file:", error.message);
+      Alert.alert("Error", "Failed to upload file");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+
+  const handleResume = async () => {
+    try {
+      setLoading(true);
+      const formData = new FormData();
+      formData.append("ResumeFileName", file);
+      const token = await AsyncStorage.getItem("token");
+      const response = await fetch("http://10.0.2.2:3000/api/v1/uploads/resume", {
+        method: "POST",
+        body: formData,
+        headers: {
+          "Content-Type": "multipart/form-data",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to upload file");
+      }
+
+      const data = await response.json();
+      console.log(data);
+
+      Alert.alert("Success", "File uploaded successfully");
+    } catch (error) {
+      console.error("Error uploading file:", error.message);
+      Alert.alert("Error", "Failed to upload file");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+
+
+  const handleChooseFile = async () => {
+    try {
+      const fileResult = await DocumentPicker.getDocumentAsync({
+        type: "image/*", // Change the type as needed
+      });
+
+      if (fileResult.type === "success" && fileResult.uri) {
+        const fileData = {
+          uri: fileResult.uri,
+          name: fileResult.name,
+          type: "image/jpeg", // Change the type as needed
+        };
+        setFile(fileData);
+      }
+    } catch (error) {
+      console.error("Error choosing file:", error.message);
+      Alert.alert("Error", "Failed to choose file");
+    }
+  };
 
   const handleProfilePictureUpload = (image) => {
     setProfilePicture(image);
@@ -36,51 +154,84 @@ const Uploads = ({ navigation }) => {
     <ScrollView style={styles.container}>
       <View style={styles.formContainer}>
         <Text style={styles.sectionTitle}>Profile Picture</Text>
-        <TouchableOpacity
-          style={[
-            styles.uploadButton,
-            { backgroundColor: "#333", padding: 12 },
-          ]}
-          onPress={() => {}}
-          // Add functionality to choose and upload profile picture
+        <View
+          style={{
+            flex: 1,
+            justifyContent: "center",
+            alignItems: "center",
+            marginTop: 20,
+          }}
         >
-          <Text style={styles.buttonText}>Upload Profile Picture</Text>
-        </TouchableOpacity>
+      
+          <Button
+            title="Choose File"
+            onPress={handleChooseFile}
+            disabled={loading}
+          />
+          <Button
+            title="Upload File"
+            onPress={handleFileUpload}
+            disabled={!profilePicture|| loading}
+          />
+        </View>
+
+    
+      
         {profilePicture && (
           <Image source={{ uri: profilePicture }} style={styles.image} />
         )}
 
         <Text style={styles.sectionTitle}>Mobile Picture</Text>
-        <TouchableOpacity
-          style={[
-            styles.uploadButton,
-            { backgroundColor: "#333", padding: 12 },
-          ]}
-          onPress={() => {}}
-          // Add functionality to choose and upload mobile picture
+        <View
+          style={{
+            flex: 1,
+            justifyContent: "center",
+            alignItems: "center",
+            marginTop: 20,
+          }}
         >
-          <Text style={styles.buttonText}>Upload Mobile Picture</Text>
-        </TouchableOpacity>
+      
+          <Button
+            title="Choose File"
+            onPress={handleChooseFile}
+            disabled={loading}
+          />
+          <Button
+            title="Upload File"
+            onPress={handleMobilepic}
+            disabled={!mobilePicture|| loading}
+          />
+        </View>
+
+  
+      
         {mobilePicture && (
-          <Image source={{ uri: mobilePicture }} style={styles.image} />
+          <Image source={{ uri:mobilePicture }} style={styles.image} />
         )}
 
-        <Text style={styles.sectionTitle}>Resume</Text>
-        <TouchableOpacity
-          style={[
-            styles.uploadButton,
-            { backgroundColor: "#333", padding: 12 },
-          ]}
-          onPress={() => {}}
-          // Add functionality to choose and upload resume
+       <Text style={styles.sectionTitle}>Upload Resume</Text>
+       
+          <View
+          style={{
+            flex: 1,
+            justifyContent: "center",
+            alignItems: "center",
+            marginTop: 20,
+          }}
         >
-          <Text style={styles.buttonText}>Upload Resume</Text>
-        </TouchableOpacity>
-        {resume && <Text style={styles.resumeText}>{resume}</Text>}
+      
+          <Button
+            title="Choose File"
+            onPress={handleChooseFile}
+            disabled={loading}
+          />
+          <Button
+            title="Upload File"
+            onPress={handleResume}
+            disabled={!resume|| loading}
+          />
+        </View>
 
-        <TouchableOpacity style={styles.saveButton} onPress={saveAndProceed}>
-          <Text style={styles.saveButtonText}>Save and Proceed</Text>
-        </TouchableOpacity>
       </View>
     </ScrollView>
   );

@@ -38,21 +38,26 @@ const OtherDetails = () => {
   const [nearByPin2, setNearByPin2] = useState("");
   const [nearByPhNo2, setNearByPhNo2] = useState("");
   const [nearByTaluk2, setNearByTaluk2] = useState("");
-  const [countries, setCountries] = useState([]);
-  const [states, setStates] = useState([]);
-  const [districts, setDistricts] = useState([]);
-  const [taluks, setTaluks] = useState([]);
-  const [cities, setCities] = useState([]);
-  const [selectedCountry, setSelectedCountry] = useState("");
-  const [selectedState, setSelectedState] = useState("");
-  const [selectedDistrict, setSelectedDistrict] = useState("");
-  const [selectedTaluk, setSelectedTaluk] = useState("");
-  const [selectedCity, setSelectedCity] = useState("");
+  const [selectedCountry1, setSelectedCountry1] = useState("");
+  const [selectedState1, setSelectedState1] = useState("");
+  const [selectedDistrict1, setSelectedDistrict1] = useState("");
+  const [selectedTaluk1, setSelectedTaluk1] = useState("");
+  const [selectedCity1, setSelectedCity1] = useState("");
+  const [countries1, setCountries1] = useState([]);
+  const [states1, setStates1] = useState([]);
+  const [districts1, setDistricts1] = useState([]);
+  const [taluks1, setTaluks1] = useState([]);
+  const [cities1, setCities1] = useState([]);
   const [selectedCountry2, setSelectedCountry2] = useState("");
   const [selectedState2, setSelectedState2] = useState("");
   const [selectedDistrict2, setSelectedDistrict2] = useState("");
   const [selectedTaluk2, setSelectedTaluk2] = useState("");
   const [selectedCity2, setSelectedCity2] = useState("");
+  const [countries2, setCountries2] = useState([]);
+  const [states2, setStates2] = useState([]);
+  const [districts2, setDistricts2] = useState([]);
+  const [taluks2, setTaluks2] = useState([]);
+  const [cities2, setCities2] = useState([]);
   const [showRefPersonDetails, setShowRefPersonDetails] = useState(false);  
   const [isDatePickerVisible, setDatePickerVisibility] = useState(false);
 
@@ -62,13 +67,42 @@ const OtherDetails = () => {
   }, []);
 
   useEffect(() => {
-    if (selectedCountry) {
-      fetchStatesByCountry(selectedCountry);
+    if (selectedCountry1) {
+      fetchStatesByCountry(selectedCountry1);
     }
-    if (nearByCntry2) {
-      fetchStatesByCountry(nearByCntry2);
+    if (selectedCountry2) {
+      fetchStatesByCountry(selectedCountry2);
     }
-  }, [nearByCntry, nearByCntry2]);
+  }, [selectedCountry1, selectedCountry2]);
+
+
+  useEffect(() => {
+    if (selectedState1) {
+      fetchDistrictsByState(selectedState1);
+    }
+    if (selectedState2) {
+      fetchDistrictsByState(selectedState2);
+    }
+  }, [selectedState1, selectedState2]);
+
+  useEffect(() => {
+    if (selectedDistrict1) {
+      fetchTaluksByDistrict(selectedDistrict1);
+    }
+    if (selectedDistrict2) {
+      fetchTaluksByDistrict(selectedDistrict2);
+    }
+  }, [selectedDistrict1, selectedDistrict2]);
+
+  useEffect(() => {
+    if (selectedTaluk1) {
+      fetchCitiesByTaluk(selectedTaluk1);
+    }
+    if (selectedTaluk2) {
+      fetchCitiesByTaluk(selectedTaluk2);
+    }
+  }, [selectedTaluk1, selectedTaluk2]);
+
   const fetchLocation = async () => {
     try {
       const response = await axios.get("http://10.0.2.2:3000/api/v1/other/location");
@@ -82,7 +116,8 @@ const OtherDetails = () => {
     axios
       .get("http://10.0.2.2:3000/api/v1/prsl/getAllCountries")
       .then((response) => {
-        setCountries(response.data);
+        setCountries1(response.data);
+        setCountries2(response.data);
       })
       .catch((error) => console.error("Error fetching countries:", error));
   };
@@ -91,7 +126,8 @@ const OtherDetails = () => {
     axios
       .get(`http://10.0.2.2:3000/api/v1/prsl/states/${countryId}`)
       .then((response) => {
-        setStates(response.data);
+        setStates1(response.data);
+        setStates2(response.data);
       })
       .catch((error) => console.error("Error fetching states:", error));
   };
@@ -100,7 +136,8 @@ const OtherDetails = () => {
     axios
       .get(`http://10.0.2.2:3000/api/v1/prsl/districts/${stateId}`)
       .then((response) => {
-        setDistricts(response.data);
+        setDistricts1(response.data);
+        setDistricts2(response.data);
       })
       .catch((error) => console.error("Error fetching districts:", error));
   };
@@ -113,7 +150,8 @@ const OtherDetails = () => {
           TalukId: taluk.TalukId,
           TalukName: taluk.TalukName,
         }));
-        setTaluks(formattedTaluks);
+        setTaluks1(formattedTaluks);
+        setTaluks2(formattedTaluks);
       })
       .catch((error) => console.error("Error fetching Taluks:", error));
   };
@@ -123,7 +161,8 @@ const OtherDetails = () => {
     axios
       .get(`http://10.0.2.2:3000/api/v1/prsl/city/${talukId}`)
       .then((response) => {
-        setCities(response.data);
+        setCities1(response.data);
+        setCities2(response.data);
       })
       .catch((error) => console.error("Error fetching Cities:", error));
   };
@@ -168,13 +207,13 @@ const OtherDetails = () => {
         factoryId,
         nearByName1,
         nearByAdd1,
-        nearByCity1:selectedCity,
-        nearByDistrict1:selectedDistrict,
-        nearByState1:selectedState,
-        nearByCntry1:selectedCountry,
+        nearByCity1:selectedCity1,
+        nearByDistrict1:selectedDistrict1,
+        nearByState1:selectedState1,
+        nearByCntry1:selectedCountry1,
         nearByPin1,
         nearByPhNo1,
-        nearByTaluk1:selectedTaluk,
+        nearByTaluk1:selectedTaluk1,
         nearByName2,
         nearByAdd2,
         nearByCity2:selectedCity2,
@@ -456,236 +495,121 @@ const OtherDetails = () => {
                 onChangeText={setNearByAdd1}
               />
   <Text>Select Country:</Text>
-  <Text>Select Country:</Text>
-        <Picker
-          selectedValue={selectedCountry}
-          onValueChange={(itemValue) => {
-            setSelectedCountry(itemValue);
-            setSelectedState("");
-            setSelectedDistrict("");
-            setSelectedTaluk("");
-            setSelectedCity("");
-            fetchStatesByCountry(itemValue);
-           
-          }}
-        >
-          <Picker.Item label="Select Country" value="" />
-          {countries.map((country, index) => (
-            <Picker.Item
-              key={`${country.country_gid}_${index}`}
-              label={country.country_name}
-              value={country.country_gid}
-            />
-          ))}
-        </Picker>
+  <Picker
+        selectedValue={selectedCountry1}
+        onValueChange={(itemValue) => {
+          setSelectedCountry1(itemValue);
+          fetchStatesByCountry(itemValue, setStates1);
+        }}
+      >
+        <Picker.Item label="Select Country" value="" />
+        {countries1.map((country, index) => (
+          <Picker.Item
+            key={`${country.country_gid}_${index}`}
+            label={country.country_name}
+            value={country.country_gid}
+          />
+        ))}
+      </Picker>
+      {/* State */}
+      <Picker
+        selectedValue={selectedState1}
+        onValueChange={(itemValue) => {
+          setSelectedState1(itemValue);
+          fetchDistrictsByState(itemValue, setDistricts1);
+        }}
+      >
+        {/* State options */}
+      </Picker>
+      {/* District */}
+      <Picker
+        selectedValue={selectedDistrict1}
+        onValueChange={(itemValue) => {
+          setSelectedDistrict1(itemValue);
+          fetchTaluksByDistrict(itemValue, setTaluks1);
+        }}
+      >
+        {/* District options */}
+      </Picker>
+      {/* Taluk */}
+      <Picker
+        selectedValue={selectedTaluk1}
+        onValueChange={(itemValue) => {
+          setSelectedTaluk1(itemValue);
+          fetchCitiesByTaluk(itemValue, setCities1);
+        }}
+      >
+        {/* Taluk options */}
+      </Picker>
+      {/* City */}
+      <Picker
+        selectedValue={selectedCity1}
+        onValueChange={(itemValue) => {
+          setSelectedCity1(itemValue);
+        }}
+      >
+        {/* City options */}
+      </Picker>
 
+      {/* Second Person's Details */}
+      <Text style={styles.sectionTitle}>Second Person's Details</Text>
+      {/* Country */}
+      <Picker
+        selectedValue={selectedCountry2}
+        onValueChange={(itemValue) => {
+          setSelectedCountry2(itemValue);
+          fetchStatesByCountry(itemValue, setStates2);
+        }}
+      >
+        <Picker.Item label="Select Country" value="" />
+        {countries2.map((country, index) => (
+          <Picker.Item
+            key={`${country.country_gid}_${index}`}
+            label={country.country_name}
+            value={country.country_gid}
+          />
+        ))}
+      </Picker>
+      {/* State */}
+      <Picker
+        selectedValue={selectedState2}
+        onValueChange={(itemValue) => {
+          setSelectedState2(itemValue);
+          fetchDistrictsByState(itemValue, setDistricts2);
+        }}
+      >
+        {/* State options */}
+      </Picker>
+      {/* District */}
+      <Picker
+        selectedValue={selectedDistrict2}
+        onValueChange={(itemValue) => {
+          setSelectedDistrict2(itemValue);
+          fetchTaluksByDistrict(itemValue, setTaluks2);
+        }}
+      >
+        {/* District options */}
+      </Picker>
+      {/* Taluk */}
+      <Picker
+        selectedValue={selectedTaluk2}
+        onValueChange={(itemValue) => {
+          setSelectedTaluk2(itemValue);
+          fetchCitiesByTaluk(itemValue, setCities2);
+        }}
+      >
+        {/* Taluk options */}
+      </Picker>
+      {/* City */}
+      <Picker
+        selectedValue={selectedCity2}
+        onValueChange={(itemValue) => {
+          setSelectedCity2(itemValue);
+        }}
+      >
+        {/* City options */}
+      </Picker>
 
-        <Text>Select State:</Text>
-        <Picker
-            selectedValue={selectedState}
-            onValueChange={(itemValue) => {
-              setSelectedState(itemValue);
-              setSelectedDistrict("");
-              setSelectedTaluk("");
-              setSelectedCity("");
-              fetchDistrictsByState(itemValue);
-        
-            }}
-          >
-            <Picker.Item label="Select State" value="" />
-            {states.map((state, index) => (
-              <Picker.Item
-                key={`${state.state_gid}_${index}`}
-                label={state.state_name}
-                value={state.state_gid}
-              />
-            ))}
-          </Picker>
-
-          <Text>Select District:</Text>
-          <Picker
-            selectedValue={selectedDistrict}
-            onValueChange={(itemValue) => {
-              setSelectedDistrict(itemValue);
-              fetchTaluksByDistrict(itemValue); // Fetch taluks based on selected district
-             
-            }}
-          >
-            <Picker.Item label="Select District" value="" />
-            {districts.map((district, index) => (
-              <Picker.Item
-                key={`${district.DistrictId}_${index}`}
-                label={district.Districtname}
-                value={`${district.DistrictId}`}
-              />
-            ))}
-          </Picker>
-
-          <Text>Select Taluk:</Text>
-          <Picker
-              selectedValue={selectedTaluk}
-              onValueChange={(itemValue) => {
-                setSelectedTaluk(itemValue);
-                fetchCitiesByTaluk(itemValue); // Call fetchCitiesByTaluk when selected taluk changes
-               
-              }}
-            >
-              <Picker.Item label="Select Taluk" value="" />
-              {taluks.map((taluk, index) => (
-                <Picker.Item
-                  key={`${taluk.TalukId}_${index}`}
-                  label={taluk.TalukName}
-                  value={taluk.TalukId}
-                />
-              ))}
-            </Picker>
-            <Text>Select City:</Text>
-            <Picker
-              selectedValue={selectedCity}
-              onValueChange={(itemValue) => {
-                setSelectedCity(itemValue);
-               
-              }}
-              enabled={cities.length > 0} // Disable picker if cities are not fetched
-            >
-              <Picker.Item label="Select City" value="" />
-              {cities.map((city, index) => (
-                <Picker.Item
-                  key={`${city.city_gid}_${index}`}
-                  label={city.city_name}
-                  value={city.city_gid}
-                />
-              ))}
-            </Picker>
-        <TextInput
-                style={styles.input}
-                placeholder="Pin:"
-                value={nearByPin1}
-                onChangeText={setNearByPin1}
-              />
-
-        <TextInput
-                style={styles.input}
-                placeholder="Ph No:"
-                value={nearByPhNo1}
-                onChangeText={setNearByPhNo1}
-              />
-
- <Text style={styles.sectionTitle}>2nd Persons Details:</Text>
-  <TextInput
-                style={styles.input}
-                placeholder="Name:"
-                value={nearByName2}
-                onChangeText={setNearByName2}
-              />
-                <TextInput
-                style={styles.input}
-                placeholder="Address:"
-                value={nearByAdd2}
-                onChangeText={setNearByAdd2}
-              />
-
-  <Text>Select Country:</Text>
-        <Picker
-          selectedValue={selectedCountry2}
-          onValueChange={(itemValue) => {
-            setSelectedCountry2(itemValue);
-            setSelectedState2("");
-            setSelectedDistrict2("");
-            setSelectedTaluk2("");
-            setSelectedCity2("");
-            fetchStatesByCountry(itemValue);
-           
-          }}
-        >
-          <Picker.Item label="Select Country" value="" />
-          {countries.map((country, index) => (
-            <Picker.Item
-              key={`${country.country_gid}_${index}`}
-              label={country.country_name}
-              value={country.country_gid}
-            />
-          ))}
-        </Picker>
-
-
-        <Text>Select State:</Text>
-        <Picker
-            selectedValue={selectedState2}
-            onValueChange={(itemValue) => {
-              setSelectedState2(itemValue);
-              setSelectedDistrict2("");
-              setSelectedTaluk2("");
-              setSelectedCity2("");
-              fetchDistrictsByState(itemValue);
-        
-            }}
-          >
-            <Picker.Item label="Select State" value="" />
-            {states.map((state, index) => (
-              <Picker.Item
-                key={`${state.state_gid}_${index}`}
-                label={state.state_name}
-                value={state.state_gid}
-              />
-            ))}
-          </Picker>
-
-          <Text>Select District:</Text>
-          <Picker
-            selectedValue={selectedDistrict2}
-            onValueChange={(itemValue) => {
-              setSelectedDistrict2(itemValue);
-              fetchTaluksByDistrict(itemValue); // Fetch taluks based on selected district
-             
-            }}
-          >
-            <Picker.Item label="Select District" value="" />
-            {districts.map((district, index) => (
-              <Picker.Item
-                key={`${district.DistrictId}_${index}`}
-                label={district.Districtname}
-                value={`${district.DistrictId}`}
-              />
-            ))}
-          </Picker>
-
-          <Text>Select Taluk:</Text>
-          <Picker
-              selectedValue={selectedTaluk2}
-              onValueChange={(itemValue) => {
-                setSelectedTaluk2(itemValue);
-                fetchCitiesByTaluk(itemValue); // Call fetchCitiesByTaluk when selected taluk changes
-               
-              }}
-            >
-              <Picker.Item label="Select Taluk" value="" />
-              {taluks.map((taluk, index) => (
-                <Picker.Item
-                  key={`${taluk.TalukId}_${index}`}
-                  label={taluk.TalukName}
-                  value={taluk.TalukId}
-                />
-              ))}
-            </Picker>
-            <Text>Select City:</Text>
-            <Picker
-              selectedValue={selectedCity2}
-              onValueChange={(itemValue) => {
-                setSelectedCity2(itemValue);
-               
-              }}
-              enabled={cities.length > 0} // Disable picker if cities are not fetched
-            >
-              <Picker.Item label="Select City" value="" />
-              {cities.map((city, index) => (
-                <Picker.Item
-                  key={`${city.city_gid}_${index}`}
-                  label={city.city_name}
-                  value={city.city_gid}
-                />
-              ))}
-            </Picker>
         <TextInput
                 style={styles.input}
                 placeholder="Pin:"
