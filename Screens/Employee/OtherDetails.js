@@ -31,19 +31,10 @@ const OtherDetails = () => {
   const [LocationOptions, setLocationOptions] = useState([]);
   const [nearByName1, setNearByName1] = useState("");
   const [nearByAdd1, setNearByAdd1] = useState("");
-  const [nearByCity1, setNearByCity1] = useState("");
-  const [nearByDistrict1, setNearByDistrict1] = useState("");
-  const [nearByState1, setNearByState1] = useState("");
-  const [nearByCntry1, setNearByCntry1] = useState("");
   const [nearByPin1, setNearByPin1] = useState("");
   const [nearByPhNo1, setNearByPhNo1] = useState("");
-  const [nearByTaluk1, setNearByTaluk1] = useState("");
   const [nearByName2, setNearByName2] = useState("");
   const [nearByAdd2, setNearByAdd2] = useState("");
-  const [nearByCity2, setNearByCity2] = useState("");
-  const [nearByDistrict2, setNearByDistrict2] = useState("");
-  const [nearByState2, setNearByState2] = useState("");
-  const [nearByCntry2, setNearByCntry2] = useState("");
   const [nearByPin2, setNearByPin2] = useState("");
   const [nearByPhNo2, setNearByPhNo2] = useState("");
   const [nearByTaluk2, setNearByTaluk2] = useState("");
@@ -52,6 +43,16 @@ const OtherDetails = () => {
   const [districts, setDistricts] = useState([]);
   const [taluks, setTaluks] = useState([]);
   const [cities, setCities] = useState([]);
+  const [selectedCountry, setSelectedCountry] = useState("");
+  const [selectedState, setSelectedState] = useState("");
+  const [selectedDistrict, setSelectedDistrict] = useState("");
+  const [selectedTaluk, setSelectedTaluk] = useState("");
+  const [selectedCity, setSelectedCity] = useState("");
+  const [selectedCountry2, setSelectedCountry2] = useState("");
+  const [selectedState2, setSelectedState2] = useState("");
+  const [selectedDistrict2, setSelectedDistrict2] = useState("");
+  const [selectedTaluk2, setSelectedTaluk2] = useState("");
+  const [selectedCity2, setSelectedCity2] = useState("");
   const [showRefPersonDetails, setShowRefPersonDetails] = useState(false);  
   const [isDatePickerVisible, setDatePickerVisibility] = useState(false);
 
@@ -61,11 +62,13 @@ const OtherDetails = () => {
   }, []);
 
   useEffect(() => {
-    if (nearByDistrict1) {
-      fetchTaluksByDistrict(nearByDistrict1);
+    if (selectedCountry) {
+      fetchStatesByCountry(selectedCountry);
     }
-  }, [nearByDistrict1]);
-
+    if (nearByCntry2) {
+      fetchStatesByCountry(nearByCntry2);
+    }
+  }, [nearByCntry, nearByCntry2]);
   const fetchLocation = async () => {
     try {
       const response = await axios.get("http://10.0.2.2:3000/api/v1/other/location");
@@ -165,22 +168,22 @@ const OtherDetails = () => {
         factoryId,
         nearByName1,
         nearByAdd1,
-        nearByCity1,
-        nearByDistrict1,
-        nearByState1,
-        nearByCntry1,
+        nearByCity1:selectedCity,
+        nearByDistrict1:selectedDistrict,
+        nearByState1:selectedState,
+        nearByCntry1:selectedCountry,
         nearByPin1,
         nearByPhNo1,
-        nearByTaluk1,
+        nearByTaluk1:selectedTaluk,
         nearByName2,
         nearByAdd2,
-        nearByCity2,
-        nearByDistrict2,
-        nearByState2,
-        nearByCntry2,
+        nearByCity2:selectedCity2,
+        nearByDistrict2:selectedDistrict2,
+        nearByState2:selectedState2,
+        nearByCntry2:selectedCountry2,
         nearByPin2,
         nearByPhNo2,
-        nearByTaluk2,
+        nearByTaluk2:selectedTaluk2
       };
       
       const headers = {
@@ -453,16 +456,19 @@ const OtherDetails = () => {
                 onChangeText={setNearByAdd1}
               />
   <Text>Select Country:</Text>
+  <Text>Select Country:</Text>
         <Picker
-          selectedValue={nearByCntry1}
+          selectedValue={selectedCountry}
           onValueChange={(itemValue) => {
-            setNearByCntry1(itemValue);
-            setNearByState1('');
-            setNearByDistrict1('');
-            setNearByTaluk1('');
-            setNearByCity1('');
+            setSelectedCountry(itemValue);
+            setSelectedState("");
+            setSelectedDistrict("");
+            setSelectedTaluk("");
+            setSelectedCity("");
             fetchStatesByCountry(itemValue);
-          }}>
+           
+          }}
+        >
           <Picker.Item label="Select Country" value="" />
           {countries.map((country, index) => (
             <Picker.Item
@@ -473,17 +479,19 @@ const OtherDetails = () => {
           ))}
         </Picker>
 
-        <View>
-          <Text>Select State:</Text>
-          <Picker
-            selectedValue={nearByState1}
+
+        <Text>Select State:</Text>
+        <Picker
+            selectedValue={selectedState}
             onValueChange={(itemValue) => {
-              setNearByState1(itemValue);
-              setNearByDistrict1('');
-              setNearByTaluk1('');
-              setNearByCity1('');
+              setSelectedState(itemValue);
+              setSelectedDistrict("");
+              setSelectedTaluk("");
+              setSelectedCity("");
               fetchDistrictsByState(itemValue);
-            }}>
+        
+            }}
+          >
             <Picker.Item label="Select State" value="" />
             {states.map((state, index) => (
               <Picker.Item
@@ -493,39 +501,36 @@ const OtherDetails = () => {
               />
             ))}
           </Picker>
-        </View>
 
-        <View>
           <Text>Select District:</Text>
           <Picker
-            selectedValue={nearByDistrict1}
+            selectedValue={selectedDistrict}
             onValueChange={(itemValue) => {
-              setNearByDistrict1(itemValue);
-              setNearByTaluk1('');
-              setNearByCity1('');
-              fetchTaluksByDistrict(itemValue);
-            }}>
+              setSelectedDistrict(itemValue);
+              fetchTaluksByDistrict(itemValue); // Fetch taluks based on selected district
+             
+            }}
+          >
             <Picker.Item label="Select District" value="" />
             {districts.map((district, index) => (
               <Picker.Item
-                key={`${district.district_gid}_${index}`}
-                label={district.district_name}
-                value={district.district_gid}
+                key={`${district.DistrictId}_${index}`}
+                label={district.Districtname}
+                value={`${district.DistrictId}`}
               />
             ))}
           </Picker>
-        </View>
 
-        <View>
-        <Text>Select Taluk:</Text>
-        <Picker
-            selectedValue={nearByTaluk1}
-            onValueChange={(itemValue) => {
-              setNearByTaluk1(itemValue);
-              setNearByCity1('');
-              fetchCitiesByTaluk(itemValue);
-            }}>
-            <Picker.Item label="Select Taluk" value="" />
+          <Text>Select Taluk:</Text>
+          <Picker
+              selectedValue={selectedTaluk}
+              onValueChange={(itemValue) => {
+                setSelectedTaluk(itemValue);
+                fetchCitiesByTaluk(itemValue); // Call fetchCitiesByTaluk when selected taluk changes
+               
+              }}
+            >
+              <Picker.Item label="Select Taluk" value="" />
               {taluks.map((taluk, index) => (
                 <Picker.Item
                   key={`${taluk.TalukId}_${index}`}
@@ -534,25 +539,24 @@ const OtherDetails = () => {
                 />
               ))}
             </Picker>
-      </View>
-      <View>
-        <Text>Select City:</Text>
-        <Picker
-          selectedValue={nearByCity1}
-          onValueChange={(itemValue) => setNearByCity1(itemValue)}
-          enabled={cities.length > 0} // Disable picker if cities are not fetched
-        >
-          <Picker.Item label="Select City" value="" />
-          {cities.map((city, index) => (
-            <Picker.Item
-              key={`${city.city_gid}_${index}`}
-              label={city.city_name}
-              value={city.city_gid}
-            />
-          ))}
-        </Picker>
-      </View>
-
+            <Text>Select City:</Text>
+            <Picker
+              selectedValue={selectedCity}
+              onValueChange={(itemValue) => {
+                setSelectedCity(itemValue);
+               
+              }}
+              enabled={cities.length > 0} // Disable picker if cities are not fetched
+            >
+              <Picker.Item label="Select City" value="" />
+              {cities.map((city, index) => (
+                <Picker.Item
+                  key={`${city.city_gid}_${index}`}
+                  label={city.city_name}
+                  value={city.city_gid}
+                />
+              ))}
+            </Picker>
         <TextInput
                 style={styles.input}
                 placeholder="Pin:"
@@ -580,17 +584,20 @@ const OtherDetails = () => {
                 value={nearByAdd2}
                 onChangeText={setNearByAdd2}
               />
+
   <Text>Select Country:</Text>
         <Picker
-          selectedValue={nearByCntry2}
+          selectedValue={selectedCountry2}
           onValueChange={(itemValue) => {
-            setNearByCntry2(itemValue);
-            setNearByState2('');
-            setNearByDistrict2('');
-            setNearByTaluk2('');
-            setNearByCity2('');
+            setSelectedCountry2(itemValue);
+            setSelectedState2("");
+            setSelectedDistrict2("");
+            setSelectedTaluk2("");
+            setSelectedCity2("");
             fetchStatesByCountry(itemValue);
-          }}>
+           
+          }}
+        >
           <Picker.Item label="Select Country" value="" />
           {countries.map((country, index) => (
             <Picker.Item
@@ -601,17 +608,19 @@ const OtherDetails = () => {
           ))}
         </Picker>
 
-        <View>
-          <Text>Select State:</Text>
-          <Picker
-            selectedValue={nearByState2}
+
+        <Text>Select State:</Text>
+        <Picker
+            selectedValue={selectedState2}
             onValueChange={(itemValue) => {
-              setNearByState2(itemValue);
-              setNearByDistrict2('');
-              setNearByTaluk2('');
-              setNearByCity2('');
+              setSelectedState2(itemValue);
+              setSelectedDistrict2("");
+              setSelectedTaluk2("");
+              setSelectedCity2("");
               fetchDistrictsByState(itemValue);
-            }}>
+        
+            }}
+          >
             <Picker.Item label="Select State" value="" />
             {states.map((state, index) => (
               <Picker.Item
@@ -621,65 +630,62 @@ const OtherDetails = () => {
               />
             ))}
           </Picker>
-        </View>
 
-        <View>
           <Text>Select District:</Text>
           <Picker
-            selectedValue={nearByDistrict2}
+            selectedValue={selectedDistrict2}
             onValueChange={(itemValue) => {
-              setNearByDistrict2(itemValue);
-              setNearByTaluk2('');
-              setNearByCity2('');
-              fetchTaluksByDistrict(itemValue);
-            }}>
+              setSelectedDistrict2(itemValue);
+              fetchTaluksByDistrict(itemValue); // Fetch taluks based on selected district
+             
+            }}
+          >
             <Picker.Item label="Select District" value="" />
             {districts.map((district, index) => (
               <Picker.Item
-                key={`${district.district_gid}_${index}`}
-                label={district.district_name}
-                value={district.district_gid}
+                key={`${district.DistrictId}_${index}`}
+                label={district.Districtname}
+                value={`${district.DistrictId}`}
               />
             ))}
           </Picker>
-        </View>
 
-        <View>
           <Text>Select Taluk:</Text>
           <Picker
-            selectedValue={nearByTaluk2}
-            onValueChange={(itemValue) => {
-              setNearByTaluk2(itemValue);
-              setNearByCity2('');
-              fetchCitiesByTaluk(itemValue);
-            }}>
-            <Picker.Item label="Select Taluk" value="" />
-            {taluks.map((taluk, index) => (
-              <Picker.Item
-                key={`${taluk.taluk_gid}_${index}`}
-                label={taluk.taluk_name}
-                value={taluk.taluk_gid}
-              />
-            ))}
-          </Picker>
-        </View>
-
-        <View>
-          <Text>Select City:</Text>
-          <Picker
-            selectedValue={nearByCity2}
-            onValueChange={(itemValue) => setNearByCity2(itemValue)}>
-            <Picker.Item label="Select City" value="" />
-            {cities.map((city, index) => (
-              <Picker.Item
-                key={`${city.city_gid}_${index}`}
-                label={city.city_name}
-                value={city.city_gid}
-              />
-            ))}
-          </Picker>
-        </View>
-
+              selectedValue={selectedTaluk2}
+              onValueChange={(itemValue) => {
+                setSelectedTaluk2(itemValue);
+                fetchCitiesByTaluk(itemValue); // Call fetchCitiesByTaluk when selected taluk changes
+               
+              }}
+            >
+              <Picker.Item label="Select Taluk" value="" />
+              {taluks.map((taluk, index) => (
+                <Picker.Item
+                  key={`${taluk.TalukId}_${index}`}
+                  label={taluk.TalukName}
+                  value={taluk.TalukId}
+                />
+              ))}
+            </Picker>
+            <Text>Select City:</Text>
+            <Picker
+              selectedValue={selectedCity2}
+              onValueChange={(itemValue) => {
+                setSelectedCity2(itemValue);
+               
+              }}
+              enabled={cities.length > 0} // Disable picker if cities are not fetched
+            >
+              <Picker.Item label="Select City" value="" />
+              {cities.map((city, index) => (
+                <Picker.Item
+                  key={`${city.city_gid}_${index}`}
+                  label={city.city_name}
+                  value={city.city_gid}
+                />
+              ))}
+            </Picker>
         <TextInput
                 style={styles.input}
                 placeholder="Pin:"
