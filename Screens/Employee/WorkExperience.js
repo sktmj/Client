@@ -16,6 +16,7 @@ import * as DocumentPicker from "expo-document-picker";
 import Icon from "react-native-vector-icons/FontAwesome";
 import { FontAwesome } from "@expo/vector-icons";
 
+
 const WorkExperience = ({ navigation }) => {
   const [isFresher, setIsFresher] = useState(false);
   const [CompName, setCompName] = useState("");
@@ -35,26 +36,37 @@ const WorkExperience = ({ navigation }) => {
   const [workRelieveReason, setWorkRelieveReason] = useState("");
   const [EPFNO, setEPFNO] = useState("");
   const [UANNO, setUANNO] = useState("");
-  // const [RegExpExNo, setRegExpExNo] = useState("");
+  const [RegExpExNo, setRegExpExNo] = useState("");
   const [SalesExp, setSalesExp] = useState("");
   const [HealthIssue, setHealthIssue] = useState("");
   const [IsDriving, setIsDriving] = useState("");
-  // const [LicenseNo, setLicenseNo] = useState("");
+  const [LicenseNo, setLicenseNo] = useState("");
   const [IsCompWrkHere, setIsCompWrkHere] = useState("");
-  
   const [CarLicense, setCarLicense] = useState("");
   const [file, setFile] = useState(null);
   const [loading, setLoading] = useState(false);
-  const [epfNoVisible, setEpfNoVisible] = useState(false);
-const [epfNo, setEpfNo] = useState("");
-const [regExpExNoVisible, setRegExpExNoVisible] = useState(false);  
-const [regExpExNo, setRegExpExNo] = useState("");
-const [licenseNoVisible, setLicenseNoVisible] = useState(false);
-const [licenseNo, setLicenseNo] = useState("");
-
+  const [token, setToken] = useState(null);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
   useEffect(() => {
     fetchDesignationOptions();
+    checkAuthentication();
   }, []);
+
+  const checkAuthentication = async () => {
+    try {
+      const storedToken = await AsyncStorage.getItem("AppId");
+      if (!storedToken) {
+        console.log("User is not authenticated. Redirecting to login screen...");
+        navigation.navigate("Login");
+      } else {
+        console.log("User is authenticated.");
+        setIsLoggedIn(true);
+        setToken(storedToken); // Ensure token is trimmed of any extra characters
+      }
+    } catch (error) {
+      console.error("Error checking authentication:", error.message);
+    }
+  };
 
   const fetchDesignationOptions = async () => {
     try {
@@ -68,7 +80,11 @@ const [licenseNo, setLicenseNo] = useState("");
   };
 
   const handlesubmit = async () => {
+    console.log(token,"hhhhh")
+  
+    
     try {
+      console.log(selectedDesignation,LastSalary, RelieveReason)
       // Add Qualification
       const experienceResponse = await axios.post(
         "http://10.0.2.2:3000/api/v1/expc/experience",
@@ -76,7 +92,7 @@ const [licenseNo, setLicenseNo] = useState("");
           CompName,
           Designation: selectedDesignation,
           LastSalary: LastSalary,
-          RelieveReason:workRelieveReason,
+          RelieveReason: RelieveReason,
           RefPerson: RefPerson,
           PhoneNo: PhoneNo,
           FrmMnth: FrmMnth,
@@ -85,26 +101,32 @@ const [licenseNo, setLicenseNo] = useState("");
           ToYr: ToYr,
           InitSalary: InitSalary,
           LastCompany: LastCompany ? "Y" : "N",
+        },
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
         }
       );
 
       if (experienceResponse.data.success) {
         Alert.alert("Success", "experience added successfully");
         // Now add Course
-        const token = await AsyncStorage.getItem("token");
+        const token = await AsyncStorage.getItem("AppId");
         const WorkExperieceResponse = await axios.post(
           "http://10.0.2.2:3000/api/v1/expc/TotalExperience",
           {
             WorkCompany: WorkCompany,
             RelieveReason: RelieveReason,
-            EPFNO: epfNo,
+            EPFNO: EPFNO,
             UANNO: UANNO,
-            RegExpExNo: regExpExNo,
+            RegExpExNo: RegExpExNo,
             SalesExp: SalesExp,
             HealthIssue: HealthIssue,
-            IsDriving: IsDriving ? "Y" : "N",
-            LicenseNo: licenseNo,
-            IsCompWrkHere: IsCompWrkHere ? "Y" : "N",
+            IsDriving: IsDriving,
+            LicenseNo: LicenseNo,
+            IsCompWrkHere: IsCompWrkHere,
             CarLicense: CarLicense ? "Y" : "N",
           },
           {
@@ -114,10 +136,10 @@ const [licenseNo, setLicenseNo] = useState("");
             },
           }
         );
-
+       console.log(WorkExperieceResponse)
         if (WorkExperieceResponse.status === 200) {
           Alert.alert("Success", "WorkExperience added successfully");
-          navigation.navigate("FamilyDetails")
+          // Navigate to next screen or perform any other action
         } else {
           Alert.alert("Error", WorkExperieceResponse.data.message);
         }
@@ -183,25 +205,6 @@ const [licenseNo, setLicenseNo] = useState("");
       Alert.alert("Error", "Failed to choose file");
     }
   };
-  const handleCheckboxToggle = (fieldName) => {
-    switch (fieldName) {
-      case "EPFNO":
-        setEpfNoVisible(!epfNoVisible);
-        break;
-      case "RegExpExNo":
-        setRegExpExNoVisible(!regExpExNoVisible);
-        break;
-      case "LicenseNo":
-        setLicenseNoVisible(!licenseNoVisible);
-        break;
-      case "IsDriving": // Add this case
-        setIsDriving(!IsDriving); // Toggle the state value
-        break;
-      default:
-        break;
-    }
-  };
-
   return (
     <ScrollView style={styles.container}>
     
@@ -279,20 +282,19 @@ const [licenseNo, setLicenseNo] = useState("");
                 value={ToYr}
                 onChangeText={setToYr}
               />
-               <TextInput
-          style={styles.input}
-           placeholder="Initial-Salary"
-            value={InitSalary.toString()} // Convert to string
-            onChangeText={setInitSalary}
-               />
+              <TextInput
+                style={styles.input}
+                placeholder="Initial-Salary"
+                value={InitSalary}
+                onChangeText={setInitSalary}
+              />
 
-
-           <TextInput
-          style={styles.input}
-          placeholder="Last-Salary"
-             value={LastSalary.toString()} // Convert to string
-            onChangeText={setLastSalary}
-               />
+              <TextInput
+                style={styles.input}
+                placeholder="Last-Salary"
+                value={LastSalary}
+                onChangeText={setLastSalary}
+              />
 
               <TextInput
                 style={styles.input}
@@ -329,132 +331,8 @@ const [licenseNo, setLicenseNo] = useState("");
             </View>
           </>
         )}
-  <View>
+
      <Text style={styles.sectionTitle}>Current Working Company</Text>
-     <TextInput
-                style={styles.input}
-                placeholder="Current Working Company"
-                value={WorkCompany}
-                onChangeText={setWorkCompany}
-              />
- <TextInput
-                style={styles.input}
-                placeholder="Reason for Relieving"
-                value={workRelieveReason}
-                onChangeText={setWorkRelieveReason}
-              />
-   
-  {/* Checkbox for EPNNO */}
-  <TouchableOpacity
-    style={styles.checkboxContainer}
-    onPress={() => handleCheckboxToggle("EPFNO")}
-  >
-     <Text style={{ marginLeft: 8 }}>Having EPF ?</Text>
-    <Icon
-      name={epfNoVisible ? "check-square-o" : "square-o"}
-      size={20}
-      color="black"
-    />
-   
-  </TouchableOpacity>
-  {/* Input field for EPNNO */}
-  {epfNoVisible && (
-    <TextInput
-      style={styles.input}
-      placeholder="Enter EPF NO"
-      value={epfNo}
-      onChangeText={setEpfNo}
-    />
-  )}
-         <TextInput
-                style={styles.input}
-                placeholder="UAN NO"
-                value={UANNO}
-                onChangeText={setUANNO}
-              />
-
-<TouchableOpacity
-    style={styles.checkboxContainer}
-    onPress={() => handleCheckboxToggle("RegExpExNo")}
-  >
-    <Icon
-      name={regExpExNoVisible ? "check-square-o" : "square-o"}
-      size={20}
-      color="black"
-    />
-    <Text style={{ marginLeft: 8 }}>RegExpExNo</Text>
-  </TouchableOpacity>
-  {/* Input field for RegExpExNo */}
-  {regExpExNoVisible && (
-    <TextInput
-      style={styles.input}
-      placeholder="Enter RegExpExNo"
-      value={regExpExNo}
-      onChangeText={setRegExpExNo}
-    />
-  )}
-  <TextInput
-                style={styles.input}
-                placeholder="Textile / Jewellery Experience"
-                value={SalesExp}
-                onChangeText={setSalesExp}              />
-
-<TextInput
-                style={styles.input}
-                placeholder="Any Health Issue"
-                value={HealthIssue}
-                onChangeText={setHealthIssue}              />
-
-  {/* Checkbox for LicenseNo */}
-  <View>
-  {/* Checkbox for IsDriving */}
-  <TouchableOpacity
-    style={styles.checkboxContainer}
-    onPress={() => {
-      setIsDriving(!IsDriving);
-      // Toggle visibility of input field based on IsDriving
-      if (!IsDriving) {
-        setLicenseNoVisible(true);
-      } else {
-        setLicenseNoVisible(false);
-      }
-    }}
-  >
-    <Icon
-      name={IsDriving ? "check-square-o" : "square-o"}
-      size={20}
-      color="black"
-    />
-    <Text style={{ marginLeft: 8 }}>IsDriving</Text>
-  </TouchableOpacity>
-  
-  {/* Input field for LicenseNo */}
-  {licenseNoVisible && (
-    <TextInput
-      style={styles.input}
-      placeholder="Enter LicenseNo"
-      value={licenseNo}
-      onChangeText={(text) => setLicenseNo(text)}
-    />
-  )}
-</View>
-  {/* Checkbox for IsCompWrkHere */}
-  <View>
-  {/* Checkbox for IsCompWrkHere */}
-  <TouchableOpacity
-    style={styles.checkboxContainer}
-    onPress={() => setIsCompWrkHere(!IsCompWrkHere)}
-  >
-    <Icon
-      name={IsCompWrkHere ? "check-square-o" : "square-o"}
-      size={20}
-      color="black"
-    />
-    <Text style={{ marginLeft: 8 }}>IsCompWrkHere</Text>
-  </TouchableOpacity>
-</View>
-  
-</View>
 
         <View
           style={{
@@ -464,7 +342,6 @@ const [licenseNo, setLicenseNo] = useState("");
             marginTop: 20,
           }}
         >
-          <Text style={{ marginLeft:1,right:130,top:50 }}>License Document : </Text>
           <Button
             title="Choose File"
             onPress={handleChooseFile}

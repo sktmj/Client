@@ -8,45 +8,47 @@ import {
   Alert,
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export default function LoginScreen() {
   const [phoneNumber, setPhoneNumber] = useState("");
   const [password, setPassword] = useState("");
   const Navigation = useNavigation();
 
+  const handleLogin = async () => {
+    try {
+      const response = await fetch("http://10.0.2.2:3000/api/v1/auth/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ UserName: phoneNumber }),
+      });
   
-const handleLogin = async () => {
-  try {
-    const response = await fetch("http://10.0.2.2:3000/api/v1/auth/login", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ UserName: phoneNumber }), // Send only username
-    });
+      if (!response.ok) {
+        throw new Error("Error logging in");
+      }
+  
+      const responseData = await response.json();
+  
+      if (responseData.token && responseData.AppId) {
+        // Store token and AppId in AsyncStorage
+        // Store token and AppId in AsyncStorage
+await AsyncStorage.setItem("token", responseData.token);
+await AsyncStorage.setItem("AppId", JSON.stringify(responseData.AppId)); // Stringify AppId
+console.log("Token and AppId stored:", responseData.token, responseData.AppId);
 
-    if (!response.ok) {
-      throw new Error("Error logging in");
+        // Redirect to personal details screen
+        Navigation.navigate("TopTab");
+      } else {
+        console.error("Token or AppId not received");
+        Alert.alert("Login failed", "Token or AppId not received");
+      }
+    } catch (error) {
+      console.error("Login error:", error.message);
+      Alert.alert("Login error", error.message);
     }
-
-    const responseData = await response.json();
-
-    if (responseData.token) {
-      // Store token in AsyncStorage
-      await AsyncStorage.setItem("token", responseData.token);
-      console.log("Token stored:", responseData.token);
-      // Redirect to personal details screen
-      Navigation.navigate("TopTab");
-    } else {
-      console.error("Token not received");
-      Alert.alert("Login failed", "Token not received");
-    }
-  } catch (error) {
-    console.error("Login error:", error.message);
-    Alert.alert("Login error", error.message);
-  }
-};
+  };
   const handleRegister = () => {
     Navigation.navigate("Register");
   };

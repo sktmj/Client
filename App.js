@@ -14,6 +14,7 @@ import Declaration from "./Screens/Employee/Declaration";
 import StartScreen from "./Screens/Employee/Start";
 import PlaceInputs from "./Components/Place";
 import start from "./Screens/Employee/Start";
+import familyDetails from "./Screens/Employee/FamilyDetails";
 
 // import StartScreen from "./Screens/Employee/Start";
 
@@ -42,9 +43,9 @@ function TopTab() {
         options={{ headerTitle: "PlaceInputs" }}
       />
       <Tab.Screen
-        name="AcademicDetails"
-        component={AcademicDetails}
-        options={{ headerTitle: "AcademicDetails" }}
+        name="start"
+        component={start}
+        options={{ headerTitle: "start" }}
       />
       <Tab.Screen
         name="WorkExperience"
@@ -52,9 +53,9 @@ function TopTab() {
         options={{ headerTitle: "WorkExperience" }}
       />
       <Tab.Screen
-        name="start"
-        component={start}
-        options={{ headerTitle: "start" }}
+        name="familyDetails"
+        component={familyDetails}
+        options={{ headerTitle: "FamilyDetails" }}
       />
       <Tab.Screen
         name="OtherDetails"

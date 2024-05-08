@@ -25,58 +25,78 @@ const AcademicDetails = ({ navigation }) => {
 
   const fetchQualifications = async () => {
     try {
-      const response = await axios.get("http://10.0.2.2:3000/api/v1/Qlf/qualification");
-      setQualifications(response.data);
+      const response = await fetch("http://10.0.2.2:3000/api/v1/Qlf/qualification");
+      if (!response.ok) {
+        throw new Error("Failed to fetch qualifications");
+      }
+      const data = await response.json();
+      setQualifications(data);
     } catch (error) {
       console.error("Error fetching qualifications:", error.message);
       Alert.alert("Error", "Failed to fetch qualifications");
     }
   };
-
+  
   const handleAddQualificationAndCourse = async () => {
+    const token = await AsyncStorage.getItem("token");
+    const AppId = await AsyncStorage.getItem("AppId"); // Retrieve AppId from AsyncStorage
     try {
       // Add Qualification
- 
-      const qualificationResponse = await axios.post("http://10.0.2.2:3000/api/v1/Qlf/InsertQlCT", {
-        QualId: selectedQualification,
-        ColName: colName,
-        YearPass: yearPass,
-        Percentage: parseFloat(percentage),
-        Degree: degree,
-        LastDegree: lastDegree ? "Y" : "N",
-        Location: location,
+      const qualificationResponse = await fetch("http://10.0.2.2:3000/api/v1/Qlf/InsertQlCT", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+          AppId: AppId, // Include AppId in the headers
+        },
+        body: JSON.stringify({
+          QualId: selectedQualification,
+          ColName: colName,
+          YearPass: yearPass,
+          Percentage: parseFloat(percentage),
+          Degree: degree,
+          LastDegree: lastDegree ? "Y" : "N",
+          Location: location,
+        }),
       });
-
-      if (qualificationResponse.data.success) {
+  
+      const qualificationData = await qualificationResponse.json();
+  
+      if (qualificationResponse.ok && qualificationData.success) {
         Alert.alert("Success", "Qualification added successfully");
         // Now add Course
         const token = await AsyncStorage.getItem("token");
-        const courseResponse = await axios.post("http://10.0.2.2:3000/api/v1/Qlf/courses", {
-          Course: course,
-          Institute: institute,
-          StudYear: studYear,
-          CrsPercentage: coursePercentage,
-        }, {
+        const courseResponse = await fetch("http://10.0.2.2:3000/api/v1/Qlf/courses", {
+          method: "POST",
           headers: {
             "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,
+            AppId: AppId, // Include AppId in the header
           },
+          body: JSON.stringify({
+            Course: course,
+            Institute: institute,
+            StudYear: studYear,
+            CrsPercentage: coursePercentage,
+          }),
         });
-
-        if (courseResponse.status === 200) {
+  
+        if (courseResponse.ok) {
           Alert.alert("Success", "Course added successfully");
           // Navigate to next screen or perform any other action
         } else {
-          Alert.alert("Error", courseResponse.data.message);
+          const courseData = await courseResponse.json();
+          Alert.alert("Error", courseData.message || "Failed to add course");
         }
       } else {
-        Alert.alert("Error", qualificationResponse.data.message);
+        Alert.alert("Error", qualificationData.message || "Failed to add qualification");
       }
     } catch (error) {
       console.error("Error adding qualification and course:", error.message);
       Alert.alert("Error", "Failed to add qualification and course");
     }
   };
+  
 
   return (
     <ScrollView style={styles.container}>

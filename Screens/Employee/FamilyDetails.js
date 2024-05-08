@@ -1,3 +1,5 @@
+
+
 import React, { useState, useEffect } from 'react';
 import { View, Text, Alert, StyleSheet, ScrollView, TextInput, TouchableOpacity } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -6,8 +8,7 @@ import { Picker } from "@react-native-picker/picker";
 import Icon from 'react-native-vector-icons/FontAwesome'; // Import the icon library
 
 
-
-const FamilyDetails = () => {
+const familyDetails = () => {
   const [familyDetails, setFamilyDetails] = useState([
     { relation: '', name: '', age: '', work: '', monthSalary: '', phoneNo: '' }
   ]);
@@ -47,7 +48,7 @@ const FamilyDetails = () => {
 
   const fetchLanguages = async () => {
     try {
-      const response = await axios.get("http://10.0.2.2:3000/api/v1/fam/languages");
+      const response = await axios.get("http://10.0.2.2:3000/api/v1/languages");
       setLanguages(response.data);
     } catch (error) {
       console.error("Error fetching Languages:", error.message);
@@ -66,11 +67,20 @@ const FamilyDetails = () => {
 
   const handleSubmit = async () => {
     try {
-      // Add Family Details
+      // Retrieve token from AsyncStorage
       const token = await AsyncStorage.getItem("token");
+  
+      // Log the retrieved token
+      console.log("Retrieved token:", token);
+  
+      if (!token) {
+        throw new Error("Token not found in AsyncStorage");
+      }
+     console.log(detail.relation,detail.name,detail.work,detail.monthSalary,"ddddddd")
+      // Add Family Details
       const familyResponses = await Promise.all(familyDetails.map(async (detail) => {
         return await axios.post(
-          "http://10.0.2.2:3000/api/v1/fam/family",
+          "http://10.0.2.2:3000/api/v1/family",
           {
             Relation: detail.relation,
             Name: detail.name,
@@ -87,7 +97,7 @@ const FamilyDetails = () => {
           }
         );
       }));
-
+  
       // Check if family details were successfully added
       const familySuccess = familyResponses.every(response => response.data.success);
 
@@ -96,7 +106,7 @@ const FamilyDetails = () => {
         // Add Language Details
         const languageResponses = await Promise.all(languageSections.map(async (language) => {
           return await axios.post(
-            "http://10.0.2.2:3000/api/v1/fam/postLng",
+            "http://10.0.2.2:3000/api/v1/postLng",
             {
               LanId: language.LanId,
               LanSpeak: language.LanSpeak,
@@ -315,4 +325,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default FamilyDetails;
+export default familyDetails;

@@ -5,6 +5,7 @@ import DateTimePicker from "react-native-modal-datetime-picker";
 import { Picker } from "@react-native-picker/picker";
 import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+
 import {
   View,
   Text,
@@ -15,6 +16,7 @@ import {
   Switch,
   Alert,
 } from "react-native";
+
 export default function PersonalDetailsForm() {
   const [personalDetails, setPersonalDetails] = useState({
     AppName: "",
@@ -72,6 +74,7 @@ export default function PersonalDetailsForm() {
   const [presentSelectedCity, setPresentSelectedCity] = useState("");
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [token, setToken] = useState(null);
+
   useEffect(() => {
     checkAuthentication();
     fetchCountries();
@@ -83,6 +86,7 @@ export default function PersonalDetailsForm() {
       fetchTaluksByDistrict(selectedDistrict);
     }
   }, [selectedDistrict]);
+
   const checkAuthentication = async () => {
     try {
       const token = await AsyncStorage.getItem("token");
@@ -100,6 +104,7 @@ export default function PersonalDetailsForm() {
       console.error("Error checking authentication:", error.message);
     }
   };
+
   const handleLogin = async () => {
     try {
       const token = "your_generated_token_here";
@@ -109,11 +114,13 @@ export default function PersonalDetailsForm() {
       console.error("Error logging in:", error.message);
     }
   };
+
   const handleLogout = () => {
     setToken(null);
     setIsLoggedIn(false);
     Navigation.navigate("Login");
   };
+
   const fetchCountries = () => {
     axios
       .get("http://10.0.2.2:3000/api/v1/prsl/getAllCountries")
@@ -122,6 +129,7 @@ export default function PersonalDetailsForm() {
       })
       .catch((error) => console.error("Error fetching countries:", error));
   };
+
   const fetchStatesByCountry = (countryId) => {
     axios
       .get(`http://10.0.2.2:3000/api/v1/prsl/states/${countryId}`)
@@ -130,6 +138,7 @@ export default function PersonalDetailsForm() {
       })
       .catch((error) => console.error("Error fetching states:", error));
   };
+
   const fetchDistrictsByState = (stateId) => {
     axios
       .get(`http://10.0.2.2:3000/api/v1/prsl/districts/${stateId}`)
@@ -138,6 +147,7 @@ export default function PersonalDetailsForm() {
       })
       .catch((error) => console.error("Error fetching districts:", error));
   };
+
   const fetchTaluksByDistrict = (districtId) => {
     axios
       .get(`http://10.0.2.2:3000/api/v1/prsl/taluk/${districtId}`)
@@ -149,133 +159,147 @@ export default function PersonalDetailsForm() {
         setTaluks(formattedTaluks);
       })
       .catch((error) => console.error("Error fetching Taluks:", error));
-};  const fetchCitiesByTaluk = (talukId) => {
-  axios
-    .get(`http://10.0.2.2:3000/api/v1/prsl/city/${talukId}`)
-    .then((response) => {
-      setCities(response.data);
-    })
-    .catch((error) => console.error("Error fetching Cities:", error));
-};
-const handleChange = (field, value) => {
-  setPersonalDetails((prevDetails) => ({
-    ...prevDetails,
-    [field]: value,
-  }));
-};
-const handleSubmit = async () => {
-  try {
-    const response = await fetch(
-      "http://10.0.2.2:3000/api/v1/prsl/updatePersonalDetails",
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify(personalDetails),
+  };
+
+  const fetchCitiesByTaluk = (talukId) => {
+    axios
+      .get(`http://10.0.2.2:3000/api/v1/prsl/city/${talukId}`)
+      .then((response) => {
+        setCities(response.data);
+      })
+      .catch((error) => console.error("Error fetching Cities:", error));
+  };
+
+  const handleChange = (field, value) => {
+    setPersonalDetails((prevDetails) => ({
+      ...prevDetails,
+      [field]: value,
+    }));
+  };
+  const handleSubmit = async () => {
+    try {
+      const response = await fetch(
+        "http://10.0.2.2:3000/api/v1/prsl/updatePersonalDetails",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify(personalDetails),
+        }
+      );
+      if (response.status === 404) {
+        console.error("Server error: 404");
+        Alert.alert(
+          "Error",
+          "The requested resource was not found on the server."
+        );
+      } else if (response.ok) {
+        const data = await response.json();
+        console.log("Personal details updated successfully:", data);
+       
+      } else {
+        console.error("Server error:", response.status, response.statusText);
+        Alert.alert(
+          "Error",
+          "An error occurred while submitting the form. Please try again later."
+        );
       }
-    );
-    if (response.status === 404) {
-      console.error("Server error: 404");
+    } catch (error) {
+      console.error("Error handling form submission:", error.message);
       Alert.alert(
         "Error",
-        "The requested resource was not found on the server."
+        "An error occurred while submitting the form. Please try again later."
       );
-    } else if (response.ok) {
-      const data = await response.json();
-      console.log("Personal details updated successfully:", data);
-      Navigation.navigate("AcademicDetails")
-    } else {
-      console.error("Server error:", response.status, response.statusText);
-      Alert.alert(  "Error",
-      "An error occurred while submitting the form. Please try again later."
-    );
-  }
-} catch (error) {
-  console.error("Error handling form submission:", error.message);
-  Alert.alert(
-    "Error",
-    "An error occurred while submitting the form. Please try again later."
-  );
-}
-};
-const showDatePicker = () => {
-setDatePickerVisibility(true);
-};
-const hideDatePicker = () => {
-setDatePickerVisibility(false);
-};
-const handleConfirm = (date) => {
-  if (date) {
-    const selectedDate = new Date(date);
-    const currentDate = new Date();
-    const age = currentDate.getFullYear() - selectedDate.getFullYear();
-    if (
-      currentDate.getMonth() < selectedDate.getMonth() ||
-      (currentDate.getMonth() === selectedDate.getMonth() &&
-        currentDate.getDate() < selectedDate.getDate())
-    ) {
-      personalDetails.age = age - 1; // Remove this line
-    } else {
-      personalDetails.age = age; // Remove this line
     }
-    personalDetails.DOB = selectedDate.toISOString().split("T")[0];
-    setPersonalDetails({ ...personalDetails }); // Update the DOB field only
-  }
-  hideDatePicker();
-};
-
-const handleConfirmDate = (date) => {
-  const formattedDate = date.toISOString().split("T")[0];
-  setPersonalDetails({
-    ...personalDetails,
-    marriageDate: formattedDate,
-  });
-  hideDatePicker();
-};
-const fetchReligion = () => {
-  axios
-    .get("http://10.0.2.2:3000/api/v1/prsl/getReligion")
-    .then((response) => {
-      setReligion(response.data);
-    })
-    .catch((error) => console.error("Error fetching Religion:", error));
   };
+
+  const showDatePicker = () => {
+    setDatePickerVisibility(true);
+  };
+
+  const hideDatePicker = () => {
+    setDatePickerVisibility(false);
+  };
+
+  const handleConfirm = (date) => {
+    if (date) {
+      const selectedDate = new Date(date);
+      const currentDate = new Date();
+      const age = currentDate.getFullYear() - selectedDate.getFullYear();
+      if (
+        currentDate.getMonth() < selectedDate.getMonth() ||
+        (currentDate.getMonth() === selectedDate.getMonth() &&
+          currentDate.getDate() < selectedDate.getDate())
+      ) {
+        personalDetails.age = age - 1; // Remove this line
+      } else {
+        personalDetails.age = age; // Remove this line
+      }
+      personalDetails.DOB = selectedDate.toISOString().split("T")[0];
+      setPersonalDetails({ ...personalDetails }); // Update the DOB field only
+    }
+    hideDatePicker();
+  };
+
+  const handleConfirmDate = (date) => {
+    const formattedDate = date.toISOString().split("T")[0];
+    setPersonalDetails({
+      ...personalDetails,
+      marriageDate: formattedDate,
+    });
+    hideDatePicker();
+  };
+
+  const fetchReligion = () => {
+    axios
+      .get("http://10.0.2.2:3000/api/v1/prsl/getReligion")
+      .then((response) => {
+        setReligion(response.data);
+      })
+      .catch((error) => console.error("Error fetching Religion:", error));
+  };
+
   const fetchCasteByReligion = (religion_gid) => {
-    axios.get(`http://10.0.2.2:3000/api/v1/prsl/caste/${religion_gid}`)
-    .then((response) => {   setCaste(response.data); // Set the caste state with the fetched caste data
-  })  .catch((error) => console.error("Error fetching Castes:", error));
-};
+    axios
+      .get(`http://10.0.2.2:3000/api/v1/prsl/caste/${religion_gid}`)
+      .then((response) => {
+        setCaste(response.data); // Set the caste state with the fetched caste data
+      })
+      .catch((error) => console.error("Error fetching Castes:", error));
+  };
 
-useEffect(() => {
-  if (selectedReligion) { fetchCasteByReligion(selectedReligion); // Fetch castes when selected religion changes
-}  }, [selectedReligion]);
+  useEffect(() => {
+    if (selectedReligion) {
+      fetchCasteByReligion(selectedReligion); // Fetch castes when selected religion changes
+    }
+  }, [selectedReligion]);
 
-const handleChangeReligion = (field, value) => {
-  if (field === "Religion") {
-    setSelectedReligion(value); // Update selected religion state
-    setPersonalDetails((prevDetails) => ({
-      ...prevDetails,
-      Religion: value, // Update only the Religion field in personalDetails state
-    }));
-  } else if (field === "CasteId") {
-    setSelectedCaste(value); // Update selected caste state
-    setPersonalDetails((prevDetails) => ({
-      ...prevDetails,
-      CasteId: value, // Update only the CasteId field in personalDetails state
-    }));
-  } else {
-    setPersonalDetails((prevDetails) => ({
-      ...prevDetails,
-      [field]: value, // Update other fields without affecting religion and caste
-    }));
-  }
-};
-return (
-  <ScrollView style={styles.container}>
-    <Text style={styles.sectionTitle}>Personal Details</Text>
-    <View style={styles.formRow}>
+  const handleChangeReligion = (field, value) => {
+    if (field === "Religion") {
+      setSelectedReligion(value); // Update selected religion state
+      setPersonalDetails((prevDetails) => ({
+        ...prevDetails,
+        Religion: value, // Update only the Religion field in personalDetails state
+      }));
+    } else if (field === "CasteId") {
+      setSelectedCaste(value); // Update selected caste state
+      setPersonalDetails((prevDetails) => ({
+        ...prevDetails,
+        CasteId: value, // Update only the CasteId field in personalDetails state
+      }));
+    } else {
+      setPersonalDetails((prevDetails) => ({
+        ...prevDetails,
+        [field]: value, // Update other fields without affecting religion and caste
+      }));
+    }
+  };
+  return (
+    <ScrollView style={styles.container}>
+      <Text style={styles.sectionTitle}>Personal Details</Text>
+      <View style={styles.formRow}>
         <View style={styles.formColumn}>
           <TextInput
             style={styles.input}
@@ -315,26 +339,27 @@ return (
             keyboardType="numeric"
             value={personalDetails.age ? personalDetails.age.toString() : ""}
             onChangeText={(value) => handleChange("age", value)}
-            />
-            </View>
-            <View style={styles.inputContainer}>
-              <Picker
-                selectedValue={personalDetails.Gender}
-                onValueChange={(itemValue) => handleChange("Gender", itemValue)}
-              >
-                <Picker.Item label="Select Gender" value="" />
-                <Picker.Item label="Male" value="M" />
-                <Picker.Item label="Female" value="F" />
-                <Picker.Item label="Others" value="O" />
-              </Picker>
-            </View>
-            <TextInput
-              style={styles.input}
-              placeholder="BloodGroup"
-              value={personalDetails.BloodGrp}
-              onChangeText={(Text) => handleChange("BloodGrp", Text)}
-            />
-             </View>
+          />
+        </View>
+        <View style={styles.inputContainer}>
+          <Picker
+            selectedValue={personalDetails.Gender}
+            onValueChange={(itemValue) => handleChange("Gender", itemValue)}
+          >
+            <Picker.Item label="Select Gender" value="" />
+            <Picker.Item label="Male" value="M" />
+            <Picker.Item label="Female" value="F" />
+            <Picker.Item label="Others" value="O" />
+          </Picker>
+        </View>
+
+        <TextInput
+          style={styles.input}
+          placeholder="BloodGroup"
+          value={personalDetails.BloodGrp}
+          onChangeText={(Text) => handleChange("BloodGrp", Text)}
+        />
+      </View>
       <View style={styles.formColumn}>
         <View style={styles.inputContainer}>
           <Picker
@@ -372,7 +397,8 @@ return (
             />
           </View>
         )}
-          <View style={styles.inputContainer}>
+
+        <View style={styles.inputContainer}>
           <Text>Select Religion:</Text>
           <Picker
             selectedValue={selectedReligion}
@@ -393,6 +419,7 @@ return (
             ))}
           </Picker>
         </View>
+
         <View style={styles.inputGroup}>
           <Text>Select Caste:</Text>
           <Picker
@@ -429,6 +456,7 @@ return (
         />
         {/* Render other personal details text inputs */}
       </View>
+
       {/* Residential Address */}
       <View style={styles.sectionContainer}>
         <Text style={styles.sectionTitle}>Residential Address</Text>
@@ -460,8 +488,10 @@ return (
             />
           ))}
         </Picker>
+
         {/* Repeat this pattern for other address fields */}
         {/* For brevity, I'll just show one */}
+
         <View style={styles.inputContainer}>
           <Text>Select State:</Text>
           <Picker
@@ -484,6 +514,7 @@ return (
               />
             ))}
           </Picker>
+
           <Text>Select District:</Text>
           <Picker
             selectedValue={selectedDistrict}
@@ -566,12 +597,14 @@ return (
           onChangeText={(value) => handleChange("ResPhoneNo", value)}
         />
       </View>
+
       {/* Present Address */}
       <View style={styles.sectionContainer}>
         <Text style={styles.sectionTitle}>Present Address</Text>
         {/* <View style={styles.switchContainer}>
           {/* <Text style={styles.switchLabel}>Same as Residential Address</Text> */}
-        {/* <Switch  value={personalDetails.SameAsPresentAddress}
+        {/* <Switch
+            value={personalDetails.SameAsPresentAddress}
             onValueChange={(value) =>
               handleChange("SameAsPresentAddress", value)
             }
@@ -585,17 +618,12 @@ return (
               value={personalDetails.PerAddress1}
               onChangeText={(value) => handleChange("PerAddress1", value)}
             />
- <Text>Select Country:</Text>
- <Picker
+            <Text>Select Country:</Text>
+  <Picker
     selectedValue={presentSelectedCountry}
     onValueChange={(itemValue) => {
       setPresentSelectedCountry(itemValue);
-            setPresentSelectedState("");
-            setPresentSelectedDistrict("");
-            setPresentSelectedTaluk("");
-            setPresentSelectedCity("");
-            fetchStatesByCountry(itemValue);
-            setPersonalDetails({ ...personalDetails, PerDistrictId: itemValue });
+      // Update other related state variables or perform any necessary actions
     }}
   >
     <Picker.Item label="Select Country" value="" />
@@ -607,23 +635,25 @@ return (
       />
     ))}
   </Picker>
-       {/* Repeat this pattern for other address fields */}
+            {/* Repeat this pattern for other address fields */}
             {/* For brevity, I'll just show one */}
 
             <View style={styles.inputContainer}>
               <Text>Select State:</Text>
               <Picker
-    selectedValue={presentSelectedState}
-    onValueChange={(itemValue) => {
-     
-            setPresentSelectedState(itemValue);
-            setPresentSelectedDistrict("");
-            setPresentSelectedTaluk("");
-            setPresentSelectedCity("");
-            fetchStatesByCountry(itemValue);
-            setPersonalDetails({ ...personalDetails, PerStateId: itemValue });
-    }}
-  >
+                selectedValue={selectedState}
+                onValueChange={(itemValue) => {
+                  setSelectedState(itemValue);
+                  setSelectedDistrict("");
+                  setSelectedTaluk("");
+                  setSelectedCity("");
+                  fetchDistrictsByState(itemValue);
+                  setPersonalDetails({
+                    ...personalDetails,
+                    PerStateId: itemValue,
+                  });
+                }}
+              >
                 <Picker.Item label="Select State" value="" />
                 {states.map((state, index) => (
                   <Picker.Item
@@ -636,16 +666,16 @@ return (
 
               <Text>Select District:</Text>
               <Picker
-    selectedValue={presentSelectedDistrict}
-    onValueChange={(itemValue) => {
-
-            setPresentSelectedDistrict(itemValue);
-            setPresentSelectedTaluk("");
-            setPresentSelectedCity("");
-            fetchStatesByCountry(itemValue);
-            setPersonalDetails({ ...personalDetails, PerDistrictId: itemValue });
-    }}
-  >
+                selectedValue={selectedDistrict}
+                onValueChange={(itemValue) => {
+                  setSelectedDistrict(itemValue);
+                  fetchTaluksByDistrict(itemValue); // Fetch taluks based on selected district
+                  setPersonalDetails({
+                    ...personalDetails,
+                    PerDistrictId: itemValue,
+                  }); // Update personal details state
+                }}
+              >
                 <Picker.Item label="Select District" value="" />
                 {districts.map((district, index) => (
                   <Picker.Item
@@ -658,14 +688,16 @@ return (
               <View style={styles.inputContainer}>
                 <Text>Select Taluk:</Text>
                 <Picker
-    selectedValue={presentSelectedTaluk}
-    onValueChange={(itemValue) => {
-            setPresentSelectedTaluk(itemValue);
-            setPresentSelectedCity("");
-            fetchStatesByCountry(itemValue);
-            setPersonalDetails({ ...personalDetails, PerTalukId: itemValue });
-    }}
-  >
+                  selectedValue={selectedTaluk}
+                  onValueChange={(itemValue) => {
+                    setSelectedTaluk(itemValue);
+                    fetchCitiesByTaluk(itemValue); // Call fetchCitiesByTaluk when selected taluk changes
+                    setPersonalDetails({
+                      ...personalDetails,
+                      PerTalukId: itemValue,
+                    }); // Update personal details state
+                  }}
+                >
                   <Picker.Item label="Select Taluk" value="" />
                   {taluks.map((taluk, index) => (
                     <Picker.Item
@@ -678,9 +710,9 @@ return (
 
                 <Text>Select City:</Text>
                 <Picker
-                  selectedValue={presentSelectedCity}
+                  selectedValue={selectedCity}
                   onValueChange={(itemValue) => {
-                    setPresentSelectedCity(itemValue);
+                    setSelectedCity(itemValue);
                     setPersonalDetails({
                       ...personalDetails,
                       PerCityId: itemValue,
@@ -698,9 +730,10 @@ return (
                   ))}
                 </Picker>
               </View>
-              </View>
+            </View>
 
-<TextInput  style={styles.input}
+            <TextInput
+              style={styles.input}
               placeholder="Pincode"
               keyboardType="numeric"
               value={personalDetails.PerPincode}
@@ -716,6 +749,7 @@ return (
           </View>
         )}
       </View>
+
       {/* Other Details */}
       <View style={styles.sectionContainer}>
         <Text style={styles.sectionTitle}>Other Details</Text>
@@ -746,6 +780,7 @@ return (
             value={personalDetails.AadharNo}
             onChangeText={(value) => handleChange("AadharNo", value)}
           />
+
           <TouchableOpacity style={styles.button} onPress={handleSubmit}>
             <Text style={styles.buttonText}>Save and Proceed</Text>
           </TouchableOpacity>
@@ -754,6 +789,7 @@ return (
     </ScrollView>
   );
 }
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,

@@ -1,158 +1,149 @@
-import { useNavigation } from "@react-navigation/native";
-import React, { useState } from "react";
-import {
-  View,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  ScrollView,
-  StyleSheet,
-} from "react-native";
+import React, { useState } from 'react';
+import { View, Text, TouchableOpacity, TextInput, Button, Alert,StyleSheet  } from 'react-native';
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import Icon from 'react-native-vector-icons/FontAwesome';
 
-const Declaration = () => {
-  const [formData, setFormData] = useState({
-    thoughtsAboutChennaiSilks: "",
-    futureGoal: "",
-    effectiveJob: "",
-    lessEffectiveJob: "",
-    roleModel: "",
-    whyRoleModel: "",
-    agreed: false,
-  });
 
-  const Navigation = useNavigation();
-
-  const handleInputChange = (name, value) => {
-    setFormData({ ...formData, [name]: value });
-  };
-
-  const handleCheckboxChange = () => {
-    setFormData({ ...formData, agreed: !formData.agreed });
-  };
-
-  const saveAndProceed = () => {
-    if (formData.agreed) {
-      // Save the form data and proceed
-      console.log("Form data saved:", formData);
-      Navigation.navigate("PersonalDetails");
-    } else {
-      alert("Please agree to the declaration to proceed.");
-    }
-  };
-
+const CustomCheckBox = ({ checked, onPress }) => {
   return (
-    <ScrollView style={styles.container}>
-      <View style={styles.formContainer}>
-        <Text style={styles.sectionTitle}>Declaration Form</Text>
-        <TextInput
-          style={styles.input}
-          placeholder="Your Thoughts About The Chennai Silks Groups?"
-          value={formData.thoughtsAboutChennaiSilks}
-          onChangeText={(text) =>
-            handleInputChange("thoughtsAboutChennaiSilks", text)
-          }
-          multiline
-          numberOfLines={3}
-        />
-        <TextInput
-          style={styles.input}
-          placeholder="Future Goal?"
-          value={formData.futureGoal}
-          onChangeText={(text) => handleInputChange("futureGoal", text)}
-        />
-        <TextInput
-          style={styles.input}
-          placeholder="In which Job You Will be more effective?"
-          value={formData.effectiveJob}
-          onChangeText={(text) => handleInputChange("effectiveJob", text)}
-        />
-        <TextInput
-          style={styles.input}
-          placeholder="In which Job You Will be less effective?"
-          value={formData.lessEffectiveJob}
-          onChangeText={(text) => handleInputChange("lessEffectiveJob", text)}
-        />
-        <TextInput
-          style={styles.input}
-          placeholder="Role Model?"
-          value={formData.roleModel}
-          onChangeText={(text) => handleInputChange("roleModel", text)}
-        />
-        <TextInput
-          style={styles.input}
-          placeholder="Why?"
-          value={formData.whyRoleModel}
-          onChangeText={(text) => handleInputChange("whyRoleModel", text)}
-        />
-        <View style={styles.checkboxContainer}>
-          <TouchableOpacity
-            style={[styles.checkbox, formData.agreed && styles.checked]}
-            onPress={handleCheckboxChange}
-          />
-          <Text style={styles.checkboxText}>
-            I agree that all information entered above are true for the job
-            applied in The KTM Jewellery Ltd.
-          </Text>
-        </View>
-        <TouchableOpacity style={styles.saveButton} onPress={saveAndProceed}>
-          <Text style={styles.saveButtonText}>Save and Proceed</Text>
-        </TouchableOpacity>
+    <TouchableOpacity onPress={onPress}>
+      <View style={styles.checkbox}>
+        {checked && <Icon name="check-square-o" size={24} color="blue" />}
+        {!checked && <Icon name="square-o" size={24} color="blue" />}
       </View>
-    </ScrollView>
+    </TouchableOpacity>
   );
 };
 
+
+const DeclarationComponent = () => {
+  const [declaration, setDeclaration] = useState(false);
+  const [goal, setGoal] = useState('');
+  const [roleModel, setRoleModel] = useState('');
+  const [roleModelWhy, setRoleModelWhy] = useState('');
+  const [ourJobDtl, setOurJobDtl] = useState('');
+  const [knownJobPlus, setKnownJobPlus] = useState('');
+  const [knownJobMinus, setKnownJobMinus] = useState('');
+
+
+  const handleDeclarationChange = () => {
+    setDeclaration(!declaration);
+  };
+  const handleUpdateDeclaration = async () => {
+    try {
+      const token = await AsyncStorage.getItem("token");
+  
+      const response = await fetch(
+        "http://10.0.2.2:3000/api/v1/prsl/declaration", // Correct endpoint
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            Declaration: declaration,
+            Goal: goal,
+            RoleModel: roleModel,
+            RoleModelWhy: roleModelWhy,
+            OurJobDtl: ourJobDtl,
+            KnownJobPlus: knownJobPlus,
+            KnownJobMinus: knownJobMinus,
+          }),
+        }
+      );
+  
+      const responseData = await response.json(); // Parse response data
+  
+      if (responseData.success) {
+        Alert.alert("Success", "Declaration updated successfully");
+        // Additional actions after successful update
+      } else {
+        Alert.alert("Error", responseData.message);
+      }
+    } catch (error) {
+      console.error("Error updating declaration:", error.message);
+      Alert.alert("Error", "Failed to update declaration");
+    }
+  };
+  
+  
+
+  return (
+    <View style={{ flex: 1, justifyContent:"flex-start", alignItems: 'center' }}>
+
+     
+      <TextInput
+        style={{ height: 40, width:400, borderColor: 'gray', borderWidth: 1, marginTop: 10, paddingHorizontal: 10 }}
+        placeholder="Goal"
+        value={goal}
+        onChangeText={setGoal}
+      />
+      <TextInput
+        style={{ height: 40, width:400, borderColor: 'gray', borderWidth: 1, marginTop: 10, paddingHorizontal: 10 }}
+        placeholder="Role Model"
+        value={roleModel}
+        onChangeText={setRoleModel}
+      />
+      <TextInput
+        style={{ height: 40, width:400, borderColor: 'gray', borderWidth: 1, marginTop: 10, paddingHorizontal: 10 }}
+        placeholder="Role Model Why"
+        value={roleModelWhy}
+        onChangeText={setRoleModelWhy}
+      />
+      <TextInput
+        style={{ height: 40, width:400, borderColor: 'gray', borderWidth: 1, marginTop: 10, paddingHorizontal: 10 }}
+        placeholder="Our Job Details"
+        value={ourJobDtl}
+        onChangeText={setOurJobDtl}
+      />
+      <TextInput
+        style={{ height: 40, width:400, borderColor: 'gray', borderWidth: 1, marginTop: 10, paddingHorizontal: 10 }}
+        placeholder="Known Job Plus"
+        value={knownJobPlus}
+        onChangeText={setKnownJobPlus}
+      />
+      <TextInput
+        style={{ height: 40, width:400, borderColor: 'gray', borderWidth: 1, marginTop: 10, paddingHorizontal: 10 }}
+        placeholder="Known Job Minus"
+        value={knownJobMinus}
+        onChangeText={setKnownJobMinus}
+      />
+       <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+        <CustomCheckBox checked={declaration} onPress={handleDeclarationChange} />
+        <Text> I agree to the declaration</Text>
+      </View>
+      <TouchableOpacity onPress={handleUpdateDeclaration}>
+        <View style={{ backgroundColor: 'blue', padding: 10, marginTop: 20 }}>
+          <Text style={{ color: 'white' }}>Submit</Text>
+        </View>
+      </TouchableOpacity>
+    </View>
+  );
+};
+
+export default DeclarationComponent;
+
+
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    padding: 20,
-  },
-  formContainer: {
-    flex: 1,
-  },
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: "bold",
-    marginBottom: 20,
-  },
-  input: {
-    borderWidth: 1,
-    borderColor: "#ccc",
-    borderRadius: 8,
-    padding: 12,
-    marginBottom: 12,
-  },
-  checkboxContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginBottom: 20,
-  },
   checkbox: {
-    width: 20,
-    height: 20,
+    width: 30,
+    height: 30,
+    justifyContent: 'center',
+    alignItems: 'center',
     borderWidth: 1,
-    borderColor: "#ccc",
-    borderRadius: 4,
+    borderColor: 'blue',
+    borderRadius: 5,
     marginRight: 10,
   },
-  checkboxText: {
-    flex: 1,
-    fontSize: 16,
+  submitButton: {
+    backgroundColor: 'blue',
+    padding: 10,
+    marginTop: 20,
+    borderRadius: 5,
   },
-  checked: {
-    backgroundColor: "#333",
+  submitButtonText: {
+    color: 'white',
+    textAlign: 'center',
   },
-  saveButton: {
-    backgroundColor: "#059A5F",
-    padding: 15,
-    borderRadius: 8,
-    alignItems: "center",
-  },
-  saveButtonText: {
-    color: "white",
-    fontSize: 18,
-    fontWeight: "bold",
-  },
-});
-
-export default Declaration;
+}); 
