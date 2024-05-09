@@ -17,6 +17,7 @@ import Icon from "react-native-vector-icons/FontAwesome";
 import { FontAwesome } from "@expo/vector-icons";
 
 
+
 const WorkExperience = ({ navigation }) => {
   const [isFresher, setIsFresher] = useState(false);
   const [CompName, setCompName] = useState("");
@@ -36,7 +37,7 @@ const WorkExperience = ({ navigation }) => {
   const [workRelieveReason, setWorkRelieveReason] = useState("");
   const [EPFNO, setEPFNO] = useState("");
   const [UANNO, setUANNO] = useState("");
-  const [RegExpExNo, setRegExpExNo] = useState("");
+  const [regExpExNo, setRegExpExNo] = useState("");
   const [SalesExp, setSalesExp] = useState("");
   const [HealthIssue, setHealthIssue] = useState("");
   const [IsDriving, setIsDriving] = useState("");
@@ -47,6 +48,11 @@ const WorkExperience = ({ navigation }) => {
   const [loading, setLoading] = useState(false);
   const [token, setToken] = useState(null);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [epfNoVisible, setEpfNoVisible] = useState(false);
+  const [epfNo, setEpfNo] = useState("");
+  const [regExpExNoVisible, setRegExpExNoVisible] = useState(false); 
+  const [licenseNoVisible, setLicenseNoVisible] = useState(false);
+
   useEffect(() => {
     fetchDesignationOptions();
     checkAuthentication();
@@ -81,8 +87,6 @@ const WorkExperience = ({ navigation }) => {
 
   const handlesubmit = async () => {
     console.log(token,"hhhhh")
-  
-    
     try {
       console.log(selectedDesignation,LastSalary, RelieveReason)
       // Add Qualification
@@ -112,8 +116,7 @@ const WorkExperience = ({ navigation }) => {
 
       if (experienceResponse.data.success) {
         Alert.alert("Success", "experience added successfully");
-        // Now add Course
-        const token = await AsyncStorage.getItem("AppId");
+        // Now add Cours
         const WorkExperieceResponse = await axios.post(
           "http://10.0.2.2:3000/api/v1/expc/TotalExperience",
           {
@@ -121,7 +124,7 @@ const WorkExperience = ({ navigation }) => {
             RelieveReason: RelieveReason,
             EPFNO: EPFNO,
             UANNO: UANNO,
-            RegExpExNo: RegExpExNo,
+            RegExpExNo: regExpExNo,
             SalesExp: SalesExp,
             HealthIssue: HealthIssue,
             IsDriving: IsDriving,
@@ -205,6 +208,26 @@ const WorkExperience = ({ navigation }) => {
       Alert.alert("Error", "Failed to choose file");
     }
   };
+
+  const handleCheckboxToggle = (fieldName) => {
+    switch (fieldName) {
+      case "EPFNO":
+        setEpfNoVisible(!epfNoVisible);
+        break;
+      case "RegExpExNo":
+        setRegExpExNoVisible(!regExpExNoVisible);
+        break;
+      case "LicenseNo":
+        setLicenseNoVisible(!licenseNoVisible);
+        break;
+      case "IsDriving": // Add this case
+        setIsDriving(!IsDriving); // Toggle the state value
+        break;
+      default:
+        break;
+    }
+  };
+
   return (
     <ScrollView style={styles.container}>
     
@@ -333,6 +356,134 @@ const WorkExperience = ({ navigation }) => {
         )}
 
      <Text style={styles.sectionTitle}>Current Working Company</Text>
+
+     <View>
+     <Text style={styles.sectionTitle}>Current Working Company</Text>
+     <TextInput
+                style={styles.input}
+                placeholder="Current Working Company"
+                value={WorkCompany}
+                onChangeText={setWorkCompany}
+              />
+ <TextInput
+                style={styles.input}
+                placeholder="Reason for Relieving"
+                value={workRelieveReason}
+                onChangeText={setWorkRelieveReason}
+              />
+   
+  {/* Checkbox for EPNNO */}
+  <TouchableOpacity
+    style={styles.checkboxContainer}
+    onPress={() => handleCheckboxToggle("EPFNO")}
+  >
+     <Text style={{ marginLeft: 8 }}>Having EPF ?</Text>
+    <Icon
+      name={epfNoVisible ? "check-square-o" : "square-o"}
+      size={20}
+      color="black"
+    />
+   
+  </TouchableOpacity>
+  {/* Input field for EPNNO */}
+  {epfNoVisible && (
+    <TextInput
+      style={styles.input}
+      placeholder="Enter EPF NO"
+      value={epfNo}
+      onChangeText={setEpfNo}
+    />
+  )}
+         <TextInput
+                style={styles.input}
+                placeholder="UAN NO"
+                value={UANNO}
+                onChangeText={setUANNO}
+              />
+
+<TouchableOpacity
+    style={styles.checkboxContainer}
+    onPress={() => handleCheckboxToggle("RegExpExNo")}
+  >
+    <Icon
+      name={regExpExNoVisible ? "check-square-o" : "square-o"}
+      size={20}
+      color="black"
+    />
+    <Text style={{ marginLeft: 8 }}>RegExpExNo</Text>
+  </TouchableOpacity>
+  {/* Input field for RegExpExNo */}
+  {regExpExNoVisible && (
+    <TextInput
+      style={styles.input}
+      placeholder="Enter RegExpExNo"
+      value={regExpExNo}
+      onChangeText={setRegExpExNo}
+    />
+  )}
+  <TextInput
+                style={styles.input}
+                placeholder="Textile / Jewellery Experience"
+                value={SalesExp}
+                onChangeText={setSalesExp}              />
+
+<TextInput
+                style={styles.input}
+                placeholder="Any Health Issue"
+                value={HealthIssue}
+                onChangeText={setHealthIssue}              />
+
+  {/* Checkbox for LicenseNo */}
+  <View>
+  {/* Checkbox for IsDriving */}
+  <TouchableOpacity
+    style={styles.checkboxContainer}
+    onPress={() => {
+      setIsDriving(!IsDriving);
+      // Toggle visibility of input field based on IsDriving
+      if (!IsDriving) {
+        setLicenseNoVisible(true);
+      } else {
+        setLicenseNoVisible(false);
+      }
+    }}
+  >
+    <Icon
+      name={IsDriving ? "check-square-o" : "square-o"}
+      size={20}
+      color="black"
+    />
+    <Text style={{ marginLeft: 8 }}>IsDriving</Text>
+  </TouchableOpacity>
+  
+  {/* Input field for LicenseNo */}
+  {licenseNoVisible && (
+    <TextInput
+      style={styles.input}
+      placeholder="Enter LicenseNo"
+      value={LicenseNo}
+      onChangeText={(text) => setLicenseNo(text)}
+    />
+  )}
+</View>
+  {/* Checkbox for IsCompWrkHere */}
+  <View>
+  {/* Checkbox for IsCompWrkHere */}
+  <TouchableOpacity
+    style={styles.checkboxContainer}
+    onPress={() => setIsCompWrkHere(!IsCompWrkHere)}
+  >
+    <Icon
+      name={IsCompWrkHere ? "check-square-o" : "square-o"}
+      size={20}
+      color="black"
+    />
+    <Text style={{ marginLeft: 8 }}>IsCompWrkHere</Text>
+  </TouchableOpacity>
+</View>
+  
+</View>
+
 
         <View
           style={{

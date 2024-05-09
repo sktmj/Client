@@ -18,10 +18,30 @@ const AcademicDetails = ({ navigation }) => {
   const [institute, setInstitute] = useState("");
   const [studYear, setStudYear] = useState("");
   const [coursePercentage, setCoursePercentage] = useState("");
-
+  const [token, setToken] = useState(null);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  
   useEffect(() => {
     fetchQualifications();
+    checkAuthentication();
   }, []);
+
+
+  const checkAuthentication = async () => {
+    try {
+      const storedToken = await AsyncStorage.getItem("AppId");
+      if (!storedToken) {
+        console.log("User is not authenticated. Redirecting to login screen...");
+        navigation.navigate("Login");
+      } else {
+        console.log("User is authenticated.");
+        setIsLoggedIn(true);
+        setToken(storedToken); // Ensure token is trimmed of any extra characters
+      }
+    } catch (error) {
+      console.error("Error checking authentication:", error.message);
+    }
+  };
 
   const fetchQualifications = async () => {
     try {
@@ -38,8 +58,6 @@ const AcademicDetails = ({ navigation }) => {
   };
   
   const handleAddQualificationAndCourse = async () => {
-    const token = await AsyncStorage.getItem("token");
-    const AppId = await AsyncStorage.getItem("AppId"); // Retrieve AppId from AsyncStorage
     try {
       // Add Qualification
       const qualificationResponse = await fetch("http://10.0.2.2:3000/api/v1/Qlf/InsertQlCT", {
@@ -47,8 +65,7 @@ const AcademicDetails = ({ navigation }) => {
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
-          AppId: AppId, // Include AppId in the headers
-        },
+        },  
         body: JSON.stringify({
           QualId: selectedQualification,
           ColName: colName,
@@ -64,14 +81,11 @@ const AcademicDetails = ({ navigation }) => {
   
       if (qualificationResponse.ok && qualificationData.success) {
         Alert.alert("Success", "Qualification added successfully");
-        // Now add Course
-        const token = await AsyncStorage.getItem("token");
         const courseResponse = await fetch("http://10.0.2.2:3000/api/v1/Qlf/courses", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,
-            AppId: AppId, // Include AppId in the header
           },
           body: JSON.stringify({
             Course: course,

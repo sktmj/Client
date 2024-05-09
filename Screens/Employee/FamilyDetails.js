@@ -1,5 +1,3 @@
-
-
 import React, { useState, useEffect } from 'react';
 import { View, Text, Alert, StyleSheet, ScrollView, TextInput, TouchableOpacity } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -7,8 +5,9 @@ import axios from 'axios';
 import { Picker } from "@react-native-picker/picker";
 import Icon from 'react-native-vector-icons/FontAwesome'; // Import the icon library
 
-
-const familyDetails = () => {
+const FamilyDetails = ({ navigation }) => {
+  const [token, setToken] = useState(null);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [familyDetails, setFamilyDetails] = useState([
     { relation: '', name: '', age: '', work: '', monthSalary: '', phoneNo: '' }
   ]);
@@ -32,7 +31,24 @@ const familyDetails = () => {
 
   useEffect(() => {
     fetchLanguages();
+    checkAuthentication();
   }, []);
+
+  const checkAuthentication = async () => {
+    try {
+      const storedToken = await AsyncStorage.getItem("AppId");
+      if (!storedToken) {
+        console.log("User is not authenticated. Redirecting to login screen...");
+        navigation.navigate("Login");
+      } else {
+        console.log("User is authenticated.");
+        setIsLoggedIn(true);
+        setToken(storedToken.trim()); // Ensure token is trimmed of any extra characters
+      }
+    } catch (error) {
+      console.error("Error checking authentication:", error.message);
+    }
+  };
 
   const handleInputChange = (index, key, value) => {
     const updatedFamilyDetails = [...familyDetails];
@@ -48,13 +64,13 @@ const familyDetails = () => {
 
   const fetchLanguages = async () => {
     try {
-      const response = await axios.get("http://10.0.2.2:3000/api/v1/languages");
+      const response = await axios.get("http://10.0.2.2:3000/api/v1/fam/languages");
       setLanguages(response.data);
     } catch (error) {
       console.error("Error fetching Languages:", error.message);
       Alert.alert("Error", "Failed to fetch Languages");
     }
-  }
+  };
 
   const handleAddLanguage = () => {
     setLanguageSections([...languageSections, { LanId: '', LanSpeak: 'N', LanRead: 'N', LanWrite: 'N' }]);
@@ -66,28 +82,18 @@ const familyDetails = () => {
   };
 
   const handleSubmit = async () => {
+    console.log(token,"shddsfoj")
     try {
-      // Retrieve token from AsyncStorage
-      const token = await AsyncStorage.getItem("token");
-  
-      // Log the retrieved token
-      console.log("Retrieved token:", token);
-  
-      if (!token) {
-        throw new Error("Token not found in AsyncStorage");
-      }
-     console.log(detail.relation,detail.name,detail.work,detail.monthSalary,"ddddddd")
-      // Add Family Details
-      const familyResponses = await Promise.all(familyDetails.map(async (detail) => {
+      const familyResponses = await Promise.all(familyDetails.map(async (family) => {
         return await axios.post(
-          "http://10.0.2.2:3000/api/v1/family",
+          "http://10.0.2.2:3000/api/v1/fam/family",
           {
-            Relation: detail.relation,
-            Name: detail.name,
-            Age: detail.age,
-            Work: detail.work,
-            MonthSalary: detail.monthSalary,
-            PhoneNo: detail.phoneNo
+            Relation: family.relation,
+            Name: family.name,
+            Age: family.age,
+            Work: family.work,
+            MonthSalary: family.monthSalary,
+            PhoneNo: family.phoneNo
           },
           {
             headers: {
@@ -97,16 +103,15 @@ const familyDetails = () => {
           }
         );
       }));
-  
-      // Check if family details were successfully added
+
       const familySuccess = familyResponses.every(response => response.data.success);
 
       if (familySuccess) {
         Alert.alert("Success", "Family details added successfully");
-        // Add Language Details
+
         const languageResponses = await Promise.all(languageSections.map(async (language) => {
           return await axios.post(
-            "http://10.0.2.2:3000/api/v1/postLng",
+            "http://10.0.2.2:3000/api/v1/fam/postLng",
             {
               LanId: language.LanId,
               LanSpeak: language.LanSpeak,
@@ -122,14 +127,13 @@ const familyDetails = () => {
           );
         }));
 
-        // Check if language details were successfully added
         const languageSuccess = languageResponses.every(response => response.data.success);
 
         if (languageSuccess) {
           Alert.alert("Success", "Language details added successfully");
           // Navigate to next screen or perform any other action
         } else {
-          Alert.alert("Error", "Failed to add language details");
+          Alert.alert("Error", "Failed to add languageSections details");
         }
       } else {
         Alert.alert("Error", "Failed to add family details");
@@ -143,11 +147,11 @@ const familyDetails = () => {
   return (
     <ScrollView style={styles.container}>
       <Text style={styles.sectionTitle}>Family Details</Text>
-      {familyDetails.map((detail, index) => (
+      {familyDetails.map((family, index) => (
         <View key={index} style={styles.inputContainer}>
           <Picker
             style={styles.input}
-            selectedValue={detail.relation}
+            selectedValue={family.relation}
             onValueChange={(itemValue) => handleInputChange(index, 'relation', itemValue)}
           >
             <Picker.Item label="Select Relation" value="" />
@@ -161,31 +165,31 @@ const familyDetails = () => {
           <TextInput
             style={styles.input}
             placeholder="name"
-            value={detail.name}
+            value={family.name}
             onChangeText={(value) => handleInputChange(index, 'name', value)}
           />
           <TextInput
             style={styles.input}
             placeholder="age"
-            value={detail.age}
+            value={family.age}
             onChangeText={(value) => handleInputChange(index, 'age', value)}
           />
           <TextInput
             style={styles.input}
             placeholder="work"
-            value={detail.work}
+            value={family.work}
             onChangeText={(value) => handleInputChange(index, 'work', value)}
           />
           <TextInput
             style={styles.input}
             placeholder="monthSalary"
-            value={detail.monthSalary}
+            value={family.monthSalary}
             onChangeText={(value) => handleInputChange(index, 'monthSalary', value)}
           />
           <TextInput
             style={styles.input}
             placeholder="PhoneNO"
-            value={detail.phoneNo}
+            value={family.phoneNo}
             onChangeText={(value) => handleInputChange(index, 'phoneNo', value)}
           />
 
@@ -197,7 +201,6 @@ const familyDetails = () => {
               <Text style={styles.buttonText}>Add Family</Text>
             </TouchableOpacity>
           </View>
-
         </View>
       ))}
       <Text style={styles.sectionTitle}>Language Details</Text>
@@ -209,8 +212,8 @@ const familyDetails = () => {
             onValueChange={(itemValue) => handleLanguageChange(index, 'LanId', itemValue)}
           >
             <Picker.Item label="Select Language" value="" />
-            {languages.map((language) => (
-              <Picker.Item  key={language.LanguageId.toString()} label={language.Languaguename} value={language.LanguageId} />
+            {languages.map((lang) => (
+              <Picker.Item key={lang.LanguageId.toString()} label={lang.Languaguename} value={lang.LanguageId} />
             ))}
           </Picker>
           <View style={styles.checkboxContainer}>
@@ -325,4 +328,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default familyDetails;
+export default FamilyDetails;
