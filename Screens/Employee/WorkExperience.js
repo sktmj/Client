@@ -209,7 +209,11 @@ const WorkExperience = ({ navigation }) => {
     }
   };
 
+
+
+  
   const handleCheckboxToggle = (fieldName) => {
+
     switch (fieldName) {
       case "EPFNO":
         setEpfNoVisible(!epfNoVisible);

@@ -105,7 +105,7 @@ export default function PersonalDetailsForm() {
 
   const checkAuthentication = async () => {
     try {
-      const token = await AsyncStorage.getItem("token");
+      const token = await AsyncStorage.getItem("AppId");
       if (!token) {
         console.log(
           "User is not authenticated. Redirecting to login screen..."
@@ -253,16 +253,24 @@ export default function PersonalDetailsForm() {
       })
       .catch((error) => console.error("Error fetching Cities:", error));
   };
-
-
-
+        
   const handleChange = (field, value) => {
     setPersonalDetails((prevDetails) => ({
       ...prevDetails,
       [field]: value,
     }));
   };
-
+  
+  
+  
+  const handlePickerChange = (field, value) => {
+    setPersonalDetails((prevDetails) => ({
+      ...prevDetails,
+      [field]: value,
+    }));
+  };      
+  
+  
   
   const handleSubmit = async () => {
     try {
@@ -389,12 +397,13 @@ export default function PersonalDetailsForm() {
       <Text style={styles.sectionTitle}>Personal Details</Text>
       <View style={styles.formRow}>
         <View style={styles.formColumn}>
-          <TextInput
+        <TextInput
             style={styles.input}
             placeholder="Name"
-            value={personalDetails.AppName}
-            onChangeText={(Text) => handleChange("AppName", Text)}
-          />
+               value={personalDetails.AppName}
+              onChangeText={(value) => handleChange("AppName", value)}
+                      />
+
           <TextInput
             style={styles.input}
             placeholder="Father's Name"
