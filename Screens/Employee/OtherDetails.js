@@ -303,18 +303,21 @@ const OtherDetails = () => {
       <Text style={styles.sectionTitle}>Personal Details</Text>
       <View style={styles.formRow}>
         <View style={styles.formColumn}>
+        <Text style={styles.text}>Current Salary :</Text>
         <TextInput
         style={styles.input}
         placeholder="Current Salary"
         value={currentSalary}
         onChangeText={setCurrentSalary}
       />
+       <Text style={styles.text}>Expectation Salary :</Text>
       <TextInput
       style={styles.input}
         placeholder="Expectation Salary"
         value={expectSalary}
         onChangeText={setExpectSalary}
       />
+      <Text style={styles.text}>How did you know about our company :</Text>
           <TextInput
             style={styles.input}
             placeholder="How did you know about our company"
@@ -331,9 +334,8 @@ const OtherDetails = () => {
               size={20}
               color="black"
             />
-            <Text style={{ marginLeft: 8 }}>
-              Any Friends/Relative Working Here?
-            </Text>
+            
+            <Text style={styles.text}>Any Friends/Relative Working Here? </Text>
           </TouchableOpacity>
           {/* Only show Job Reference Person Details section if the checkbox is checked */}
           {isCompWrkHere && (
@@ -341,18 +343,21 @@ const OtherDetails = () => {
               <Text style={styles.sectionTitle}>
                 Job Reference Person Details
               </Text>
+              <Text style={styles.text}>Name : </Text>
               <TextInput
                 style={styles.input}
                 placeholder="Name"
                 value={refPerName}
                 onChangeText={setRefPerName}
               />
+              <Text style={styles.text}>Address : </Text>
               <TextInput
                 style={styles.input}
                 placeholder="Address"
                 value={refPerAdd}
                 onChangeText={setRefPerAdd}
               />
+                 <Text style={styles.text}>Phone No : </Text>
               <TextInput
                 style={styles.input}
                 placeholder="Phone No"
@@ -494,10 +499,8 @@ const OtherDetails = () => {
             <View style={{ marginTop: 10, marginTop: 30 }} />
 
             {/* Styling for "I'm Fresher" text */}
-            <Text style={{ marginLeft: 10, fontSize: 16 }}>
-              Expecting Joining date
-            </Text>
-
+            
+            <Text style={styles.text}> Expecting Joining date : </Text>
             <View style={styles.inputContainer}>
               <TextInput
                 style={styles.input}
@@ -556,16 +559,14 @@ const OtherDetails = () => {
    Job Applied For:
   </Text> */}
           <View style={{ marginTop: 30 }}>
+          <Text style={styles.text}> Job Applied For   : </Text>
             <TextInput
               style={styles.input}
-              placeholder="Job Applied For:"
               value={jobApplied}
               onChangeText={setJobApplied}
             />
 
-            <Text style={{ marginLeft: 10, fontSize: 16 }}>
-              Select Location:
-            </Text>
+<Text style={styles.text}> select location   : </Text>
             <Picker
               selectedValue={factoryId}
               onValueChange={(itemValue, itemIndex) => setFactoryId(itemValue)}
@@ -583,19 +584,21 @@ const OtherDetails = () => {
             <Text style={styles.sectionTitle}>
               Any Two Persons Details(Except Relatives)
             </Text>
+            <Text style={styles.text}> Name  : </Text>
             <TextInput
               style={styles.input}
               placeholder="Name:"
               value={nearByName1}
               onChangeText={setNearByName1}
             />
+             <Text style={styles.text}>Address : </Text>
             <TextInput
               style={styles.input}
               placeholder="Address:"
               value={nearByAdd1}
               onChangeText={setNearByAdd1}
             />
-            <Text>Select Country:</Text>
+           <Text style={styles.text}>select country: </Text>
             <Picker
               selectedValue={selectedCountry}
               onValueChange={(itemValue) => {
@@ -621,7 +624,7 @@ const OtherDetails = () => {
             {/* For brevity, I'll just show one */}
 
             <View style={styles.inputContainer}>
-              <Text>Select State:</Text>
+            <Text style={styles.text}>select state: </Text>
               <Picker
                 selectedValue={selectedState}
                 onValueChange={(itemValue) => {
@@ -642,7 +645,7 @@ const OtherDetails = () => {
                 ))}
               </Picker>
 
-              <Text>Select District:</Text>
+              <Text style={styles.text}>select district: </Text>
               <Picker
                 selectedValue={selectedDistrict}
                 onValueChange={(itemValue) => {
@@ -660,7 +663,7 @@ const OtherDetails = () => {
                 ))}
               </Picker>
               <View style={styles.inputContainer}>
-                <Text>Select Taluk:</Text>
+              <Text style={styles.text}>select taluk: </Text>
                 <Picker
                   selectedValue={selectedTaluk}
                   onValueChange={(itemValue) => {
@@ -678,7 +681,7 @@ const OtherDetails = () => {
                   ))}
                 </Picker>
 
-                <Text>Select City:</Text>
+                   <Text style={styles.text}>select city: </Text>
                 <Picker
                   selectedValue={selectedCity}
                   onValueChange={(itemValue) => {
@@ -700,7 +703,7 @@ const OtherDetails = () => {
             {/* Second Person's Details */}
             <Text style={styles.sectionTitle}>Second Person's Details</Text>
             {/* Country */}
-            <Text>Select Country:</Text>
+            <Text style={styles.text}>select country: </Text>
             <Picker
               selectedValue={selectedPresentCountry}
               onValueChange={(itemValue) => {
@@ -721,7 +724,7 @@ const OtherDetails = () => {
             {/* For brevity, I'll just show one */}
 
             <View style={styles.inputContainer}>
-              <Text>Select State:</Text>
+            <Text style={styles.text}>select state: </Text>
               <Picker
                 selectedValue={selectedPresentState}
                 onValueChange={(itemValue) => {
@@ -739,7 +742,7 @@ const OtherDetails = () => {
                 ))}
               </Picker>
 
-              <Text>Select District:</Text>
+              <Text style={styles.text}>select district: </Text>
               <Picker
                 selectedValue={selectedPresentDistrict}
                 onValueChange={(itemValue) => {
@@ -757,7 +760,7 @@ const OtherDetails = () => {
                 ))}
               </Picker>
               <View style={styles.inputContainer}>
-                <Text>Select Taluk:</Text>
+              <Text style={styles.text}>select taluk: </Text>
                 <Picker
                   selectedValue={selectedPresentTaluk}
                   onValueChange={(itemValue) => {
@@ -775,7 +778,7 @@ const OtherDetails = () => {
                   ))}
                 </Picker>
 
-                <Text>Select City:</Text>
+                <Text style={styles.text}>select city: </Text>
                 <Picker
                   selectedValue={selectedPresentCity}
                   onValueChange={(itemValue) => {
@@ -794,14 +797,14 @@ const OtherDetails = () => {
                 </Picker>
               </View>
             </View>
-
+            <Text style={styles.text}>pin code: </Text>
             <TextInput
               style={styles.input}
               placeholder="Pin:"
               value={nearByPin2}
               onChangeText={setNearByPin2}
             />
-
+  <Text style={styles.text}>phone no: </Text>
             <TextInput
               style={styles.input}
               placeholder="Ph No:"
@@ -840,7 +843,7 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   button: {
-    backgroundColor: "blue",
+    backgroundColor:"#059A5F",
     padding: 15,
     borderRadius: 10,
     alignItems: "center",
@@ -871,6 +874,12 @@ const styles = StyleSheet.create({
     top: "50%",
     transform: [{ translateY: -12 }],
   },
+  text: {
+    fontSize: 14,
+    fontWeight: "bold",
+    color: "#333",
+    textTransform: "uppercase",
+  }
 });
 
 export default OtherDetails;

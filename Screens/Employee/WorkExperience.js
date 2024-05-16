@@ -16,8 +16,6 @@ import * as DocumentPicker from "expo-document-picker";
 import Icon from "react-native-vector-icons/FontAwesome";
 import { FontAwesome } from "@expo/vector-icons";
 
-
-
 const WorkExperience = ({ navigation }) => {
   const [isFresher, setIsFresher] = useState(false);
   const [CompName, setCompName] = useState("");
@@ -50,19 +48,68 @@ const WorkExperience = ({ navigation }) => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [epfNoVisible, setEpfNoVisible] = useState(false);
   const [epfNo, setEpfNo] = useState("");
-  const [regExpExNoVisible, setRegExpExNoVisible] = useState(false); 
+  const [regExpExNoVisible, setRegExpExNoVisible] = useState(false);
   const [licenseNoVisible, setLicenseNoVisible] = useState(false);
-
+  const [sections, setSections] = useState([]);
   useEffect(() => {
     fetchDesignationOptions();
     checkAuthentication();
   }, []);
+  useEffect(() => {
+    if (isFresher) {
+      setSections([]);
+    } else {
+      setSections([
+        {
+          CompName: "",
+          Designation: "",
+          LastSalary: "",
+          RelieveReason: "",
+          RefPerson: "",
+          PhoneNo: "",
+          FrmMnth: "",
+          FrmYr: "",
+          ToMnth: "",
+          ToYr: "",
+          InitSalary: "",
+          LastCompany: false,
+        },
+      ]);
+    }
+  }, [isFresher]);
 
+  const handleAddSection = () => {
+    setSections([
+      ...sections,
+      {
+        CompName: "",
+        Designation: "",
+        LastSalary: "",
+        RelieveReason: "",
+        RefPerson: "",
+        PhoneNo: "",
+        FrmMnth: "",
+        FrmYr: "",
+        ToMnth: "",
+        ToYr: "",
+        InitSalary: "",
+        LastCompany: false,
+      },
+    ]);
+  };
+
+  const handleRemoveSection = (index) => {
+    const updatedSections = [...sections];
+    updatedSections.splice(index, 1);
+    setSections(updatedSections);
+  };
   const checkAuthentication = async () => {
     try {
       const storedToken = await AsyncStorage.getItem("AppId");
       if (!storedToken) {
-        console.log("User is not authenticated. Redirecting to login screen...");
+        console.log(
+          "User is not authenticated. Redirecting to login screen..."
+        );
         navigation.navigate("Login");
       } else {
         console.log("User is authenticated.");
@@ -86,9 +133,9 @@ const WorkExperience = ({ navigation }) => {
   };
 
   const handlesubmit = async () => {
-    console.log(token,"hhhhh")
+    console.log(token, "hhhhh");
     try {
-      console.log(selectedDesignation,LastSalary, RelieveReason)
+      console.log(selectedDesignation, LastSalary, RelieveReason);
       // Add Qualification
       const experienceResponse = await axios.post(
         "http://10.0.2.2:3000/api/v1/expc/experience",
@@ -139,7 +186,7 @@ const WorkExperience = ({ navigation }) => {
             },
           }
         );
-       console.log(WorkExperieceResponse)
+        console.log(WorkExperieceResponse);
         if (WorkExperieceResponse.status === 200) {
           Alert.alert("Success", "WorkExperience added successfully");
           // Navigate to next screen or perform any other action
@@ -209,11 +256,7 @@ const WorkExperience = ({ navigation }) => {
     }
   };
 
-
-
-  
   const handleCheckboxToggle = (fieldName) => {
-
     switch (fieldName) {
       case "EPFNO":
         setEpfNoVisible(!epfNoVisible);
@@ -234,260 +277,266 @@ const WorkExperience = ({ navigation }) => {
 
   return (
     <ScrollView style={styles.container}>
-    
-      <View style={styles.inputContainer}>
-        <TouchableOpacity onPress={() => setIsFresher((prev) => !prev)}>
-          <View style={{ flexDirection: "row", alignItems: "center" }}>
-            {isFresher ? (
-              <FontAwesome name="check-square" size={24} color="black" />
-            ) : (
-              <FontAwesome name="square" size={24} color="black" />
-            )}
-            <Text style={{ marginLeft: 10 }}>I'm Fresher</Text>
-          </View>
-        </TouchableOpacity>
+      <TouchableOpacity onPress={() => setIsFresher((prev) => !prev)}>
+        <View style={{ flexDirection: "row", alignItems: "center" }}>
+          <Icon
+            name={isFresher ? "check-square" : "square"}
+            size={24}
+            color="black"
+          />
+          <Text style={styles.text}>I'M FRESHER :</Text>
+        </View>
+      </TouchableOpacity>
 
-        {!isFresher && (
-          <>
-            <View>
-              <TextInput
-                style={styles.input}
-                placeholder="Organizaion Name Name"
-                value={CompName}
-                onChangeText={setCompName}
-              />
-              <Text>Select Designation:</Text>
+      {!isFresher &&
+        sections.map((section, index) => (
+          <View key={index}>
+            <Text style={styles.sectionTitle}>Experience {index + 1}</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="Organization Name"
+              value={section.CompName}
+              onChangeText={(text) => {
+                const updatedSections = [...sections];
+                updatedSections[index].CompName = text;
+                setSections(updatedSections);
+              }}
+            />
+            <Text style={styles.text}>Select Designation:</Text>
 
-              {/* <Picker
-          selectedValue={selectedDesignation}
-          onValueChange={(itemValue, itemIndex) => setSelectedDesignation(itemValue)}
-        >
-          {designationOptions.map((option) => (
-            <Picker.Item key={option.DesignationId.toString()} label={option.DesignationName} value={option.DesignationId} />
-          ))}
-        </Picker> */}
+{/* <Picker
+selectedValue={selectedDesignation}
+onValueChange={(itemValue, itemIndex) => setSelectedDesignation(itemValue)}
+>
+{designationOptions.map((option) => (
+<Picker.Item key={option.DesignationId.toString()} label={option.DesignationName} value={option.DesignationId} />
+))}
+</Picker> */}
 
-              <Picker
-                selectedValue={selectedDesignation}
-                onValueChange={(itemValue, itemIndex) =>
-                  setSelectedDesignation(itemValue)
-                }
-              >
-                <Picker.Item label="Select designation" value="" />
-                {designationOptions.map((option, index) => (
-                  <Picker.Item
-                    key={`${option.DesignationId}_${index}`}
-                    label={option.DesignationName}
-                    value={option.DesignationId}
-                  />
-                ))}
-              </Picker>
-
-              <TextInput
-                style={styles.input}
-                placeholder="From-Month"
-                value={FrmMnth}
-                onChangeText={setFrmMnth}
-              />
-              <TextInput
-                style={styles.input}
-                placeholder="From-Year"
-                value={FrmYr}
-                onChangeText={setFrmYr}
-              />
-
-              <TextInput
-                style={styles.input}
-                placeholder="To-Month"
-                value={ToMnth}
-                onChangeText={setToMnth}
-              />
-
-              <TextInput
-                style={styles.input}
-                placeholder="To-Year"
-                value={ToYr}
-                onChangeText={setToYr}
-              />
-              <TextInput
-                style={styles.input}
-                placeholder="Initial-Salary"
-                value={InitSalary}
-                onChangeText={setInitSalary}
-              />
-
-              <TextInput
-                style={styles.input}
-                placeholder="Last-Salary"
-                value={LastSalary}
-                onChangeText={setLastSalary}
-              />
-
-              <TextInput
-                style={styles.input}
-                placeholder="Relieve-Reason"
-                value={RelieveReason}
-                onChangeText={setRelieveReason}
-              />
-
-              <TextInput
-                style={styles.input}
-                placeholder="Contact-Person"
-                value={RefPerson}
-                onChangeText={setRefPerson}
-              />
-
-              <TextInput
-                style={styles.input}
-                placeholder="Contact-Number"
-                value={PhoneNo}
-                onChangeText={setPhoneNo}
-              />
-
-              <TouchableOpacity
-                style={styles.checkboxContainer}
-                onPress={() => setLastCompany(!LastCompany)}
-              >
-                <Icon
-                  name={LastCompany ? "check-square-o" : "square-o"}
-                  size={20}
-                  color="black"
-                />
-                <Text style={{ marginLeft: 8 }}>Last Company?</Text>
-              </TouchableOpacity>
-            </View>
-          </>
-        )}
-
-     <Text style={styles.sectionTitle}>Current Working Company</Text>
-
-     <View>
-     <Text style={styles.sectionTitle}>Current Working Company</Text>
-     <TextInput
-                style={styles.input}
-                placeholder="Current Working Company"
-                value={WorkCompany}
-                onChangeText={setWorkCompany}
-              />
- <TextInput
-                style={styles.input}
-                placeholder="Reason for Relieving"
-                value={workRelieveReason}
-                onChangeText={setWorkRelieveReason}
-              />
-   
-  {/* Checkbox for EPNNO */}
-  <TouchableOpacity
-    style={styles.checkboxContainer}
-    onPress={() => handleCheckboxToggle("EPFNO")}
-  >
-     <Text style={{ marginLeft: 8 }}>Having EPF ?</Text>
-    <Icon
-      name={epfNoVisible ? "check-square-o" : "square-o"}
-      size={20}
-      color="black"
+<Picker
+  selectedValue={selectedDesignation}
+  onValueChange={(itemValue, itemIndex) =>
+    setSelectedDesignation(itemValue)
+  }
+>
+  <Picker.Item label="Select designation" value="" />
+  {designationOptions.map((option, index) => (
+    <Picker.Item
+      key={`${option.DesignationId}_${index}`}
+      label={option.DesignationName}
+      value={option.DesignationId}
     />
-   
-  </TouchableOpacity>
-  {/* Input field for EPNNO */}
-  {epfNoVisible && (
-    <TextInput
-      style={styles.input}
-      placeholder="Enter EPF NO"
-      value={epfNo}
-      onChangeText={setEpfNo}
-    />
-  )}
-         <TextInput
-                style={styles.input}
-                placeholder="UAN NO"
-                value={UANNO}
-                onChangeText={setUANNO}
-              />
-
-<TouchableOpacity
-    style={styles.checkboxContainer}
-    onPress={() => handleCheckboxToggle("RegExpExNo")}
-  >
-    <Icon
-      name={regExpExNoVisible ? "check-square-o" : "square-o"}
-      size={20}
-      color="black"
-    />
-    <Text style={{ marginLeft: 8 }}>RegExpExNo</Text>
-  </TouchableOpacity>
-  {/* Input field for RegExpExNo */}
-  {regExpExNoVisible && (
-    <TextInput
-      style={styles.input}
-      placeholder="Enter RegExpExNo"
-      value={regExpExNo}
-      onChangeText={setRegExpExNo}
-    />
-  )}
-  <TextInput
-                style={styles.input}
-                placeholder="Textile / Jewellery Experience"
-                value={SalesExp}
-                onChangeText={setSalesExp}              />
+  ))}
+</Picker>
+<Text style={styles.text}>From-Month :</Text>
 
 <TextInput
+  style={styles.input}
+  value={FrmMnth}
+  onChangeText={setFrmMnth}
+/>
+ <Text style={styles.text}>From-Year:</Text>
+<TextInput
+  style={styles.input}
+  placeholder="From-Year"
+  value={FrmYr}
+  onChangeText={setFrmYr}
+/>
+<Text style={styles.text}>To-Month :</Text>
+<TextInput
+  style={styles.input}
+  placeholder="To-Month"
+  value={ToMnth}
+  onChangeText={setToMnth}
+/>
+<Text style={styles.text}>To-Year :</Text>
+<TextInput
+  style={styles.input}
+  placeholder="To-Year"
+  value={ToYr}
+  onChangeText={setToYr}
+/>
+<Text style={styles.text}>Initial-Salary :</Text>
+<TextInput
+  style={styles.input}
+  placeholder="Initial-Salary"
+  value={InitSalary}
+  onChangeText={setInitSalary}
+/>
+<Text style={styles.text}>Last-Salary :</Text>
+<TextInput
+  style={styles.input}
+  placeholder="Last-Salary"
+  value={LastSalary}
+  onChangeText={setLastSalary}
+/>
+<Text style={styles.text}>Relieve-Reason :</Text>
+<TextInput
+  style={styles.input}
+  placeholder="Relieve-Reason"
+  value={RelieveReason}
+  onChangeText={setRelieveReason}
+/>
+<Text style={styles.text}>Contact-Person :</Text>
+<TextInput
+  style={styles.input}
+  placeholder="Contact-Person"
+  value={RefPerson}
+  onChangeText={setRefPerson}
+/>
+<Text style={styles.text}>Contact-Number :</Text>
+<TextInput
+  style={styles.input}
+  placeholder="Contact-Number"
+  value={PhoneNo}
+  onChangeText={setPhoneNo}
+/>
+
+<TouchableOpacity style={styles.deleteButton} onPress={() => handleRemoveSection(index)}>
+              <Text>Delete</Text>
+            </TouchableOpacity>
+          </View>
+          
+        ))}
+
+      {!isFresher && (
+        
+        <TouchableOpacity style={styles.addButton} onPress={handleAddSection}>
+          <Text style={styles.addButtonText}>Add Experience</Text>
+        </TouchableOpacity>
+       
+      )}
+      <View>
+          <Text style={styles.sectionTitle}>Current Working Company</Text>
+          <Text style={styles.text}>current working company :</Text>
+          <TextInput
+            style={styles.input}
+            placeholder="Current Working Company"
+            value={WorkCompany}
+            onChangeText={setWorkCompany}
+          />
+                <Text style={styles.text}>reason for relieving :</Text>
+          <TextInput
+            style={styles.input}
+            placeholder="Reason for Relieving"
+            value={workRelieveReason}
+            onChangeText={setWorkRelieveReason}
+          />
+
+          {/* Checkbox for EPNNO */}
+          <TouchableOpacity
+            style={styles.checkboxContainer}
+            onPress={() => handleCheckboxToggle("EPFNO")}
+          >
+<Text style={styles.text}>having epf ?</Text>
+            <Icon
+              name={epfNoVisible ? "check-square-o" : "square-o"}
+              size={20}
+              color="black"
+            />
+          </TouchableOpacity>
+          {/* Input field for EPNNO */}
+  
+          {epfNoVisible && (
+
+            <TextInput
+              style={styles.input}
+              placeholder="Enter EPF NO"
+              value={epfNo}
+              onChangeText={setEpfNo}
+            />
+          )}
+          <Text style={styles.text}>UAN NO</Text>
+          <TextInput
+            style={styles.input}
+            value={UANNO}
+            onChangeText={setUANNO}
+          />
+
+          <TouchableOpacity
+            style={styles.checkboxContainer}
+            onPress={() => handleCheckboxToggle("RegExpExNo")}
+          >
+            <Icon
+              name={regExpExNoVisible ? "check-square-o" : "square-o"}
+              size={20}
+              color="black"
+            />
+    
+            <Text style={styles.text}>RegExpExNo</Text>
+          </TouchableOpacity>
+          {/* Input field for RegExpExNo */}
+          {regExpExNoVisible && (
+            <TextInput
+              style={styles.input}
+              placeholder="Enter RegExpExNo"
+              value={regExpExNo}
+              onChangeText={setRegExpExNo}
+            />
+          )}
+            <Text style={styles.text}>Textile / Jewellery Experience :</Text>
+          <TextInput
+            style={styles.input}
+            value={SalesExp}
+            onChangeText={setSalesExp}
+          />
+   <Text style={styles.text}>Any Health Issue :</Text>
+          <TextInput
+            style={styles.input}
+            placeholder="Any Health Issue"
+            value={HealthIssue}
+            onChangeText={setHealthIssue}
+          />
+
+          {/* Checkbox for LicenseNo */}
+          <View>
+            {/* Checkbox for IsDriving */}
+            <TouchableOpacity
+              style={styles.checkboxContainer}
+              onPress={() => {
+                setIsDriving(!IsDriving);
+                // Toggle visibility of input field based on IsDriving
+                if (!IsDriving) {
+                  setLicenseNoVisible(true);
+                } else {
+                  setLicenseNoVisible(false);
+                }
+              }}
+            >
+              <Icon
+                name={IsDriving ? "check-square-o" : "square-o"}
+                size={20}
+                color="black"
+              />
+              <Text style={styles.text}>do you ride bike ?</Text>
+            </TouchableOpacity>
+
+            {/* Input field for LicenseNo */}
+            {licenseNoVisible && (
+              <TextInput
                 style={styles.input}
-                placeholder="Any Health Issue"
-                value={HealthIssue}
-                onChangeText={setHealthIssue}              />
-
-  {/* Checkbox for LicenseNo */}
-  <View>
-  {/* Checkbox for IsDriving */}
-  <TouchableOpacity
-    style={styles.checkboxContainer}
-    onPress={() => {
-      setIsDriving(!IsDriving);
-      // Toggle visibility of input field based on IsDriving
-      if (!IsDriving) {
-        setLicenseNoVisible(true);
-      } else {
-        setLicenseNoVisible(false);
-      }
-    }}
-  >
-    <Icon
-      name={IsDriving ? "check-square-o" : "square-o"}
-      size={20}
-      color="black"
-    />
-    <Text style={{ marginLeft: 8 }}>IsDriving</Text>
-  </TouchableOpacity>
-  
-  {/* Input field for LicenseNo */}
-  {licenseNoVisible && (
-    <TextInput
-      style={styles.input}
-      placeholder="Enter LicenseNo"
-      value={LicenseNo}
-      onChangeText={(text) => setLicenseNo(text)}
-    />
-  )}
-</View>
-  {/* Checkbox for IsCompWrkHere */}
-  <View>
-  {/* Checkbox for IsCompWrkHere */}
-  <TouchableOpacity
-    style={styles.checkboxContainer}
-    onPress={() => setIsCompWrkHere(!IsCompWrkHere)}
-  >
-    <Icon
-      name={IsCompWrkHere ? "check-square-o" : "square-o"}
-      size={20}
-      color="black"
-    />
-    <Text style={{ marginLeft: 8 }}>IsCompWrkHere</Text>
-  </TouchableOpacity>
-</View>
-  
-</View>
-
+                placeholder="Enter LicenseNo"
+                value={LicenseNo}
+                onChangeText={(text) => setLicenseNo(text)}
+              />
+            )}
+          </View>
+          {/* Checkbox for IsCompWrkHere */}
+          <View>
+            {/* Checkbox for IsCompWrkHere */}
+            <TouchableOpacity
+              style={styles.checkboxContainer}
+              onPress={() => setIsCompWrkHere(!IsCompWrkHere)}
+            >
+              <Icon
+                name={IsCompWrkHere ? "check-square-o" : "square-o"}
+                size={20}
+                color="black"
+              />
+           <Text style={styles.text}> Ready To Work In All Branches?</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
 
         <View
           style={{
@@ -497,6 +546,7 @@ const WorkExperience = ({ navigation }) => {
             marginTop: 20,
           }}
         >
+           <Text style={styles.text}> License DOC</Text>
           <Button
             title="Choose File"
             onPress={handleChooseFile}
@@ -509,10 +559,10 @@ const WorkExperience = ({ navigation }) => {
           />
         </View>
         {/* Add other input fields similarly */}
-        <TouchableOpacity style={styles.addButton} onPress={handlesubmit}>
-          <Text style={styles.addButtonText}>Insert</Text>
+        <TouchableOpacity style={styles.submitButton} onPress={handlesubmit}>
+          <Text style={styles.addButtonText}>Submit</Text>
         </TouchableOpacity>
-      </View>
+
     </ScrollView>
   );
 };
@@ -550,6 +600,30 @@ const styles = StyleSheet.create({
     color: "#fff",
     fontSize: 16,
   },
+  deleteButton: {
+    backgroundColor: "#FF0000",
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+    alignItems: "center",
+    flex: 1,
+    marginRight: 5,
+  },
+  text: {
+    fontSize: 14,
+    fontWeight: "bold",
+    color: "#333",
+    textTransform: "uppercase",
+  },
+  submitButton: {
+    backgroundColor:"#059A5F",
+    paddingVertical:25,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+    alignItems: "center",
+    marginTop: 20,
+   
+  }
 });
 
 export default WorkExperience;

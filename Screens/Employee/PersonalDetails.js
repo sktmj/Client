@@ -77,16 +77,23 @@ export default function PersonalDetailsForm() {
   const [selectedPresentDistrict, setSelectedPresentDistrict] = useState("");
   const [selectedPresentTaluk, setSelectedPresentTaluk] = useState("");
   const [selectedPresentCity, setSelectedPresentCity] = useState("");
-
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [token, setToken] = useState(null);
+
 
   useEffect(() => {
     checkAuthentication();
     fetchCountries();
     fetchReligion();
     fetchPresentCountries();
+    fetchUserDetails();
   }, []);
+
+  useEffect(() => {
+  if (token) {
+    fetchUserDetails();
+  }
+}, [token]);
 
   useEffect(() => {
     if (selectedDistrict) {
@@ -103,7 +110,7 @@ export default function PersonalDetailsForm() {
    [selectedPresentDistrict]);
 
 
-  const checkAuthentication = async () => {
+   const checkAuthentication = async () => {
     try {
       const token = await AsyncStorage.getItem("AppId");
       if (!token) {
@@ -120,6 +127,30 @@ export default function PersonalDetailsForm() {
       console.error("Error checking authentication:", error.message);
     }
   };
+  
+  const fetchUserDetails = async () => {
+    try {
+      const storedToken = token;
+      const response = await axios.get("http://10.0.2.2:3000/api/v1/prsl/getPrsl", {
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${storedToken}`, // Use the token from the state
+        },
+      });
+      if (response.data.success) {
+        console.log("User details retrieved successfully:", response.data.data);
+        // Populate the input fields with the retrieved data
+        setPersonalDetails(response.data.data[0]); // Assuming the data is an array with one object
+      } else {
+        console.error("User details retrieval failed:", response.data.message);
+      }
+    } catch (error) {
+      console.error("Error fetching user details:", error.message);
+    }
+  };
+  
+  
+
 
   const handleLogin = async () => {
     try {
@@ -274,33 +305,21 @@ export default function PersonalDetailsForm() {
   
   const handleSubmit = async () => {
     try {
-      const response = await fetch(
+      const response = await axios.post(
         "http://10.0.2.2:3000/api/v1/prsl/updatePersonalDetails",
+        personalDetails, // Send the entire personalDetails object
         {
-          method: "POST",
           headers: {
             "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,
           },
-          body: JSON.stringify(personalDetails),
         }
       );
-      if (response.status === 404) {
-        console.error("Server error: 404");
-        Alert.alert(
-          "Error",
-          "The requested resource was not found on the server."
-        );
-      } else if (response.ok) {
-        const data = await response.json();
-        console.log("Personal details updated successfully:", data);
-       
+
+      if (response.data.success) {
+        console.log("Personal details updated successfully:", response.data);
       } else {
-        console.error("Server error:", response.status, response.statusText);
-        Alert.alert(
-          "Error",
-          "An error occurred while submitting the form. Please try again later."
-        );
+        console.error("Error updating personal details:", response.data.message);
       }
     } catch (error) {
       console.error("Error handling form submission:", error.message);
@@ -397,20 +416,23 @@ export default function PersonalDetailsForm() {
       <Text style={styles.sectionTitle}>Personal Details</Text>
       <View style={styles.formRow}>
         <View style={styles.formColumn}>
+        <Text style={styles.text}>Name :</Text>
         <TextInput
             style={styles.input}
             placeholder="Name"
                value={personalDetails.AppName}
               onChangeText={(value) => handleChange("AppName", value)}
                       />
-
+<Text style={styles.text}>FATHER'S NAME:</Text>
           <TextInput
             style={styles.input}
-            placeholder="Father's Name"
+            placeholder="Father Name"
             value={personalDetails.FatherName}
             onChangeText={(value) => handleChange("FatherName", value)}
           />
+
           <View style={styles.inputContainer}>
+          <Text style={styles.text}>Date of birth:</Text>
             <TextInput
               style={styles.input}
               placeholder="Date of Birth (YYYY-MM-DD)"
@@ -430,6 +452,7 @@ export default function PersonalDetailsForm() {
               onCancel={hideDatePicker}
             />
           </View>
+          <Text style={styles.text}>AGE:</Text>
           <TextInput
             style={styles.input}
             placeholder="Age"
@@ -439,6 +462,8 @@ export default function PersonalDetailsForm() {
           />
         </View>
         <View style={styles.inputContainer}>
+        <Text style={styles.text}>GANDER:</Text>
+
           <Picker
             selectedValue={personalDetails.Gender}
             onValueChange={(itemValue) => handleChange("Gender", itemValue)}
@@ -449,16 +474,18 @@ export default function PersonalDetailsForm() {
             <Picker.Item label="Others" value="O" />
           </Picker>
         </View>
-
+        <Text style={styles.text}>BLOOD GROUP :</Text>
         <TextInput
           style={styles.input}
           placeholder="BloodGroup"
           value={personalDetails.BloodGrp}
           onChangeText={(Text) => handleChange("BloodGrp", Text)}
         />
+
       </View>
       <View style={styles.formColumn}>
         <View style={styles.inputContainer}>
+        <Text style={styles.text}>MARITAL STATUS</Text>
           <Picker
             selectedValue={personalDetails.Martialstatus}
             onValueChange={(itemValue) => {
@@ -496,7 +523,7 @@ export default function PersonalDetailsForm() {
         )}
 
         <View style={styles.inputContainer}>
-          <Text>Select Religion:</Text>
+        <Text style={styles.text}>SELECT RELIGION :</Text>
           <Picker
             selectedValue={selectedReligion}
             onValueChange={(itemValue) => {
@@ -518,7 +545,7 @@ export default function PersonalDetailsForm() {
         </View>
 
         <View style={styles.inputGroup}>
-          <Text>Select Caste:</Text>
+        <Text style={styles.text}>SELECT CASTE :</Text>
           <Picker
             selectedValue={selectedCaste}
             onValueChange={(itemValue) => {
@@ -545,6 +572,7 @@ export default function PersonalDetailsForm() {
             )}
           </Picker>
         </View>
+        <Text style={styles.text}>NATIVE :</Text>
         <TextInput
           style={styles.input}
           placeholder="Native"
@@ -557,23 +585,21 @@ export default function PersonalDetailsForm() {
       {/* Residential Address */}
       <View style={styles.sectionContainer}>
         <Text style={styles.sectionTitle}>Residential Address</Text>
+        <Text style={styles.text}>ADDRESS:</Text>
         <TextInput
           style={styles.input}
           placeholder="Address"
           value={personalDetails.ResAddress1}
           onChangeText={(value) => handleChange("ResAddress1", value)}
         />
-        <Text>Select Country:</Text>
+       <Text style={styles.text}>SELECT COUNTRY :</Text>
         <Picker
           selectedValue={selectedCountry}
           onValueChange={(itemValue) => {
             setSelectedCountry(itemValue);
-            setSelectedState("");
-            setSelectedDistrict("");
-            setSelectedTaluk("");
-            setSelectedCity("");
             fetchStatesByCountry(itemValue);
             setPersonalDetails({ ...personalDetails, ResCountryId: itemValue });
+
           }}
         >
           <Picker.Item label="Select Country" value="" />
@@ -590,7 +616,7 @@ export default function PersonalDetailsForm() {
         {/* For brevity, I'll just show one */}
 
         <View style={styles.inputContainer}>
-          <Text>Select State:</Text>
+        <Text style={styles.text}>SELECT STATE :</Text>
           <Picker
             selectedValue={selectedState}
             onValueChange={(itemValue) => {
@@ -612,7 +638,7 @@ export default function PersonalDetailsForm() {
             ))}
           </Picker>
 
-          <Text>Select District:</Text>
+          <Text style={styles.text}>SELECT DISTRICT :</Text>
           <Picker
             selectedValue={selectedDistrict}
             onValueChange={(itemValue) => {
@@ -633,8 +659,8 @@ export default function PersonalDetailsForm() {
               />
             ))}
           </Picker>
-          <View style={styles.inputContainer}>
-            <Text>Select Taluk:</Text>
+        
+          <Text style={styles.text}>SELECT TALUK :</Text>
             <Picker
               selectedValue={selectedTaluk}
               onValueChange={(itemValue) => {
@@ -656,7 +682,7 @@ export default function PersonalDetailsForm() {
               ))}
             </Picker>
 
-            <Text>Select City:</Text>
+            <Text style={styles.text}>SELECT CITY :</Text>
             <Picker
               selectedValue={selectedCity}
               onValueChange={(itemValue) => {
@@ -677,8 +703,9 @@ export default function PersonalDetailsForm() {
                 />
               ))}
             </Picker>
-          </View>
+      
         </View>
+        <Text style={styles.text}>PINCODE:</Text>
         <TextInput
           style={styles.input}
           placeholder="Pincode"
@@ -686,6 +713,7 @@ export default function PersonalDetailsForm() {
           value={personalDetails.ResPincode}
           onChangeText={(value) => handleChange("ResPincode", value)}
         />
+          <Text style={styles.text}>PHONE NO :</Text>
         <TextInput
           style={styles.input}
           placeholder="Phone No"
@@ -709,13 +737,14 @@ export default function PersonalDetailsForm() {
         {/* </View> */}
         {!personalDetails.SameAsPresentAddress && (
           <View>
+              <Text style={styles.text}>ADDRESS :</Text>
             <TextInput
               style={styles.input}
               placeholder="Address"
               value={personalDetails.PerAddress1}
               onChangeText={(value) => handleChange("PerAddress1", value)}
             />
-            <Text>Select Country:</Text>
+        <Text style={styles.text}>SELECT COUNTRY:</Text>
             <Picker
   selectedValue={selectedPresentCountry}
   onValueChange={(itemValue) => {
@@ -741,7 +770,7 @@ export default function PersonalDetailsForm() {
             {/* For brevity, I'll just show one */}
 
             <View style={styles.inputContainer}>
-              <Text>Select State:</Text>
+            <Text style={styles.text}>SELECT STATE:</Text>
               <Picker
         selectedValue={selectedPresentState}
   onValueChange={(itemValue) => {
@@ -763,7 +792,7 @@ export default function PersonalDetailsForm() {
                 ))}
               </Picker>
 
-              <Text>Select District:</Text>
+              <Text style={styles.text}>SELECT DISTRICT :</Text>
               <Picker
         selectedValue={selectedPresentDistrict}
   onValueChange={(itemValue) => {
@@ -784,8 +813,8 @@ export default function PersonalDetailsForm() {
                   />
                 ))}
               </Picker>
-              <View style={styles.inputContainer}>
-                <Text>Select Taluk:</Text>
+            
+              <Text style={styles.text}>SELECT TALUK:</Text>
                 <Picker
         selectedValue={selectedPresentTaluk}
   onValueChange={(itemValue) => {
@@ -807,7 +836,7 @@ export default function PersonalDetailsForm() {
                   ))}
                 </Picker>
 
-                <Text>Select City:</Text>
+                <Text style={styles.text}>SELECT CITY :</Text>
                 <Picker
                   selectedValue={selectedPresentCity}
                   onValueChange={(itemValue) => {
@@ -828,9 +857,9 @@ export default function PersonalDetailsForm() {
                     />
                   ))}
                 </Picker> 
-             </View> 
+         
             </View>
-
+            <Text style={styles.text}>PINCODE:</Text>
             <TextInput
               style={styles.input}
               placeholder="Pincode"
@@ -838,6 +867,7 @@ export default function PersonalDetailsForm() {
               value={personalDetails.PerPincode}
               onChangeText={(value) => handleChange("PerPincode", value)}
             />
+              <Text style={styles.text}>PHONE NO :</Text>
             <TextInput
               style={styles.input}
               placeholder="Phone No"
@@ -853,26 +883,32 @@ export default function PersonalDetailsForm() {
       <View style={styles.sectionContainer}>
         <Text style={styles.sectionTitle}>Other Details</Text>
         <View style={styles.inputContainer}>
+        <Text style={styles.text}>LAND MARK :</Text>
           <TextInput
             style={styles.input}
             placeholder="Land Mark"
             value={personalDetails.LandMark}
             onChangeText={(value) => handleChange("LandMark", value)}
           />
+            <Text style={styles.text}>MOBILE NO:</Text>
           <TextInput style={styles.input} placeholder="Mobile No" />
+          <Text style={styles.text}>ALTERNATE NO:</Text>
           <TextInput style={styles.input} placeholder="Alternate No" />
+          <Text style={styles.text}>EMAIL :</Text>
           <TextInput
             style={styles.input}
             placeholder="Email"
             value={personalDetails.EmailId}
             onChangeText={(value) => handleChange("EmailId", value)}
           />
+            <Text style={styles.text}>PAN-NO :</Text>
           <TextInput
             style={styles.input}
             placeholder="Pan No"
             value={personalDetails.PANNO}
             onChangeText={(value) => handleChange("PANNO", value)}
           />
+            <Text style={styles.text}>AADHAR NO:</Text>
           <TextInput
             style={styles.input}
             placeholder="Aadhar No"
@@ -929,4 +965,11 @@ const styles = StyleSheet.create({
     top: 10,
     right: 10,
   },
+  text:{
+    fontSize: 14,
+    fontWeight: "bold",
+  
+    color: "#333",
+    textTransform: "uppercase"
+  }
 });

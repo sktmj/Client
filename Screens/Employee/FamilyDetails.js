@@ -149,6 +149,7 @@ const FamilyDetails = ({ navigation }) => {
       <Text style={styles.sectionTitle}>Family Details</Text>
       {familyDetails.map((family, index) => (
         <View key={index} style={styles.inputContainer}>
+           <Text style={styles.text}>select relation :</Text>
           <Picker
             style={styles.input}
             selectedValue={family.relation}
@@ -162,30 +163,35 @@ const FamilyDetails = ({ navigation }) => {
             <Picker.Item label="Spouse" value="W" />
             <Picker.Item label="Children" value="C" />
           </Picker>
+          <Text style={styles.text}>name :</Text>
           <TextInput
             style={styles.input}
             placeholder="name"
             value={family.name}
             onChangeText={(value) => handleInputChange(index, 'name', value)}
           />
+          <Text style={styles.text}>age :</Text>
           <TextInput
             style={styles.input}
             placeholder="age"
             value={family.age}
             onChangeText={(value) => handleInputChange(index, 'age', value)}
           />
+          <Text style={styles.text}>work:</Text>
           <TextInput
             style={styles.input}
             placeholder="work"
             value={family.work}
             onChangeText={(value) => handleInputChange(index, 'work', value)}
           />
+          <Text style={styles.text}>monthly salary :</Text>
           <TextInput
             style={styles.input}
             placeholder="monthSalary"
             value={family.monthSalary}
             onChangeText={(value) => handleInputChange(index, 'monthSalary', value)}
           />
+          <Text style={styles.text}>phone no :</Text>
           <TextInput
             style={styles.input}
             placeholder="PhoneNO"
@@ -206,7 +212,7 @@ const FamilyDetails = ({ navigation }) => {
       <Text style={styles.sectionTitle}>Language Details</Text>
       {languageSections.map((language, index) => (
         <View key={index} style={styles.inputContainer}>
-          <Text>Select Language:</Text>
+       <Text style={styles.text}>select lanaguage :</Text>
           <Picker
             selectedValue={language.LanId}
             onValueChange={(itemValue) => handleLanguageChange(index, 'LanId', itemValue)}
@@ -250,13 +256,14 @@ const FamilyDetails = ({ navigation }) => {
               <Text style={styles.buttonText}>Add Language</Text>
             </TouchableOpacity>
           </View>
-        </View>
-      ))}
-      <View style={styles.buttonsContainer}>
+          <View style={styles.buttonsContainer}>
         <TouchableOpacity style={styles.submitButton} onPress={handleSubmit}>
           <Text style={styles.buttonText}>Submit</Text>
         </TouchableOpacity>
       </View>
+        </View>
+      ))}
+      
     </ScrollView>
   );
 };
@@ -307,7 +314,7 @@ const styles = StyleSheet.create({
     marginRight: 5,
   },
   submitButton: {
-    backgroundColor: "#0080FF",
+    backgroundColor: "#059A5F",
     paddingVertical: 12,
     paddingHorizontal: 16,
     borderRadius: 8,
@@ -326,6 +333,12 @@ const styles = StyleSheet.create({
     marginLeft: 5,
     marginRight: 10,
   },
+  text: {
+    fontSize: 14,
+    fontWeight: "bold",
+    color: "#333",
+    textTransform: "uppercase",
+  }
 });
 
 export default FamilyDetails;

@@ -1,42 +1,50 @@
-import React, { useEffect, useState } from 'react';
-import { View, Text, TouchableOpacity, TextInput, Button, Alert,StyleSheet  } from 'react-native';
+import React, { useEffect, useState } from "react";
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  TextInput,
+  Button,
+  Alert,
+  StyleSheet,
+} from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import Icon from 'react-native-vector-icons/FontAwesome';
-
+import Icon from "react-native-vector-icons/FontAwesome";
 
 const CustomCheckBox = ({ checked, onPress }) => {
   return (
     <TouchableOpacity onPress={onPress} style={styles.checkboxContainer}>
-    <View style={styles.checkbox}>
-      {checked && <Icon name="check-square-o" size={24} color="green" />}
-      {!checked && <Icon name="square-o" size={24} color="green" />}
-    </View>
-    <Text style={styles.checkboxText}>I agree to the declaration</Text>
-  </TouchableOpacity>
+      <View style={styles.checkbox}>
+        {checked && <Icon name="check-square-o" size={24} color="green" />}
+        {!checked && <Icon name="square-o" size={24} color="green" />}
+      </View>
+      <Text style={styles.checkboxText}>I agree to the declaration</Text>
+    </TouchableOpacity>
   );
 };
 
-
 const DeclarationComponent = () => {
   const [declaration, setDeclaration] = useState(false);
-  const [goal, setGoal] = useState('');
-  const [roleModel, setRoleModel] = useState('');
-  const [roleModelWhy, setRoleModelWhy] = useState('');
-  const [ourJobDtl, setOurJobDtl] = useState('');
-  const [knownJobPlus, setKnownJobPlus] = useState('');
-  const [knownJobMinus, setKnownJobMinus] = useState('');
+  const [goal, setGoal] = useState("");
+  const [roleModel, setRoleModel] = useState("");
+  const [roleModelWhy, setRoleModelWhy] = useState("");
+  const [ourJobDtl, setOurJobDtl] = useState("");
+  const [knownJobPlus, setKnownJobPlus] = useState("");
+  const [knownJobMinus, setKnownJobMinus] = useState("");
   const [token, setToken] = useState(null);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
- 
-  useEffect(()=>{
+
+  useEffect(() => {
     checkAuthentication();
-  },[])
+  }, []);
 
   const checkAuthentication = async () => {
     try {
       const storedToken = await AsyncStorage.getItem("AppId");
       if (!storedToken) {
-        console.log("User is not authenticated. Redirecting to login screen...");
+        console.log(
+          "User is not authenticated. Redirecting to login screen..."
+        );
         navigation.navigate("Login");
       } else {
         console.log("User is authenticated.");
@@ -71,9 +79,9 @@ const DeclarationComponent = () => {
           }),
         }
       );
-  
+
       const responseData = await response.json(); // Parse response data
-  
+
       if (responseData.success) {
         Alert.alert("Success", "Declaration updated successfully");
         // Additional actions after successful update
@@ -85,47 +93,46 @@ const DeclarationComponent = () => {
       Alert.alert("Error", "Failed to update declaration");
     }
   };
-  
-  
 
   return (
     <View style={styles.container}>
+      <Text style={styles.text}>
+        Your Thoghts About The Chennai Silks Group?
+      </Text>
       <TextInput
         style={styles.input}
-        placeholder="Goal"
-        value={goal}
-        onChangeText={setGoal}
-      />
-      <TextInput
-        style={styles.input}
-        placeholder="Role Model"
-        value={roleModel}
-        onChangeText={setRoleModel}
-      />
-      <TextInput
-        style={styles.input}
-        placeholder="Role Model Why"
-        value={roleModelWhy}
-        onChangeText={setRoleModelWhy}
-      />
-      <TextInput
-        style={styles.input}
-        placeholder="Our Job Details"
         value={ourJobDtl}
         onChangeText={setOurJobDtl}
       />
+      <Text style={styles.text}>Future Goal?</Text>
+      <TextInput style={styles.input} value={goal} onChangeText={setGoal} />
+      <Text style={styles.text}>In which Job You Will be more effective?</Text>
       <TextInput
         style={styles.input}
-        placeholder="Known Job Plus"
         value={knownJobPlus}
         onChangeText={setKnownJobPlus}
       />
+      <Text style={styles.text}>In which Job You Will be less effective? </Text>
       <TextInput
         style={styles.input}
-        placeholder="Known Job Minus"
         value={knownJobMinus}
         onChangeText={setKnownJobMinus}
       />
+
+      <Text style={styles.text}>Role Model? </Text>
+      <TextInput
+        style={styles.input}
+        value={roleModel}
+        onChangeText={setRoleModel}
+      />
+
+      <Text style={styles.text}>Why? </Text>
+      <TextInput
+        style={styles.input}
+        value={roleModelWhy}
+        onChangeText={setRoleModelWhy}
+      />
+
       <CustomCheckBox checked={declaration} onPress={handleDeclarationChange} />
       <TouchableOpacity onPress={handleUpdateDeclaration}>
         <View style={styles.submitButton}>
@@ -140,32 +147,28 @@ export default DeclarationComponent;
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
-    justifyContent:"flex-start" ,
-    alignItems: 'center',
+    backgroundColor: "#fff",
     padding: 20,
   },
   input: {
-    height: 40,
-    width: 300,
-    borderColor: 'gray',
-    borderWidth: 2,
-    marginTop: 10,
-    paddingHorizontal: 10,
+    borderWidth: 1,
+    borderColor: "#ccc",
     borderRadius: 5,
+    padding: 10,
+    marginBottom: 10,
   },
   checkboxContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     marginTop: 20,
   },
   checkbox: {
     width: 30,
     height: 30,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     borderWidth: 1,
-    borderColor: 'blue',
+    borderColor: "blue",
     borderRadius: 5,
     marginRight: 10,
   },
@@ -173,16 +176,22 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
   submitButton: {
-    backgroundColor: 'blue',
+    backgroundColor:  "#059A5F",
     padding: 10,
     marginTop: 20,
     borderRadius: 5,
-    
+  },
+  text: {
+    fontSize: 14,
+    fontWeight: "bold",
+    fontStyle: "italic",
+    color: "#333",
+    textTransform: "uppercase",
   },
   submitButtonText: {
-    color: 'white',
-    textAlign: 'center',
+    color: "white",
+    textAlign: "center",
     fontSize: 16,
-   width:400
+    width: 400,
   },
 });

@@ -39,7 +39,7 @@ await AsyncStorage.setItem("AppId", JSON.stringify(responseData.AppId)); // Stri
 console.log("Token and AppId stored:", responseData.token, responseData.AppId);
 
         // Redirect to personal details screen
-        Navigation.navigate("TopTab");
+        Navigation.navigate("Application Form");
       } else {
         console.error("Token or AppId not received");
         Alert.alert("Login failed", "Token or AppId not received");

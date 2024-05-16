@@ -15,7 +15,12 @@ import StartScreen from "./Screens/Employee/Start";
 import PlaceInputs from "./Components/Place";
 import start from "./Screens/Employee/Start";
 import familyDetails from "./Screens/Employee/FamilyDetails";
-
+import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { FontAwesome5 } from '@expo/vector-icons';
+import { Ionicons } from '@expo/vector-icons';
+import { Entypo } from '@expo/vector-icons';
+import { MaterialIcons } from '@expo/vector-icons';
+import { Foundation } from '@expo/vector-icons';
 // import StartScreen from "./Screens/Employee/Start";
 
 const Stack = createNativeStackNavigator();
@@ -37,41 +42,70 @@ function TopTab() {
         },
       }}
     >
-      <Tab.Screen
-        name="PersonalDetails"
-        component={PersonalDetails}
-        options={{ headerTitle: "PlaceInputs" }}
-      />
+  <Tab.Screen
+  name="PersonalDetails"
+  component={PersonalDetails}
+  options={{
+    title: () => (
+      <MaterialCommunityIcons name="account-tie" size={24} color="black" />// Render FontAwesome5 icon as header title
+    ),
+  }}
+/>
+
       <Tab.Screen
         name="AcademicDetails"
         component={AcademicDetails}
-        options={{ headerTitle: "AcademicDetails" }}
-      />
+        options={{   title: () => (
+          <FontAwesome5 name="school" size={24} color="black" />// Render FontAwesome5 icon as header title
+        ),
+      }}
+    />
+   
       <Tab.Screen
-        name="WorkExperience"
+        name="WorkExperience" 
         component={WorkExperience}
-        options={{ headerTitle: "WorkExperience" }}
-      />
+        options={{   title: () => (
+          <Entypo name="network" size={24} color="black" />// Render FontAwesome5 icon as header title
+        ),
+      }}
+    />
+
+
       <Tab.Screen
         name="familyDetails"
         component={familyDetails}
-        options={{ headerTitle: "FamilyDetails" }}
-      />
+        options={{   title: () => (
+          <MaterialIcons name="family-restroom" size={24} color="black" />// Render FontAwesome5 icon as header title
+        ),
+      }}
+    />
+   
       <Tab.Screen
         name="OtherDetails"
         component={OtherDetails}
-        options={{ headerTitle: "OtherDetails" }}
-      />
+        options={{   title: () => (
+          <FontAwesome5 name="user-friends" size={24} color="black" />// Render FontAwesome5 icon as header title
+        ),
+      }}
+    />
+   
       <Tab.Screen
         name="Uploads"
         component={Uploads}
-        options={{ headerTitle: "Uploads" }}
-      />
+        options={{   title: () => (
+          <Entypo name="camera" size={24} color="black" />// Render FontAwesome5 icon as header title
+        ),
+      }}
+    />
+    
       <Tab.Screen
         name="Declaration"
         component={Declaration}
-        options={{ headerTitle: "Declaration" }}
-      />
+        options={{   title: () => (
+          <Foundation name="target-two" size={24} color="black" />// Render FontAwesome5 icon as header title
+        ),
+      }}
+    />
     </Tab.Navigator>
   );
 }
@@ -90,7 +124,7 @@ function App() {
           component={SignupScreen}
           options={{ headerTitle: "Signup", headerTitleAlign: "center" }}
         />
-        <Stack.Screen name="TopTab" component={TopTab} />
+        <Stack.Screen name="Application Form" component={TopTab} />
       </Stack.Navigator>
     </NavigationContainer>
   );
