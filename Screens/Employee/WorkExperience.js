@@ -56,6 +56,9 @@ const WorkExperience = ({ navigation }) => {
     checkAuthentication();
   }, []);
   useEffect(() => {
+    fetchExperienceDetails(); // Call the function when the component mounts
+  }, []);
+  useEffect(() => {
     if (isFresher) {
       setSections([]);
     } else {
@@ -132,6 +135,38 @@ const WorkExperience = ({ navigation }) => {
     }
   };
 
+  const fetchExperienceDetails = async () => {
+    try {
+      const storedToken = await AsyncStorage.getItem("AppId");
+      if (storedToken) {
+        const response = await axios.get(
+          "http://10.0.2.2:3000/api/v1/expc/getExpc",
+          {
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${storedToken}`,
+            },
+          }
+        );
+        if (response.data.success) {
+          console.log("Experience details retrieved successfully:", response.data.data);
+          const fetchedExperience = response.data.data[0]; // Assuming you only need data from the first experience
+          setCompName(fetchedExperience.CompName);
+          setSelectedDesignation(fetchedExperience.Designation);
+          // Similarly set other state variables
+        } else {
+          console.error("Experience details retrieval failed:", response.data.message);
+        }
+      } else {
+        console.log("User is not authenticated. Redirecting to login screen...");
+        navigation.navigate("Login");
+      }
+    } catch (error) {
+      console.error("Error fetching experience details:", error.message);
+    }
+  };
+
+
   const handlesubmit = async () => {
     console.log(token, "hhhhh");
     try {
@@ -140,7 +175,7 @@ const WorkExperience = ({ navigation }) => {
       const experienceResponse = await axios.post(
         "http://10.0.2.2:3000/api/v1/expc/experience",
         {
-          CompName,
+          CompName:CompName,
           Designation: selectedDesignation,
           LastSalary: LastSalary,
           RelieveReason: RelieveReason,

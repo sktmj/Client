@@ -1,5 +1,14 @@
 import React, { useState, useEffect } from "react";
-import { ScrollView, Text, TextInput, TouchableOpacity, View, StyleSheet, Alert } from "react-native";
+import {
+  ScrollView,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+  StyleSheet,
+  Alert,
+  ActivityIndicator,
+} from "react-native";
 import axios from "axios";
 import { Picker } from "@react-native-picker/picker";
 import Icon from "react-native-vector-icons/FontAwesome";
@@ -7,43 +16,22 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const AcademicDetails = ({ navigation }) => {
   const [qualifications, setQualifications] = useState([]);
-  const [qualificationFields, setQualificationFields] = useState([
-    {
-      selectedQualification: null,
-      colName: "",
-      yearPass: "",
-      percentage: "",
-      degree: "",
-      lastDegree: false,
-      location: "",
-    },
-  ]);
-  const [courseFields, setCourseFields] = useState([
-    {
-      course: "",
-      institute: "",
-      studYear: "",
-      coursePercentage: "",
-    },
-  ]);
+  const [qualificationFields, setQualificationFields] = useState([]);
+  const [courseFields, setCourseFields] = useState([]);
   const [token, setToken] = useState(null);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [formChanged, setFormChanged] = useState(false);
 
   useEffect(() => {
-    fetchQualifications();
     checkAuthentication();
   }, []);
 
-
   useEffect(() => {
     if (token) {
-      fetchQulificationDetails();
-    }
-  }, [token]);
-
-  useEffect(() => {
-    if (token) {
+      fetchQualificationDetails();
       fetchCourseDetails();
+      fetchQualifications();
     }
   }, [token]);
 
@@ -51,50 +39,81 @@ const AcademicDetails = ({ navigation }) => {
     try {
       const storedToken = await AsyncStorage.getItem("AppId");
       if (!storedToken) {
-        console.log("User is not authenticated. Redirecting to login screen...");
+        console.log(
+          "User is not authenticated. Redirecting to login screen..."
+        );
         navigation.navigate("Login");
       } else {
         console.log("User is authenticated.");
         setIsLoggedIn(true);
-        setToken(storedToken); // Ensure token is trimmed of any extra characters
+        setToken(storedToken.trim()); // Ensure token is trimmed of any extra characters
       }
     } catch (error) {
       console.error("Error checking authentication:", error.message);
     }
   };
 
-  const fetchQulificationDetails = async () => {
+  const fetchQualificationDetails = async () => {
     try {
-      const storedToken = token;
-      const response = await axios.get("http://10.0.2.2:3000/api/v1/Qlf/getQlf", {
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${storedToken}`, // Use the token from the state
-        },
-      });
+      const response = await axios.get(
+        "http://10.0.2.2:3000/api/v1/Qlf/getQlf",
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`, // Use the token from the state
+          },
+        }
+      );
       if (response.data.success) {
-        console.log("Qualifications retrieved successfully:", response.data.data);
-        setQualificationFields(response.data.data); // Set the qualification fields directly
+        console.log(
+          "Qualifications retrieved successfully:",
+          response.data.data
+        );
+        const fetchedQualifications = response.data.data.map((qual) => ({
+          AppQualId: qual.AppQualId, // Include AppQualId
+          selectedQualification: qual.QualId,
+          colName: qual.ColName,
+          yearPass: qual.YearPass,
+          percentage: qual.Percentage ? String(qual.Percentage) : "",
+          degree: qual.Degree,
+          lastDegree: qual.LastDegree === "Y",
+          location: qual.Location,
+        }));
+        setQualificationFields(fetchedQualifications);
       } else {
-        console.error("Qualification retrieval failed:", response.data.message);
+        console.error(
+          "Qualification retrieval failed:",
+          response.data.message
+        );
       }
     } catch (error) {
       console.error("Error fetching qualification details:", error.message);
     }
   };
-  
+
   const fetchCourseDetails = async () => {
     try {
-      const storedToken = token;
-      const response = await axios.get("http://10.0.2.2:3000/api/v1/Qlf/getCourse", {
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${storedToken}`, // Use the token from the state
-        },
-      });
+      const response = await axios.get(
+        "http://10.0.2.2:3000/api/v1/Qlf/getCourse",
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`, // Use the token from the state
+          },
+        }
+      );
       if (response.data.success) {
         console.log("Courses retrieved successfully:", response.data.data);
-        setCourseFields(response.data.data); // Set the course fields directly
+        const fetchedCourses = response.data.data.map((course) => ({
+          CourseId: course.CourseId, // Include CourseId
+          course: course.Course,
+          institute: course.Institute,
+          studYear: course.StudYear,
+          coursePercentage: course.CrsPercentage
+            ? String(course.CrsPercentage)
+            : "",
+        }));
+        setCourseFields(fetchedCourses);
       } else {
         console.error("Course retrieval failed:", response.data.message);
       }
@@ -105,7 +124,9 @@ const AcademicDetails = ({ navigation }) => {
 
   const fetchQualifications = async () => {
     try {
-      const response = await fetch("http://10.0.2.2:3000/api/v1/Qlf/qualification");
+      const response = await fetch(
+        "http://10.0.2.2:3000/api/v1/Qlf/qualification"
+      );
       if (!response.ok) {
         throw new Error("Failed to fetch qualifications");
       }
@@ -121,6 +142,7 @@ const AcademicDetails = ({ navigation }) => {
     setQualificationFields([
       ...qualificationFields,
       {
+        AppQualId: null, // Initialize with null
         selectedQualification: null,
         colName: "",
         yearPass: "",
@@ -130,323 +152,492 @@ const AcademicDetails = ({ navigation }) => {
         location: "",
       },
     ]);
+    setFormChanged(true);
   };
 
   const handleRemoveQualificationField = (index) => {
     const fields = [...qualificationFields];
-    fields.splice(index, 1);
+    const removedField = fields.splice(index, 1)[0]; // Remove the field and get the removed item
     setQualificationFields(fields);
+    setFormChanged(true);
+
+    // Check if the removed field was already present in the database
+    if (removedField.AppQualId) {
+      // Perform deletion operation from the database
+      // You can write the deletion logic here
+      console.log(
+        `Qualification with ID ${removedField.AppQualId} will be deleted from the database`
+      );
+    }
   };
 
   const handleAddCourseField = () => {
     setCourseFields([
       ...courseFields,
       {
+        CourseId: null, // Initialize with null
         course: "",
         institute: "",
         studYear: "",
         coursePercentage: "",
       },
     ]);
+    setFormChanged(true);
   };
 
   const handleRemoveCourseField = (index) => {
     const fields = [...courseFields];
-    fields.splice(index, 1);
+    const removedField = fields.splice(index, 1)[0]; // Remove the field and get the removed item
     setCourseFields(fields);
+    setFormChanged(true);
+
+    // Check if the removed field was already present in the database
+    if (removedField.CourseId) {
+      // Perform deletion operation from the database
+      // You can write the deletion logic here
+      console.log(
+        `Course with ID ${removedField.CourseId} will be deleted from the database`
+      );
+    }
   };
 
   const handleQualificationChange = (index, field, value) => {
     const fields = [...qualificationFields];
     fields[index][field] = value;
     setQualificationFields(fields);
+    setFormChanged(true);
   };
 
   const handleCourseChange = (index, field, value) => {
     const fields = [...courseFields];
     fields[index][field] = value;
     setCourseFields(fields);
+    setFormChanged(true);
+  };
+
+  const handleUpdateCourse = async (index) => {
+    if (isSubmitting) {
+      return; // Prevent multiple submissions
+    }
+    setIsSubmitting(true);
+    try {
+      const course = courseFields[index];
+      const response = await axios.put(
+        "http://10.0.2.2:3000/api/v1/Qlf/updateAppCourse",
+        {
+          CourseId: course.CourseId, // Include CourseId
+          Course: course.course,
+          Institute: course.institute,
+          CrsPercentage: parseFloat(course.coursePercentage),
+          StudYear: course.studYear,
+        },
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+  
+      if (!response.data.success) {
+        throw new Error(response.data.message || "Failed to update Course");
+      }
+  
+      Alert.alert("Success", "Course updated successfully");
+      setFormChanged(false); // Reset form change tracking
+    } catch (error) {
+      console.error("Error updating Course:", error.message);
+      Alert.alert("Error", "Failed to update Course");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleAddQualificationAndCourse = async () => {
+    if (isSubmitting) {
+      return; // Prevent multiple submissions
+    }
+    setIsSubmitting(true);
+  
     try {
       for (const qualification of qualificationFields) {
-        const qualificationResponse = await fetch("http://10.0.2.2:3000/api/v1/Qlf/InsertQlCT", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({
-            QualId: qualification.selectedQualification,
-            ColName: qualification.colName,
-            YearPass: qualification.yearPass,
-            Percentage: parseFloat(qualification.percentage),
-            Degree: qualification.degree,
-            LastDegree: qualification.lastDegree ? "Y" : "N",
-            Location: qualification.location,
-          }),
-        });
-
-        const qualificationData = await qualificationResponse.json();
-
-        if (!qualificationResponse.ok || !qualificationData.success) {
-          Alert.alert("Error", qualificationData.message || "Failed to add qualification");
-          return;
+        if (!qualification.AppQualId) {
+          // Only add new qualifications
+          const qualificationResponse = await fetch(
+            "http://10.0.2.2:3000/api/v1/Qlf/InsertQlCT",
+            {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${token}`,
+              },
+              body: JSON.stringify({
+                QualId: qualification.selectedQualification,
+                ColName: qualification.colName,
+                YearPass: qualification.yearPass,
+                Percentage: parseFloat(qualification.percentage),
+                Degree: qualification.degree,
+                LastDegree: qualification.lastDegree ? "Y" : "N",
+                Location: qualification.location,
+              }),
+            }
+          );
+  
+          if (!qualificationResponse.ok) {
+            throw new Error("Failed to add qualification");
+          }
+  
+          const qualificationData = await qualificationResponse.json();
+  
+          if (!qualificationData.success) {
+            throw new Error(
+              qualificationData.message || "Failed to add qualification"
+            );
+          }
+  
+          // Update the qualification field with the newly generated AppQualId
+          qualification.AppQualId = qualificationData.AppQualId;
         }
       }
-
+  
+      const addedCourseIds = [];
       for (const course of courseFields) {
-        const courseResponse = await fetch("http://10.0.2.2:3000/api/v1/Qlf/courses", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({
-            Course: course.course,
-            Institute: course.institute,
-            StudYear: course.studYear,
-            CrsPercentage: course.coursePercentage,
-          }),
-        });
-
-        if (!courseResponse.ok) {
-          const courseData = await courseResponse.json();
-          Alert.alert("Error", courseData.message || "Failed to add course");
-          return;
+        // Check if the course already exists in the database
+        if (!course.CourseId) {
+          const courseResponse = await axios.post(
+            "http://10.0.2.2:3000/api/v1/Qlf/courses",
+            {
+              Course: course.course,
+              Institute: course.institute,
+              StudYear: course.studYear,
+              CrsPercentage: parseFloat(course.coursePercentage),
+            },
+            {
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${token}`,
+              },
+            }
+          );
+  
+          if (!courseResponse.data.success) {
+            throw new Error(
+              courseResponse.data.message || "Failed to add course"
+            );
+          }
+  
+          // Store the added CourseId
+          addedCourseIds.push(courseResponse.data.CourseId);
         }
       }
-
-      Alert.alert("Success", "Qualifications and courses added successfully");
-      // Navigate to next screen or perform any other action
+  
+      // Save the added CourseIds in AsyncStorage
+      await AsyncStorage.setItem("AddedCourseIds", JSON.stringify(addedCourseIds));
+  
+      Alert.alert("Success", "Courses added successfully");
+      setFormChanged(false); // Reset form change tracking
     } catch (error) {
-      console.error("Error adding qualification and course:", error.message);
-      Alert.alert("Error", "Failed to add qualification and course");
+      console.error("Error adding courses:", error.message);
+      Alert.alert("Error", "Failed to add courses");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
   return (
-    <ScrollView style={styles.container}>
-    <Text style={styles.sectionTitle}>Add Qualification</Text>
-    {qualificationFields.map((field, index) => (
-      <View key={index} style={styles.inputContainer}>
-        <Text style={styles.text}>Select qualification:</Text>
-        <Picker
-          selectedValue={field.selectedQualification}
-          onValueChange={(itemValue) => handleQualificationChange(index, "selectedQualification", itemValue)}
-        >
-          {qualifications.map((qualification) => (
-            <Picker.Item
-              key={qualification.QualificationId.toString()}
-              label={qualification.QualificationName}
-              value={qualification.QualificationId}
-            />
+    <ScrollView contentContainerStyle={styles.container}>
+      {isSubmitting && (
+        <View style={styles.loadingOverlay}>
+          <ActivityIndicator size="large" color="#0000ff" />
+        </View>
+      )}
+      {isLoggedIn ? (
+        <View>
+          <Text style={styles.header}>Qualification Details</Text>
+          {qualificationFields.map((qualification, index) => (
+            <View key={index} style={styles.inputContainer}>
+              <Text style={styles.label}>Qualification:</Text>
+              <Picker
+                style={styles.picker}
+                selectedValue={qualification.selectedQualification}
+                onValueChange={(value) =>
+                  handleQualificationChange(index, "selectedQualification", value)
+                }
+              >
+                <Picker.Item label="Select Qualification" value={null} />
+                {qualifications.map((qual) => (
+                  <Picker.Item
+                    key={qual.QualId}
+                    label={qual.QualName}
+                    value={qual.QualId}
+                  />
+                ))}
+              </Picker>
+
+              <Text style={styles.label}>College Name:</Text>
+              <TextInput
+                style={styles.input}
+                value={qualification.colName}
+                onChangeText={(value) =>
+                  handleQualificationChange(index, "colName", value)
+                }
+              />
+
+              <Text style={styles.label}>Year of Passing:</Text>
+              <TextInput
+                style={styles.input}
+                value={qualification.yearPass}
+                onChangeText={(value) =>
+                  handleQualificationChange(index, "yearPass", value)
+                }
+              />
+
+              <Text style={styles.label}>Percentage:</Text>
+              <TextInput
+                style={styles.input}
+                keyboardType="numeric"
+                value={qualification.percentage}
+                onChangeText={(value) =>
+                  handleQualificationChange(index, "percentage", value)
+                }
+              />
+
+              <Text style={styles.label}>Degree:</Text>
+              <TextInput
+                style={styles.input}
+                value={qualification.degree}
+                onChangeText={(value) =>
+                  handleQualificationChange(index, "degree", value)
+                }
+              />
+
+              <Text style={styles.label}>Is this your last degree?</Text>
+              <Picker
+                style={styles.picker}
+                selectedValue={qualification.lastDegree ? "Y" : "N"}
+                onValueChange={(value) =>
+                  handleQualificationChange(
+                    index,
+                    "lastDegree",
+                    value === "Y"
+                  )
+                }
+              >
+                <Picker.Item label="Yes" value="Y" />
+                <Picker.Item label="No" value="N" />
+              </Picker>
+
+              <Text style={styles.label}>Location:</Text>
+              <TextInput
+                style={styles.input}
+                value={qualification.location}
+                onChangeText={(value) =>
+                  handleQualificationChange(index, "location", value)
+                }
+              />
+
+              <TouchableOpacity
+                style={styles.updateButton}
+                onPress={() => handleUpdateQualification(index)}
+                disabled={isSubmitting}
+              >
+                <Text style={styles.updateButtonText}>Update</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={styles.removeButton}
+                onPress={() => handleRemoveQualificationField(index)}
+                disabled={isSubmitting}
+              >
+                <Text style={styles.removeButtonText}>Remove</Text>
+              </TouchableOpacity>
+            </View>
           ))}
-        </Picker>
-        <Text style={styles.text}>collage name:</Text>
-        <TextInput
-          style={styles.input}
-          placeholder="Collage Name"
-          value={field.colName}
-          onChangeText={(value) => handleQualificationChange(index, "colName", value)}
-        />
-           <Text style={styles.text}>Year of Passing :</Text>
-        <TextInput
-          style={styles.input}
-          placeholder="Year of Passing"
-          value={field.yearPass}
-          onChangeText={(value) => handleQualificationChange(index, "yearPass", value)}
-        />
-          <Text style={styles.text}>Percentage:</Text>
-        <TextInput
-          style={styles.input}
-          placeholder="Percentage"
-          value={field.percentage}
-          onChangeText={(value) => handleQualificationChange(index, "percentage", value)}
-        />
-          <Text style={styles.text}>DEGREE :</Text>
-        <TextInput
-          style={styles.input}
-          placeholder="Degree"
-          value={field.degree}
-          onChangeText={(value) => handleQualificationChange(index, "degree", value)}
-        />
-          <Text style={styles.text}>LAST DEGREE ?</Text>
-        <TouchableOpacity
-          style={styles.checkboxContainer}
-          onPress={() => handleQualificationChange(index, "lastDegree", !field.lastDegree)}
-        >
-          <Icon name={field.lastDegree ? "check-square-o" : "square-o"} size={20} color="black" />
-          <Text style={{ marginLeft: 8 }}>Last Degree?</Text>
-        </TouchableOpacity>
-        <Text style={styles.text}>LOCATION:</Text>
-        <TextInput
-          style={styles.input}
-          placeholder="Location"
-          value={field.location}
-          onChangeText={(value) => handleQualificationChange(index, "location", value)}
-        />
-       
+
           <TouchableOpacity
-            style={[styles.button, styles.deleteButton]}
-            onPress={() => handleRemoveQualificationField(index)}
+            style={styles.addButton}
+            onPress={handleAddQualificationField}
+            disabled={isSubmitting}
           >
-            <Text style={styles.buttonText}>Delete</Text>
+            <Icon name="plus" size={20} color="#fff" />
+            <Text style={styles.addButtonText}>Add Qualification</Text>
+          </TouchableOpacity>
+
+          <Text style={styles.header}>Course Details</Text>
+          {courseFields.map((course, index) => (
+            <View key={index} style={styles.inputContainer}>
+              <Text style={styles.label}>Course:</Text>
+              <TextInput
+                style={styles.input}
+                value={course.course}
+                onChangeText={(value) =>
+                  handleCourseChange(index, "course", value)
+                }
+              />
+
+              <Text style={styles.label}>Institute:</Text>
+              <TextInput
+                style={styles.input}
+                value={course.institute}
+                onChangeText={(value) =>
+                  handleCourseChange(index, "institute", value)
+                }
+              />
+
+              <Text style={styles.label}>Study Year:</Text>
+              <TextInput
+                style={styles.input}
+                value={course.studYear}
+                onChangeText={(value) =>
+                  handleCourseChange(index, "studYear", value)
+                }
+              />
+
+              <Text style={styles.label}>Percentage:</Text>
+              <TextInput
+                style={styles.input}
+                keyboardType="numeric"
+                value={course.coursePercentage}
+                onChangeText={(value) =>
+                  handleCourseChange(index, "coursePercentage", value)
+                }
+              />
+
+              {/* Update course button */}
+              <TouchableOpacity
+                style={styles.updateButton}
+                onPress={() => handleUpdateCourse(index)}
+                disabled={isSubmitting}
+              >
+                <Text style={styles.updateButtonText}>Update</Text>
+              </TouchableOpacity>
+
+              {/* Remove course button */}
+              <TouchableOpacity
+                style={styles.removeButton}
+                onPress={() => handleRemoveCourseField(index)}
+                disabled={isSubmitting}
+              >
+                <Text style={styles.removeButtonText}>Remove</Text>
+              </TouchableOpacity>
+            </View>
+          ))}
+
+          {/* Add course button */}
+          <TouchableOpacity
+            style={styles.addButton}
+            onPress={handleAddCourseField}
+            disabled={isSubmitting}
+          >
+            <Icon name="plus" size={20} color="#fff" />
+            <Text style={styles.addButtonText}>Add Course</Text>
+          </TouchableOpacity>
+
+          {/* Submit button */}
+          <TouchableOpacity
+            style={styles.submitButton}
+            onPress={handleAddQualificationAndCourse}
+            disabled={isSubmitting || !formChanged} // Disable if already submitting or no changes
+          >
+            <Text style={styles.submitButtonText}>Submit</Text>
           </TouchableOpacity>
         </View>
-
-    ))}
-
-    
-    <TouchableOpacity style={styles.addButton} onPress={handleAddQualificationField}>
-      <Text style={styles.addButtonText}>Add Qualification</Text>
-    </TouchableOpacity>
-       
-      <Text style={styles.sectionTitle}>Add Course Details</Text>
-      {courseFields.map((field, index) => (
-        <View key={index} style={styles.inputContainer}>
-            <Text style={styles.text}>COURSE:</Text>
-          <TextInput
-            style={styles.input}
-            placeholder="Course"
-            value={field.course}
-            onChangeText={(value) => handleCourseChange(index, "course", value)}
-          />
-            <Text style={styles.text}>INSTITUTE :</Text>
-          <TextInput
-            style={styles.input}
-            placeholder="Institute"
-            value={field.institute}
-            onChangeText={(value) => handleCourseChange(index, "institute", value)}
-          />
-            <Text style={styles.text}>YEAR OF STUDY :</Text>
-          <TextInput
-            style={styles.input}
-            placeholder="Year of Study"
-            value={field.studYear}
-            onChangeText={(value) => handleCourseChange(index, "studYear", value)}
-          />
-            <Text style={styles.text}>PERCENTAGE :</Text>
-          <TextInput
-            style={styles.input}
-            placeholder="Percentage"
-            value={field.coursePercentage}
-            onChangeText={(value) => handleCourseChange(index, "coursePercentage", value)}
-          />
-           <View style={styles.buttonsContainer}></View>
-          <TouchableOpacity
-            style={[styles.button, styles.deleteButton]}
-            onPress={() => handleRemoveCourseField(index)}
-          >
-            <Text style={styles.buttonText}>Delete</Text>
-          </TouchableOpacity>
-          </View>
-      ))}
-      <View>
-      <TouchableOpacity style={styles.addButton} onPress={handleAddCourseField}>
-        <Text style={styles.addButtonText}>Add Course</Text>
-      </TouchableOpacity>
-
-      <TouchableOpacity style={styles.submitButton} onPress={handleAddQualificationAndCourse}>
-        <Text style={styles.submitButtonText}>Submit</Text>
-      </TouchableOpacity>
-      </View>
+      ) : (
+        <Text style={styles.loadingText}>Loading...</Text>
+      )}
     </ScrollView>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
     padding: 20,
   },
-  sectionTitle: {
-    fontSize: 18,
+  loadingOverlay: {
+    position: "absolute",
+    top: 0,
+    bottom: 0,
+    left: 0,
+    right: 0,
+    backgroundColor: "rgba(255, 255, 255, 0.7)",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  header: {
+    fontSize: 24,
     fontWeight: "bold",
-    marginTop: 20,
-    marginBottom: 10,
-    color: "#333",
+    marginBottom: 20,
   },
   inputContainer: {
-    marginBottom: 12,
+    marginBottom: 20,
+  },
+  label: {
+    fontSize: 16,
+    marginBottom: 5,
   },
   input: {
     borderWidth: 1,
     borderColor: "#ccc",
-    borderRadius: 8,
-    padding: 12,
-    marginBottom: 12,
+    padding: 10,
+    borderRadius: 5,
+    marginBottom: 10,
   },
- addButton: {
-    backgroundColor: "#059A5F",
-    paddingVertical: 8,
-    paddingHorizontal: 12,
-    borderRadius: 8,
+  picker: {
+    borderWidth: 1,
+    borderColor: "#ccc",
+    borderRadius: 5,
+    marginBottom: 10,
+  },
+  addButton: {
+    flexDirection: "row",
     alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "#4CAF50",
+    padding: 10,
+    borderRadius: 5,
+    marginBottom: 20,
   },
   addButtonText: {
     color: "#fff",
-    fontSize: 14,
+    marginLeft: 10,
+    fontSize: 16,
+  },
+  removeButton: {
+    backgroundColor: "#f44336",
+    padding: 10,
+    borderRadius: 5,
+    marginTop: 10,
+  },
+  removeButtonText: {
+    color: "#fff",
+    fontSize: 16,
+    textAlign: "center",
+  },
+  updateButton: {
+    backgroundColor: "#2196F3",
+    padding: 10,
+    borderRadius: 5,
+    marginTop: 10,
+  },
+  updateButtonText: {
+    color: "#fff",
+    fontSize: 16,
+    textAlign: "center",
   },
   submitButton: {
-    backgroundColor:"#059A5F",
-    paddingVertical:25,
-    paddingHorizontal: 16,
-    borderRadius: 8,
+    backgroundColor: "#008CBA",
+    padding: 15,
+    borderRadius: 5,
     alignItems: "center",
-    marginTop: 20,
-   
   },
   submitButtonText: {
     color: "#fff",
-    fontSize: 16,
+    fontSize: 18,
   },
-  checkboxContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginBottom: 12,
+  loadingText: {
+    fontSize: 18,
+    textAlign: "center",
   },
-  button: {
-    paddingVertical: 8,
-    paddingHorizontal: 12,
-    borderRadius: 8,
-    alignItems: "center",
-    marginTop: 10,
-  },
-  deleteButton: {
-    backgroundColor: "#FF0000",
-    paddingVertical: 8,
-    paddingHorizontal: 12,
-    borderRadius: 8,
-    alignItems: "center",
-  },
-  buttonText: {
-    color: "#fff",
-    fontSize: 14,
-  },
-  text: {
-    fontSize: 14,
-    fontWeight: "bold",
-    color: "#333",
-    textTransform: "uppercase",
-  },
-  buttonsContainer: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    marginTop: 10,
-  },
-  addButton: {
-    backgroundColor: "#059A5F",
-    paddingVertical: 12,
-    paddingHorizontal: 16, // Adjusted for better visibility
-    borderRadius: 8,
-    alignItems: "center",
-  },
-  addButtonText: {
-    color: "#fff",
-    fontSize: 16,
-  }
 });
 
 export default AcademicDetails;
