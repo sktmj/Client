@@ -215,50 +215,50 @@ const AcademicDetails = ({ navigation }) => {
     setFormChanged(true);
   };
 
-  const handleUpdateCourse = async (index) => {
-    if (isSubmitting) {
-      return; // Prevent multiple submissions
-    }
-    setIsSubmitting(true);
-    try {
-      const course = courseFields[index];
-      const response = await axios.put(
-        "http://10.0.2.2:3000/api/v1/Qlf/updateAppCourse",
-        {
-          CourseId: course.CourseId, // Include CourseId
-          Course: course.course,
-          Institute: course.institute,
-          CrsPercentage: parseFloat(course.coursePercentage),
-          StudYear: course.studYear,
+ const handleUpdateCourse = async (index) => {
+  if (isSubmitting) {
+    return; // Prevent multiple submissions
+  }
+  setIsSubmitting(true);
+  try {
+    const course = courseFields[index];
+    const response = await axios.put(
+      "http://10.0.2.2:3000/api/v1/Qlf/updateAppCourse",
+      {
+        CourseId: course.CourseId, // Include CourseId
+        Course: course.course,
+        Institute: course.institute,
+        CrsPercentage: parseFloat(course.coursePercentage),
+        StudYear: course.studYear,
+      },
+      {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
         },
-        {
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-  
-      if (!response.data.success) {
-        throw new Error(response.data.message || "Failed to update Course");
       }
-  
-      Alert.alert("Success", "Course updated successfully");
-      setFormChanged(false); // Reset form change tracking
-    } catch (error) {
-      console.error("Error updating Course:", error.message);
-      Alert.alert("Error", "Failed to update Course");
-    } finally {
-      setIsSubmitting(false);
+    );
+
+    if (!response.data.success) {
+      throw new Error(response.data.message || "Failed to update Course");
     }
-  };
+
+    Alert.alert("Success", "Course updated successfully");
+    setFormChanged(false); // Reset form change tracking
+  } catch (error) {
+    console.error("Error updating Course:", error.message);
+    Alert.alert("Error", "Failed to update Course");
+  } finally {
+    setIsSubmitting(false);
+  }
+};
 
   const handleAddQualificationAndCourse = async () => {
     if (isSubmitting) {
       return; // Prevent multiple submissions
     }
     setIsSubmitting(true);
-  
+
     try {
       for (const qualification of qualificationFields) {
         if (!qualification.AppQualId) {
@@ -282,67 +282,63 @@ const AcademicDetails = ({ navigation }) => {
               }),
             }
           );
-  
+
           if (!qualificationResponse.ok) {
             throw new Error("Failed to add qualification");
           }
-  
+
           const qualificationData = await qualificationResponse.json();
-  
+
           if (!qualificationData.success) {
             throw new Error(
               qualificationData.message || "Failed to add qualification"
             );
           }
-  
+
           // Update the qualification field with the newly generated AppQualId
           qualification.AppQualId = qualificationData.AppQualId;
         }
       }
-  
-      const addedCourseIds = [];
-      for (const course of courseFields) {
-        // Check if the course already exists in the database
-        if (!course.CourseId) {
-          const courseResponse = await axios.post(
-            "http://10.0.2.2:3000/api/v1/Qlf/courses",
-            {
-              Course: course.course,
-              Institute: course.institute,
-              StudYear: course.studYear,
-              CrsPercentage: parseFloat(course.coursePercentage),
-            },
-            {
-              headers: {
-                "Content-Type": "application/json",
-                Authorization: `Bearer ${token}`,
-              },
-            }
-          );
-  
-          if (!courseResponse.data.success) {
-            throw new Error(
-              courseResponse.data.message || "Failed to add course"
-            );
-          }
-  
-          // Store the added CourseId
-          addedCourseIds.push(courseResponse.data.CourseId);
+      const addedCourseIds = []; 
+
+     for (const course of courseFields) {
+      const courseResponse = await axios.post(
+        "http://10.0.2.2:3000/api/v1/Qlf/courses",
+        {
+          Course: course.course,
+          Institute: course.institute,
+          StudYear: course.studYear,
+          CrsPercentage: parseFloat(course.coursePercentage),
+        },
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
         }
+      );
+
+      if (!courseResponse.data.success) {
+        throw new Error(courseResponse.data.message || "Failed to add course");
       }
-  
-      // Save the added CourseIds in AsyncStorage
-      await AsyncStorage.setItem("AddedCourseIds", JSON.stringify(addedCourseIds));
-  
-      Alert.alert("Success", "Courses added successfully");
-      setFormChanged(false); // Reset form change tracking
-    } catch (error) {
-      console.error("Error adding courses:", error.message);
-      Alert.alert("Error", "Failed to add courses");
-    } finally {
-      setIsSubmitting(false);
+
+      // Store the added CourseId
+      addedCourseIds.push(courseResponse.data.CourseId);
     }
-  };
+
+    // Save the added CourseIds in AsyncStorage
+    await AsyncStorage.setItem("AddedCourseIds", JSON.stringify(addedCourseIds));
+
+    Alert.alert("Success", "Courses added successfully");
+    setFormChanged(false); // Reset form change tracking
+  } catch (error) {
+    console.error("Error adding courses:", error.message);
+    Alert.alert("Error", "Failed to add courses");
+  } finally {
+    setIsSubmitting(false);
+  }
+};
+
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
