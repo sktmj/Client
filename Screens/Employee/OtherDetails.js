@@ -16,7 +16,7 @@ import { Picker } from "@react-native-picker/picker";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const OtherDetails = () => {
-  const [currentSalary, setCurrentSalary] = useState("");
+  const [CurrentSalary, setCurrentSalary] = useState("");
   const [expectSalary, setExpectSalary] = useState("");
   const [knowCompany, setKnowCompany] = useState("");
   const [isCompWrkHere, setIsCompWrkHere] = useState(false);
@@ -71,11 +71,16 @@ const OtherDetails = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   useEffect(() => {
     checkAuthentication();
-    fetchLocation();
-    fetchCountries();
-    fetchPresentCountries();
+   
   }, []);
-
+  useEffect(() => {
+    if (token) {
+      fetchPersonalDetails(); // Fetch user details when token is available
+      fetchLocation();
+      fetchCountries();
+      fetchPresentCountries();
+    }
+  }, [token]);
   useEffect(() => {
     if (selectedDistrict) {
       fetchTaluksByDistrict(selectedDistrict);
@@ -232,50 +237,48 @@ const OtherDetails = () => {
   
   
   const handleSubmit = async () => {
-    
-    console.log(currentSalary, expectSalary, knowCompany, "kononook");
     try {
       const response = await axios.post(
         "http://10.0.2.2:3000/api/v1/other/others",
         {
-          currentSalary: currentSalary,
-          expectSalary: expectSalary,
-          knowCompany: knowCompany,
-          isCompWrkHere: isCompWrkHere,
-          refPerName: refPerName,
-          refPerAdd: refPerAdd,
-          refPerPhNo: refPerPhNo,
-          familyReason: familyReason,
-          earnMoney: earnMoney,
-          gainExp: gainExp,
-          socialSts: socialSts,
-          betterLife: betterLife,
-          wrkInt: wrkInt,
-          compBrand: compBrand,
-          othReason: othReason,
-          expDOJ: expDOJ,
-          isAccNeed: isAccNeed,
-          sectionTrns: sectionTrns,
-          jobApplied: jobApplied,
-          factoryId: factoryId,
-          nearByName1: nearByName1,
-          nearByAdd1: nearByAdd1,
-          nearByCity1: selectedCity,
-          nearByDistrict1: selectedDistrict,
-          nearByState1: selectedState,
-          nearByCntry1: selectedCountry,
-          nearByPin1: nearByPin1,
-          nearByPhNo1: nearByPhNo1,
-          nearByTaluk1: selectedTaluk,
-          nearByName2: nearByName2,
-          nearByAdd2: nearByAdd2,
-          nearByCity2: selectedPresentCity,
-          nearByDistrict2: selectedPresentDistrict,
-          nearByState2: selectedPresentState,
-          nearByCntry2: selectedPresentCountry,
-          nearByPin2: nearByPin2,
-          nearByPhNo2: nearByPhNo2,
-          nearByTaluk2: selectedPresentTaluk,
+          CurrentSalary: CurrentSalary,
+          ExpectSalary: expectSalary,
+          KnowCompany: knowCompany,
+          IsCompWrkHere: isCompWrkHere,
+          RefPerName: refPerName,
+          RefPerAdd: refPerAdd,
+          RefPerPhNo: refPerPhNo,
+          FamilyReason: familyReason,
+          EarnMoney: earnMoney,
+          GainExp: gainExp,
+          SocialSts: socialSts,
+          BetterLife: betterLife,
+          WrkInt: wrkInt,
+          CompBrand: compBrand,
+          OthReason: othReason,
+          ExpDOJ: expDOJ,
+          IsAccNeed: isAccNeed,
+          SectionTrns: sectionTrns,
+          JobApplied: jobApplied,
+          FactoryId: factoryId,
+          NearByName1: nearByName1,
+          NearByAdd1: nearByAdd1,
+          NearByCity1: selectedCity,
+          NearByDistrict1: selectedDistrict,
+          NearByState1: selectedState,
+          NearByCntry1: selectedCountry,
+          NearByPin1: nearByPin1,
+          NearByPhNo1: nearByPhNo1,
+          NearByTaluk1: selectedTaluk,
+          NearByName2: nearByName2,
+          NearByAdd2: nearByAdd2,
+          NearByCity2: selectedPresentCity,
+          NearByDistrict2: selectedPresentDistrict,
+          NearByState2: selectedPresentState,
+          NearByCntry2: selectedPresentCountry,
+          NearByPin2: nearByPin2,
+          NearByPhNo2: nearByPhNo2,
+          NearByTaluk2: selectedPresentTaluk,
         },
         {
           headers: {
@@ -297,19 +300,76 @@ const OtherDetails = () => {
     }
   };
   
+
+  
+  const fetchPersonalDetails = async () => {
+    try {
+      const response = await axios.get(
+        "http://10.0.2.2:3000/api/v1/other/getOthers",
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      if (response.data.success) {
+        console.log("User others details retrieved successfully:", response.data.data);
+        const userData = response.data.data[0];
+        setCurrentSalary(userData.CurrentSalary ? userData.CurrentSalary.toString() : "");
+      setExpectSalary(userData.ExpectSalary ? userData.ExpectSalary.toString() : "");
+        setKnowCompany(userData.KnowCompany || "");
+        setIsCompWrkHere(userData.IsCompWrkHere || false);
+        setRefPerName(userData.RefPerName || "");
+        setRefPerAdd(userData.RefPerAdd || "");
+        setRefPerPhNo(userData.RefPerPhNo || "");
+        setFamilyReason(userData.FamilyReason || false);
+        setEarnMoney(userData.EarnMoney || false);
+        setGainExp(userData.GainExp || false);
+        setSocialSts(userData.SocialSts || false)
+        setExpDOJ(userData.ExpDOJ || "");
+        setIsAccNeed(userData.IsAccNeed || false);
+        setSectionTrns(userData.SectionTrns || false);
+        setJobApplied(userData.JobApplied || "");
+        setFactoryId(userData.FactoryId || "");
+        setNearByName1(userData.NearByName1 || "");
+        setNearByAdd1(userData.NearByAdd1 || "");
+        setSelectedCity(userData.NearByCity1 || "");
+        setSelectedDistrict(userData.NearByDistrict1 || "");
+        setSelectedState(userData.NearByState1 || "");
+        setSelectedCountry(userData.NearByCntry1 || "");
+        setNearByPin1(userData.NearByPin1 || "");
+        setNearByPhNo1(userData.NearByPhNo1 || "");
+        setSelectedTaluk(userData.NearByTaluk1 || "");
+        setNearByName2(userData.NearByName2 || "");
+        setNearByAdd2(userData.NearByAdd2 || "");
+        setSelectedPresentCity(userData.NearByCity2 || "");
+        setSelectedPresentDistrict(userData.NearByDistrict2 || "");
+        setSelectedPresentState(userData.NearByState2 || "");
+        setSelectedPresentCountry(userData.NearByCntry2 || "");
+        setNearByPin2(userData.NearByPin2 || "");
+        setNearByPhNo2(userData.NearByPhNo2 || "");
+        setSelectedPresentTaluk(userData.NearByTaluk2 || "");
+      } else {
+        console.error("User details retrieval failed:", response.data.message);
+      }
+    } catch (error) {
+      console.error("Error fetching user details:", error.message);
+    }
+  };
   
   return (
     <ScrollView style={styles.container}>
-      <Text style={styles.sectionTitle}>Personal Details</Text>
+      <Text style={styles.sectionTitle}>Others Details</Text>
       <View style={styles.formRow}>
         <View style={styles.formColumn}>
         <Text style={styles.text}>Current Salary :</Text>
         <TextInput
-        style={styles.input}
-        placeholder="Current Salary"
-        value={currentSalary}
-        onChangeText={setCurrentSalary}
-      />
+  style={styles.input}
+  placeholder="Current Salary"
+  value={CurrentSalary}
+  onChangeText={setCurrentSalary}
+/>
        <Text style={styles.text}>Expectation Salary :</Text>
       <TextInput
       style={styles.input}
@@ -699,6 +759,20 @@ const OtherDetails = () => {
                   ))}
                 </Picker>
               </View>
+              <Text style={styles.text}>pin code: </Text>
+            <TextInput
+              style={styles.input}
+              placeholder="Pin:"
+              value={nearByPin1}
+              onChangeText={setNearByPin1}
+            />
+  <Text style={styles.text}>phone no: </Text>
+            <TextInput
+              style={styles.input}
+              placeholder="Ph No:"
+              value={nearByPhNo1}
+              onChangeText={setNearByPhNo1}
+            />
             </View>
             {/* Second Person's Details */}
             <Text style={styles.sectionTitle}>Second Person's Details</Text>

@@ -431,15 +431,9 @@ const AcademicDetails = ({ navigation }) => {
                   handleQualificationChange(index, "location", value)
                 }
               />
-
-              <TouchableOpacity
-                style={styles.updateButton}
-                onPress={() => handleUpdateQualification(index)}
-                disabled={isSubmitting}
-              >
-                <Text style={styles.updateButtonText}>Update</Text>
-              </TouchableOpacity>
-
+             
+          <View style={styles.buttonsContainer}>
+             
               <TouchableOpacity
                 style={styles.removeButton}
                 onPress={() => handleRemoveQualificationField(index)}
@@ -447,6 +441,14 @@ const AcademicDetails = ({ navigation }) => {
               >
                 <Text style={styles.removeButtonText}>Remove</Text>
               </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.updateButton}
+                onPress={() => handleUpdateQualification(index)}
+                disabled={isSubmitting}
+              >
+                <Text style={styles.updateButtonText}>Update</Text>
+              </TouchableOpacity>
+            </View>
             </View>
           ))}
 
@@ -588,7 +590,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: "#4CAF50",
+    backgroundColor: "#059A5F",
     padding: 10,
     borderRadius: 5,
     marginBottom: 20,
@@ -599,26 +601,30 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
   removeButton: {
-    backgroundColor: "#f44336",
-    padding: 10,
-    borderRadius: 5,
-    marginTop: 10,
+    backgroundColor: "#FF0000",
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+    alignItems: "center",
+    flex: 1,
+    marginRight: 5,
   },
   removeButtonText: {
     color: "#fff",
     fontSize: 16,
-    textAlign: "center",
   },
   updateButton: {
-    backgroundColor: "#2196F3",
-    padding: 10,
-    borderRadius: 5,
-    marginTop: 10,
+     backgroundColor: "#059A5F",
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+    alignItems: "center",
+    flex: 1,
+    marginRight: 5,
   },
   updateButtonText: {
     color: "#fff",
     fontSize: 16,
-    textAlign: "center",
   },
   submitButton: {
     backgroundColor: "#008CBA",
@@ -633,6 +639,11 @@ const styles = StyleSheet.create({
   loadingText: {
     fontSize: 18,
     textAlign: "center",
+  },
+   buttonsContainer: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginTop: 20,
   },
 });
 

@@ -10,7 +10,7 @@ import {
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import Icon from "react-native-vector-icons/FontAwesome";
-
+import axios from "axios";
 const CustomCheckBox = ({ checked, onPress }) => {
   return (
     <TouchableOpacity onPress={onPress} style={styles.checkboxContainer}>
@@ -18,7 +18,7 @@ const CustomCheckBox = ({ checked, onPress }) => {
         {checked && <Icon name="check-square-o" size={24} color="green" />}
         {!checked && <Icon name="square-o" size={24} color="green" />}
       </View>
-      <Text style={styles.checkboxText}>I agree to the declaration</Text>
+      <Text style={styles.checkboxText}>I agree that all information entered above are true for    the job applied in The KTM Jewellery Ltd.</Text>
     </TouchableOpacity>
   );
 };
@@ -38,6 +38,11 @@ const DeclarationComponent = () => {
     checkAuthentication();
   }, []);
 
+  useEffect(() => {
+    if (token) {
+      fetchDecalrationDetails();
+    }
+  }, [token]);
   const checkAuthentication = async () => {
     try {
       const storedToken = await AsyncStorage.getItem("AppId");
@@ -93,6 +98,39 @@ const DeclarationComponent = () => {
       Alert.alert("Error", "Failed to update declaration");
     }
   };
+
+
+  
+const fetchDecalrationDetails = async () => {
+  try {
+    const response = await axios.get(
+      "http://10.0.2.2:3000/api/v1/prsl/getDeclaration",
+      {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+    if (response.data.success) {
+      console.log("User Declaration details retrieved successfully:", response.data.data);
+      const userData = response.data.data[0];
+
+      setOurJobDtl(userData.OurJobDtl || "");
+      setGoal(userData.Goal || "");
+      setKnownJobPlus(userData.KnownJobPlus || "");
+      setKnownJobMinus(userData.KnownJobMinus || "");
+      setRoleModel(userData.RoleModel || "");
+      setRoleModelWhy(userData.RoleModelWhy || "");
+      setDeclaration(userData.Declaration || false);
+
+    } else {
+      console.error("User Declaration retrieval failed:", response.data.message);
+    }
+  } catch (error) {
+    console.error("Error fetching Declaration details:", error.message);
+  }
+};
 
   return (
     <View style={styles.container}>

@@ -19,8 +19,7 @@ const FamilyDetails = ({ navigation }) => {
 
   const handleAddFamily = () => {
     setFamilyDetails([...familyDetails, { FamilyId: '', relation: '', name: '', age: '', work: '', monthSalary: '', phoneNo: '' }]);
-  };
-
+  }
   const handleDeleteFamily = (index) => {
     if (familyDetails.length > 1) {
       const updatedFamilyDetails = familyDetails.filter((_, i) => i !== index);
