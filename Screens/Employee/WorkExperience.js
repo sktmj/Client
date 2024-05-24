@@ -148,17 +148,17 @@ const WorkExperience = ({ navigation }) => {
         const fetchedExperience = response.data.data.map((experience) => ({
           ExpId: experience.ExpId,
           CompName: experience.CompName, // Include CourseId
-          selectedDesignationn: experience.DesignationId,
-          Designation: experience.Designation,
+          selectedDesignation: experience.Designation, // Correct key here
+          Designation: experience.Designation, // Optionally include designation name
           RefPerson: experience.RefPerson,
           PhoneNo: experience.PhoneNo,
           FrmMnth: experience.FrmMnth,
           FrmYr: experience.FrmYr,
-          RelieveReason:experience.workRelieveReason,
+          RelieveReason: experience.workRelieveReason,
           ToMnth: experience.ToMnth,
           ToYr: experience.ToYr,
-          InitSalary:experience.InitSalary? String(experience.InitSalary) : "",
-          LastSalary:experience.LastSalary? String(experience.LastSalary) : "",
+          InitSalary: experience.InitSalary ? String(experience.InitSalary) : "",
+          LastSalary: experience.LastSalary ? String(experience.LastSalary) : "",
           LastCompany: experience.LastCompany ? "Y" : "N",
         }));
         setExperienceField(fetchedExperience);
@@ -169,6 +169,7 @@ const WorkExperience = ({ navigation }) => {
       console.error("Error fetching Experience details:", error.message);
     }
   };
+  
 
   const handlesubmit = async () => {
     if (isSubmitting) {
@@ -400,6 +401,7 @@ const WorkExperience = ({ navigation }) => {
         const userData = response.data.data[0];
         setWorkCompany(userData.WorkCompany);
         setWorkRelieveReason(userData.RelieveReason);
+        setSelectedDesignation(userData.Designation)
         setEPFNO(userData.EPFNO);
         setUANNO(userData.UANNO);
         setRegExpExNo(userData.RegExpExNo);
@@ -445,30 +447,23 @@ const WorkExperience = ({ navigation }) => {
 
             <Text style={styles.text}>Select Designation:</Text>
 
-            {/* <Picker
-selectedValue={selectedDesignation}
-onValueChange={(itemValue, itemIndex) => setSelectedDesignation(itemValue)}
->
-{designationOptions.map((option) => (
-<Picker.Item key={option.DesignationId.toString()} label={option.DesignationName} value={option.DesignationId} />
-))}
-</Picker> */}
+           
             <Picker
-              style={styles.picker}
-              selectedValue={experience.selectedDesignation}
-              onValueChange={(value) =>
-                handleExperienceChange(index, "selectedDesignation", value)
-              }
-            >
-              <Picker.Item label="Select Designation" value={null} />
-              {designationOptions.map((option) => (
-                <Picker.Item
-                  key={option.DesignationId.toString()}
-                  label={option.DesignationName}
-                  value={option.DesignationId}
-                />
-              ))}
-            </Picker>
+  style={styles.picker}
+  selectedValue={experience.selectedDesignation}
+  onValueChange={(value) =>
+    handleExperienceChange(index, "selectedDesignation", value)
+  }
+>
+  <Picker.Item label="Select Designation" value={null} />
+  {designationOptions.map((option) => (
+    <Picker.Item
+      key={option.DesignationId.toString()}
+      label={option.DesignationName}
+      value={option.DesignationId}
+    />
+  ))}
+</Picker>
 
             <Text style={styles.text}>From-Month :</Text>
             <TextInput
@@ -559,7 +554,7 @@ onValueChange={(itemValue, itemIndex) => setSelectedDesignation(itemValue)}
                 <Picker.Item label="Yes" value="Y" />
                 <Picker.Item label="No" value="N" />
               </Picker>
-
+          <View style={styles.buttonsContainer}>
             <TouchableOpacity
               style={styles.updateButton}
               onPress={() => handleUpdateExperience(index)}
@@ -569,21 +564,28 @@ onValueChange={(itemValue, itemIndex) => setSelectedDesignation(itemValue)}
             </TouchableOpacity>
 
             <TouchableOpacity
-              style={styles.deleteButton}
+              style={styles.removeButton}
               onPress={() => handleRemoveQualificationField(index)}
             >
               <Text>Delete</Text>
             </TouchableOpacity>
           </View>
+          </View>
         ))}
 
       {!isFresher && (
-        <TouchableOpacity
-          style={styles.addButton}
-          onPress={handleExperienceField}
-        >
-          <Text style={styles.addButtonText}>Add Experience</Text>
-        </TouchableOpacity>
+
+<View style={styles.addExperienceContainer}>
+  <TouchableOpacity
+    style={styles.addButton}
+    onPress={handleExperienceField}
+    disabled={isSubmitting}
+  >
+    <Icon name="plus" size={20} color="#fff" />
+    <Text style={styles.addButtonText}>Add Experience</Text>
+  </TouchableOpacity>
+</View>
+
       )}
       <View>
         <Text style={styles.sectionTitle}>Current Working Company</Text>
@@ -731,11 +733,15 @@ onValueChange={(itemValue, itemIndex) => setSelectedDesignation(itemValue)}
           onPress={handleFileUpload}
           disabled={!file || loading}
         />
+        
       </View>
+      <View style={styles.submitButtonContainer}>
+  <TouchableOpacity style={styles.submitButton} onPress={handlesubmit}>
+    <Text style={styles.submitButtonText}>Submit</Text>
+  </TouchableOpacity>
+</View>
       {/* Add other input fields similarly */}
-      <TouchableOpacity style={styles.submitButton} onPress={handlesubmit}>
-        <Text style={styles.addButtonText}>Submit</Text>
-      </TouchableOpacity>
+     
     </ScrollView>
   );
 };
@@ -763,18 +769,21 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   addButton: {
-    backgroundColor: "#059A5F",
-    paddingVertical: 12,
-    paddingHorizontal: 16, // Adjusted for better visibility
-    borderRadius: 8,
-    alignItems: "center",
-  },
+    flexDirection: "row",
+  alignItems: "center",
+  justifyContent: "center",
+  backgroundColor:"#1E6F7E",
+  padding: 10,
+  borderRadius: 5,
+  marginBottom: 20, // Adjust this value to move the button down
+},
   addButtonText: {
     color: "#fff",
+    marginLeft: 10,
     fontSize: 16,
   },
-  deleteButton: {
-    backgroundColor: "#FF0000",
+  removeButton: {
+    backgroundColor: "red",
     paddingVertical: 12,
     paddingHorizontal: 16,
     borderRadius: 8,
@@ -788,24 +797,43 @@ const styles = StyleSheet.create({
     color: "#333",
     textTransform: "uppercase",
   },
+  submitButtonContainer: {
+    paddingHorizontal: 20,
+    marginBottom: 20, // Adjust this value as needed for the desired gap
+  },
   submitButton: {
     backgroundColor: "#059A5F",
-    paddingVertical: 25,
-    paddingHorizontal: 16,
-    borderRadius: 8,
+    paddingVertical: 15,
+    paddingHorizontal: 30,
+    borderRadius: 5,
     alignItems: "center",
-    marginTop: 20,
+  },
+  submitButtonText: {
+    color: "#fff",
+    fontSize: 18,
+  },
+  addExperienceContainer: {
+    marginTop: 20, // Adjust as needed
+    marginBottom: 20, // Adjust as needed
   },
   updateButton: {
-    backgroundColor: "#2196F3",
-    padding: 10,
-    borderRadius: 5,
-    marginTop: 10,
-  },
+    backgroundColor:"#1E6F7E",
+   paddingVertical: 12,
+   paddingHorizontal: 16,
+   borderRadius: 8,
+   alignItems: "center",
+   flex: 1,
+   marginRight: 5,
+ },
   updateButtonText: {
     color: "#fff",
     fontSize: 16,
     textAlign: "center",
+  }, 
+  buttonsContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: 10,
   },
 });
 

@@ -86,8 +86,15 @@ export default function PersonalDetailsForm() {
     fetchCountries();
     fetchReligion();
     fetchPresentCountries();
-    fetchUserDetails();
   }, []);
+  
+useEffect(() => {
+  setSelectedCountry(personalDetails.ResCountryId);
+  setSelectedState(personalDetails.ResStateId);
+  setSelectedDistrict(personalDetails.ResDistrictId);
+  setSelectedTaluk(personalDetails.ResTalukId);
+  setSelectedCity(personalDetails.ResCityId);
+}, [personalDetails]);
 
   useEffect(() => {
   if (token) {
@@ -134,14 +141,22 @@ export default function PersonalDetailsForm() {
       const response = await axios.get("http://10.0.2.2:3000/api/v1/prsl/getPrsl", {
         headers: {
           "Content-Type": "application/json",
-          "Authorization": `Bearer ${storedToken}`, // Use the token from the state
+          "Authorization": `Bearer ${storedToken}`,
         },
       });
       if (response.data.success) {
         console.log("User details retrieved successfully:", response.data.data);
-        // Populate the input fields with the retrieved data
-        setPersonalDetails(response.data.data[0]); // Assuming the data is an array with one object
-      } else {
+        console.log(setSelectedDistrict,"sssss")
+        const userData = response.data.data[0]; // Assuming the data is an array with one object
+        setPersonalDetails(userData); // Populate all personal details fields with the retrieved data
+        setSelectedCountry(userData.ResCountryId);
+        setSelectedState(userData.ResStateId);
+        setSelectedDistrict(userData.ResDistrictId);
+        setSelectedTaluk(userData.ResTalukId);
+        setSelectedCity(userData.ResCityId);
+        
+      } 
+      else {
         console.error("User details retrieval failed:", response.data.message);
       }
     } catch (error) {
@@ -484,43 +499,45 @@ export default function PersonalDetailsForm() {
 
       </View>
       <View style={styles.formColumn}>
-        <View style={styles.inputContainer}>
-        <Text style={styles.text}>MARITAL STATUS</Text>
-          <Picker
-            selectedValue={personalDetails.Martialstatus}
-            onValueChange={(itemValue) => {
-              handleChange("Martialstatus", itemValue);
-              setShowMarriageDateInput(itemValue === "Married");
-            }}
-          >
-            <Picker.Item label="Marital Status" value="" />
-            <Picker.Item label="Single" value="S" />
-            <Picker.Item label="Married" value="M" />
-            <Picker.Item label="Divorced" value="D" />
-          </Picker>
-        </View>
-        {showMarriageDateInput && (
-          <View style={styles.inputContainer}>
-            <TextInput
-              style={styles.input}
-              placeholder="Date of Marriage (YYYY-MM-DD)"
-              value={personalDetails.MarriageDate}
-              onChangeText={(value) => handleChange("MarriageDate", value)}
-            />
-            <TouchableOpacity
-              style={styles.calendarIcon}
-              onPress={showDatePicker}
-            >
-              <FontAwesome name="calendar" size={24} color="black" />
-            </TouchableOpacity>
-            <DateTimePicker
-              isVisible={isDatePickerVisible}
-              mode="date"
-              onConfirm={handleConfirmDate}
-              onCancel={hideDatePicker}
-            />
-          </View>
-        )}
+  <View style={styles.inputContainer}>
+    <Text style={styles.text}>MARITAL STATUS</Text>
+    <Picker
+      selectedValue={personalDetails.Martialstatus}
+      onValueChange={(itemValue) => {
+        handleChange("Martialstatus", itemValue);
+        setShowMarriageDateInput(itemValue === "M"); // Set showMarriageDateInput to true if marital status is "Married"
+      }}
+    >
+      <Picker.Item label="Marital Status" value="" />
+      <Picker.Item label="Single" value="S" />
+      <Picker.Item label="Married" value="M" />
+      <Picker.Item label="Divorced" value="D" />
+    </Picker>
+  </View>
+  {showMarriageDateInput && (
+    <View style={styles.inputContainer}>
+      <Text style={styles.text}>Date of Marriage:</Text>
+      <TextInput
+        style={styles.input}
+        placeholder="Date of Marriage (YYYY-MM-DD)"
+        value={personalDetails.MarriageDate}
+        onChangeText={(value) => handleChange("MarriageDate", value)}
+      />
+      <TouchableOpacity
+        style={styles.calendarIcon}
+        onPress={showDatePicker}
+      >
+        <FontAwesome name="calendar" size={24} color="black" />
+      </TouchableOpacity>
+      <DateTimePicker
+        isVisible={isDatePickerVisible}
+        mode="date"
+        onConfirm={handleConfirmDate}
+        onCancel={hideDatePicker}
+      />
+    </View>
+  )}
+
 
         <View style={styles.inputContainer}>
         <Text style={styles.text}>SELECT RELIGION :</Text>
@@ -603,9 +620,9 @@ export default function PersonalDetailsForm() {
           }}
         >
           <Picker.Item label="Select Country" value="" />
-          {countries.map((country, index) => (
+          {countries.map((country) => (
             <Picker.Item
-              key={`${country.country_gid}_${index}`}
+              key={country.country_gid}
               label={country.country_name}
               value={country.country_gid}
             />

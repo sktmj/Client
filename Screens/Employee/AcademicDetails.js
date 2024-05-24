@@ -363,9 +363,9 @@ const AcademicDetails = ({ navigation }) => {
                 <Picker.Item label="Select Qualification" value={null} />
                 {qualifications.map((qual) => (
                   <Picker.Item
-                    key={qual.QualId}
-                    label={qual.QualName}
-                    value={qual.QualId}
+                    key={qual.QualificationId}
+                    label={qual.QualificationName}
+                    value={qual.QualificationId}
                   />
                 ))}
               </Picker>
@@ -432,34 +432,33 @@ const AcademicDetails = ({ navigation }) => {
                 }
               />
              
-          <View style={styles.buttonsContainer}>
-             
-              <TouchableOpacity
-                style={styles.removeButton}
-                onPress={() => handleRemoveQualificationField(index)}
-                disabled={isSubmitting}
-              >
-                <Text style={styles.removeButtonText}>Remove</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={styles.updateButton}
-                onPress={() => handleUpdateQualification(index)}
-                disabled={isSubmitting}
-              >
-                <Text style={styles.updateButtonText}>Update</Text>
-              </TouchableOpacity>
-            </View>
+             <View style={styles.buttonsContainer}>
+  <TouchableOpacity
+    style={[styles.button, styles.removeButton]}
+    onPress={() => handleRemoveQualificationField(index)}
+    disabled={isSubmitting}
+  >
+    <Text style={styles.buttonText}>Remove</Text>
+  </TouchableOpacity>
+  <TouchableOpacity
+    style={[styles.button, styles.updateButton]}
+    onPress={() => handleUpdateQualification(index)}
+    disabled={isSubmitting}
+  >
+    <Text style={styles.buttonText}>Update</Text>
+  </TouchableOpacity>
+</View>
             </View>
           ))}
 
-          <TouchableOpacity
-            style={styles.addButton}
-            onPress={handleAddQualificationField}
-            disabled={isSubmitting}
-          >
-            <Icon name="plus" size={20} color="#fff" />
-            <Text style={styles.addButtonText}>Add Qualification</Text>
-          </TouchableOpacity>
+<TouchableOpacity
+  style={styles.addButton}
+  onPress={handleAddQualificationField}
+  disabled={isSubmitting}
+>
+  <Icon name="plus" size={20} color="#fff" />
+  <Text style={styles.addButtonText}>Add Qualification</Text>
+</TouchableOpacity>
 
           <Text style={styles.header}>Course Details</Text>
           {courseFields.map((course, index) => (
@@ -500,15 +499,9 @@ const AcademicDetails = ({ navigation }) => {
                   handleCourseChange(index, "coursePercentage", value)
                 }
               />
-
+ <View style={styles.buttonsContainer}>
               {/* Update course button */}
-              <TouchableOpacity
-                style={styles.updateButton}
-                onPress={() => handleUpdateCourse(index)}
-                disabled={isSubmitting}
-              >
-                <Text style={styles.updateButtonText}>Update</Text>
-              </TouchableOpacity>
+            
 
               {/* Remove course button */}
               <TouchableOpacity
@@ -518,6 +511,14 @@ const AcademicDetails = ({ navigation }) => {
               >
                 <Text style={styles.removeButtonText}>Remove</Text>
               </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.updateButton}
+                onPress={() => handleUpdateCourse(index)}
+                disabled={isSubmitting}
+              >
+                <Text style={styles.updateButtonText}>Update</Text>
+              </TouchableOpacity>
+            </View>
             </View>
           ))}
 
@@ -590,7 +591,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: "#059A5F",
+    backgroundColor:"#1E6F7E",
     padding: 10,
     borderRadius: 5,
     marginBottom: 20,
@@ -601,7 +602,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
   removeButton: {
-    backgroundColor: "#FF0000",
+    backgroundColor: "red",
     paddingVertical: 12,
     paddingHorizontal: 16,
     borderRadius: 8,
@@ -614,7 +615,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
   updateButton: {
-     backgroundColor: "#059A5F",
+     backgroundColor:"#1E6F7E",
     paddingVertical: 12,
     paddingHorizontal: 16,
     borderRadius: 8,
@@ -627,7 +628,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
   submitButton: {
-    backgroundColor: "#008CBA",
+    backgroundColor: "#059A5F",
     padding: 15,
     borderRadius: 5,
     alignItems: "center",
@@ -641,10 +642,29 @@ const styles = StyleSheet.create({
     textAlign: "center",
   },
    buttonsContainer: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    marginTop: 20,
-  },
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: 10,
+  },button: {
+    borderRadius: 5,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
+  }, buttonText: {
+    color: '#fff', // White text color for all buttons
+    fontWeight: 'bold',
+    textAlign: 'center',
+  }
+  
 });
 
 export default AcademicDetails;

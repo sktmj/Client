@@ -406,11 +406,12 @@ const FamilyDetails = ({ navigation }) => {
           />
 
           <View style={styles.buttonsContainer}>
-            <TouchableOpacity style={styles.addButton} onPress={() => handleUpdatefamily(index)}>
-              <Text style={styles.buttonText}>Update</Text>
-            </TouchableOpacity>
+           
             <TouchableOpacity style={styles.deleteButton} onPress={() => handleDeleteFamily(index)}>
               <Text style={styles.buttonText}>Delete</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.updateButton} onPress={() => handleUpdatefamily(index)}>
+              <Text style={styles.buttonText}>Update</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -461,7 +462,7 @@ const FamilyDetails = ({ navigation }) => {
             <TouchableOpacity style={styles.deleteButton} onPress={() => handleDeleteLanguage(index)}>
               <Text style={styles.buttonText}>Delete</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.addButton} onPress={()=>handleUpdateLanguage(index)}>
+            <TouchableOpacity style={styles.updateButton} onPress={()=>handleUpdateLanguage(index)}>
               <Text style={styles.buttonText}>Update</Text>
             </TouchableOpacity>
           </View>
@@ -470,7 +471,7 @@ const FamilyDetails = ({ navigation }) => {
        <TouchableOpacity style={styles.addButton} onPress={handleAddLanguage}>
               <Text style={styles.buttonText}>Add Language</Text>
             </TouchableOpacity>
-      <View style={styles.buttonsContainer}>
+      <View style={styles.submitButtonContainer}>
         <TouchableOpacity style={styles.submitButton} onPress={handleSubmit}>
           <Text style={styles.buttonText}>Submit</Text>
         </TouchableOpacity>
@@ -490,6 +491,11 @@ const styles = StyleSheet.create({
     marginTop: 20,
     marginBottom: 10,
     color: "#333",
+  },
+  buttonsContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: 10,
   },
   inputContainer: {
     marginBottom: 12,
@@ -515,8 +521,17 @@ const styles = StyleSheet.create({
     flex: 1,
     marginRight: 5,
   },
+  addButton: {
+    flexDirection: "row",
+  alignItems: "center",
+  justifyContent: "center",
+  backgroundColor:"#1E6F7E",
+  padding: 10,
+  borderRadius: 5,
+  marginBottom: 20, // Adjust this value to move the button down
+},
   deleteButton: {
-    backgroundColor: "#FF0000",
+    backgroundColor: "red",
     paddingVertical: 12,
     paddingHorizontal: 16,
     borderRadius: 8,
@@ -549,7 +564,20 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     color: "#333",
     textTransform: "uppercase",
-  }
+  },
+  updateButton: {
+    backgroundColor:"#1E6F7E",
+   paddingVertical: 12,
+   paddingHorizontal: 16,
+   borderRadius: 8,
+   alignItems: "center",
+   flex: 1,
+   marginRight: 5,
+ },
+ submitButtonContainer: {
+  paddingHorizontal: 20,
+  marginBottom: 20, // Adjust this value as needed for the desired gap
+},
 });
 
 export default FamilyDetails;
