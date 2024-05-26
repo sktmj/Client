@@ -27,6 +27,7 @@ export default function PersonalDetailsForm() {
     Martialstatus: "",
     MarriageDate: "",
     Religion: "",
+    MobileNo:"",
     CasteId: "",
     Nativity: "",
     ResAddress1: "",
@@ -47,7 +48,7 @@ export default function PersonalDetailsForm() {
     PerPhoneNo: "",
     LandMark: "",
     EmailId: "",
-    PANNO: "",
+    PANNo: "",
     AadharNo: "",
   });
   const Navigation = useNavigation();
@@ -908,9 +909,10 @@ useEffect(() => {
             onChangeText={(value) => handleChange("LandMark", value)}
           />
             <Text style={styles.text}>MOBILE NO:</Text>
-          <TextInput style={styles.input} placeholder="Mobile No" />
+          <TextInput style={styles.input} placeholder="Mobile No" value = {personalDetails.MobileNo} onChangeText={(value) => handleChange("MobileNo", value)} />
+          
           <Text style={styles.text}>ALTERNATE NO:</Text>
-          <TextInput style={styles.input} placeholder="Alternate No" />
+          <TextInput style={styles.input}  placeholder="Passport" value = {personalDetails.PassportNo} onChangeText={(value) => handleChange("PassportNo", value)}  />
           <Text style={styles.text}>EMAIL :</Text>
           <TextInput
             style={styles.input}
@@ -922,8 +924,8 @@ useEffect(() => {
           <TextInput
             style={styles.input}
             placeholder="Pan No"
-            value={personalDetails.PANNO}
-            onChangeText={(value) => handleChange("PANNO", value)}
+            value={personalDetails.PANNo}
+            onChangeText={(value) => handleChange("PANNo", value)}
           />
             <Text style={styles.text}>AADHAR NO:</Text>
           <TextInput
