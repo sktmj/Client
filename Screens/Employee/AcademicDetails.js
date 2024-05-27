@@ -13,7 +13,7 @@ import axios from "axios";
 import { Picker } from "@react-native-picker/picker";
 import Icon from "react-native-vector-icons/FontAwesome";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-
+  
 const AcademicDetails = ({ navigation }) => {
   const [qualifications, setQualifications] = useState([]);
   const [qualificationFields, setQualificationFields] = useState([]);
@@ -81,10 +81,7 @@ const AcademicDetails = ({ navigation }) => {
         }));
         setQualificationFields(fetchedQualifications);
       } else {
-        console.error(
-          "Qualification retrieval failed:",
-          response.data.message
-        );
+        console.error("Qualification retrieval failed:", response.data.message);
       }
     } catch (error) {
       console.error("Error fetching qualification details:", error.message);
@@ -215,100 +212,21 @@ const AcademicDetails = ({ navigation }) => {
     setFormChanged(true);
   };
 
- const handleUpdateCourse = async (index) => {
-  if (isSubmitting) {
-    return; // Prevent multiple submissions
-  }
-  setIsSubmitting(true);
-  try {
-    const course = courseFields[index];
-    const response = await axios.put(
-      "http://10.0.2.2:3000/api/v1/Qlf/updateAppCourse",
-      {
-        CourseId: course.CourseId, // Include CourseId
-        Course: course.course,
-        Institute: course.institute,
-        CrsPercentage: parseFloat(course.coursePercentage),
-        StudYear: course.studYear,
-      },
-      {
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-      }
-    );
-
-    if (!response.data.success) {
-      throw new Error(response.data.message || "Failed to update Course");
-    }
-
-    Alert.alert("Success", "Course updated successfully");
-    setFormChanged(false); // Reset form change tracking
-  } catch (error) {
-    console.error("Error updating Course:", error.message);
-    Alert.alert("Error", "Failed to update Course");
-  } finally {
-    setIsSubmitting(false);
-  }
-};
-
-  const handleAddQualificationAndCourse = async () => {
+  const handleUpdateCourse = async (index) => {
     if (isSubmitting) {
       return; // Prevent multiple submissions
     }
     setIsSubmitting(true);
-
     try {
-      for (const qualification of qualificationFields) {
-        if (!qualification.AppQualId) {
-          // Only add new qualifications
-          const qualificationResponse = await fetch(
-            "http://10.0.2.2:3000/api/v1/Qlf/InsertQlCT",
-            {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-                Authorization: `Bearer ${token}`,
-              },
-              body: JSON.stringify({
-                QualId: qualification.selectedQualification,
-                ColName: qualification.colName,
-                YearPass: qualification.yearPass,
-                Percentage: parseFloat(qualification.percentage),
-                Degree: qualification.degree,
-                LastDegree: qualification.lastDegree ? "Y" : "N",
-                Location: qualification.location,
-              }),
-            }
-          );
-
-          if (!qualificationResponse.ok) {
-            throw new Error("Failed to add qualification");
-          }
-
-          const qualificationData = await qualificationResponse.json();
-
-          if (!qualificationData.success) {
-            throw new Error(
-              qualificationData.message || "Failed to add qualification"
-            );
-          }
-
-          // Update the qualification field with the newly generated AppQualId
-          qualification.AppQualId = qualificationData.AppQualId;
-        }
-      }
-      const addedCourseIds = []; 
-
-     for (const course of courseFields) {
-      const courseResponse = await axios.post(
-        "http://10.0.2.2:3000/api/v1/Qlf/courses",
+      const course = courseFields[index];
+      const response = await axios.put(
+        "http://10.0.2.2:3000/api/v1/Qlf/updateAppCourse",
         {
+          CourseId: course.CourseId, // Include CourseId
           Course: course.course,
           Institute: course.institute,
-          StudYear: course.studYear,
           CrsPercentage: parseFloat(course.coursePercentage),
+          StudYear: course.studYear,
         },
         {
           headers: {
@@ -318,27 +236,183 @@ const AcademicDetails = ({ navigation }) => {
         }
       );
 
-      if (!courseResponse.data.success) {
-        throw new Error(courseResponse.data.message || "Failed to add course");
+      if (!response.data.success) {
+        throw new Error(response.data.message || "Failed to update Course");
       }
 
-      // Store the added CourseId
-      addedCourseIds.push(courseResponse.data.CourseId);
+      Alert.alert("Success", "Course updated successfully");
+      setFormChanged(false); // Reset form change tracking
+    } catch (error) {
+      console.error("Error updating Course:", error.message);
+      Alert.alert("Error", "Failed to update Course");
+    } finally {
+      setIsSubmitting(false);
     }
+  };
 
-    // Save the added CourseIds in AsyncStorage
-    await AsyncStorage.setItem("AddedCourseIds", JSON.stringify(addedCourseIds));
+  const handleUpdateQualification = async (index) => {
+    if (isSubmitting) {
+      return; // Prevent multiple submissions
+    }
+    setIsSubmitting(true);
+    try {
+      const qualification = qualificationFields[index];
+      const response = await axios.put(
+        "http://10.0.2.2:3000/api/v1/Qlf/updateAppQualification",
+        {
+          AppQualId: qualification.AppQualId,
+          QualId: qualification.selectedQualification,
+          ColName: qualification.colName,
+          YearPass: qualification.yearPass,
+          Percentage: parseFloat(qualification.percentage),
+          Degree: qualification.degree,
+          LastDegree: qualification.lastDegree ? "Y" : "N",
+          Location: qualification.location,
+        },
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
 
-    Alert.alert("Success", "Courses added successfully");
-    setFormChanged(false); // Reset form change tracking
-  } catch (error) {
-    console.error("Error adding courses:", error.message);
-    Alert.alert("Error", "Failed to add courses");
-  } finally {
-    setIsSubmitting(false);
+      if (!response.data.success) {
+        throw new Error(
+          response.data.message || "Failed to update Qualification"
+        );
+      }
+
+      Alert.alert("Success", "Qualification updated successfully");
+      setFormChanged(false); // Reset form change tracking
+    } catch (error) {
+      console.error("Error updating qualification:", error.message);
+      Alert.alert("Error", "Failed to update qualification");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleAddQualificationAndCourse = async () => {
+    setIsSubmitting(true);
+    try {
+      // Update or insert qualifications
+      for (let i = 0; i < qualificationFields.length; i++) {
+        const qualification = qualificationFields[i];
+        if (qualification.AppQualId) {
+          // Update existing qualification
+          await axios.put(
+            "http://10.0.2.2:3000/api/v1/Qlf/updateAppQualification",
+            {
+              AppQualId: qualification.AppQualId,
+              QualId: qualification.selectedQualification,
+              ColName: qualification.colName,
+              YearPass: qualification.yearPass,
+              Percentage: parseFloat(qualification.percentage),
+              Degree: qualification.degree,
+              LastDegree: qualification.lastDegree ? "Y" : "N",
+              Location: qualification.location,
+            },
+            {
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${token}`,
+              },
+            }
+          );
+        } else {
+          // Insert new qualification
+          const response = await axios.post(
+            "http://10.0.2.2:3000/api/v1/Qlf/insertAppQualification",
+            {
+              QualId: qualification.selectedQualification,
+              ColName: qualification.colName,
+              YearPass: qualification.yearPass,
+              Percentage: parseFloat(qualification.percentage),
+              Degree: qualification.degree,
+              LastDegree: qualification.lastDegree ? "Y" : "N",
+              Location: qualification.location,
+            },
+            {
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${token}`,
+              },
+            }
+          );
+          // Update state with new AppQualId
+          qualificationFields[i].AppQualId = response.data.AppQualId;
+        }
+      }
+  
+      // Update or insert courses
+      for (let i = 0; i < courseFields.length; i++) {
+        const course = courseFields[i];
+        if (course.CourseId) {
+          // Update existing course
+          await axios.put(
+            "http://10.0.2.2:3000/api/v1/Qlf/updateAppCourse",
+            {
+              CourseId: course.CourseId,
+              Course: course.course,
+              Institute: course.institute,
+              CrsPercentage: parseFloat(course.coursePercentage),
+              StudYear: course.studYear,
+            },
+            {
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${token}`,
+              },
+            }
+          );
+        } else {
+          // Insert new course
+          const response = await axios.post(
+            "http://10.0.2.2:3000/api/v1/Qlf/courses",
+            {
+              Course: course.course,
+              Institute: course.institute,
+              CrsPercentage: parseFloat(course.coursePercentage),
+              StudYear: course.studYear,
+            },
+            {
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${token}`,
+              },
+            }
+          );
+          // Update state with new CourseId
+          courseFields[i].CourseId = response.data.CourseId;
+        }
+      }
+  
+      Alert.alert("Success", "Qualifications and Courses submitted successfully");
+      setFormChanged(false); // Reset form change tracking
+    } catch (error) {
+      console.error("Error adding/updating qualifications and courses:", error);
+      Alert.alert("Error", "Failed to submit qualifications and courses");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+  
+  const handleSubmit = async () => {
+    if (isSubmitting) {
+      return; // Prevent multiple submissions
+    }
+    await handleAddQualificationAndCourse();
+  };
+
+  if (!isLoggedIn) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color="#0000ff" />
+        <Text>Loading...</Text>
+      </View>
+    );
   }
-};
-
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
@@ -357,7 +431,11 @@ const AcademicDetails = ({ navigation }) => {
                 style={styles.picker}
                 selectedValue={qualification.selectedQualification}
                 onValueChange={(value) =>
-                  handleQualificationChange(index, "selectedQualification", value)
+                  handleQualificationChange(
+                    index,
+                    "selectedQualification",
+                    value
+                  )
                 }
               >
                 <Picker.Item label="Select Qualification" value={null} />
@@ -412,11 +490,7 @@ const AcademicDetails = ({ navigation }) => {
                 style={styles.picker}
                 selectedValue={qualification.lastDegree ? "Y" : "N"}
                 onValueChange={(value) =>
-                  handleQualificationChange(
-                    index,
-                    "lastDegree",
-                    value === "Y"
-                  )
+                  handleQualificationChange(index, "lastDegree", value === "Y")
                 }
               >
                 <Picker.Item label="Yes" value="Y" />
@@ -431,34 +505,34 @@ const AcademicDetails = ({ navigation }) => {
                   handleQualificationChange(index, "location", value)
                 }
               />
-             
-             <View style={styles.buttonsContainer}>
-  <TouchableOpacity
-    style={[styles.button, styles.removeButton]}
-    onPress={() => handleRemoveQualificationField(index)}
-    disabled={isSubmitting}
-  >
-    <Text style={styles.buttonText}>Remove</Text>
-  </TouchableOpacity>
-  <TouchableOpacity
-    style={[styles.button, styles.updateButton]}
-    onPress={() => handleUpdateQualification(index)}
-    disabled={isSubmitting}
-  >
-    <Text style={styles.buttonText}>Update</Text>
-  </TouchableOpacity>
-</View>
+
+              <View style={styles.buttonsContainer}>
+                <TouchableOpacity
+                  style={[styles.button, styles.removeButton]}
+                  onPress={() => handleRemoveQualificationField(index)}
+                  disabled={isSubmitting}
+                >
+                  <Text style={styles.buttonText}>Remove</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={[styles.button, styles.updateButton]}
+                  onPress={() => handleUpdateQualification(index)}
+                  disabled={isSubmitting}
+                >
+                  <Text style={styles.buttonText}>Update</Text>
+                </TouchableOpacity>
+              </View>
             </View>
           ))}
 
-<TouchableOpacity
-  style={styles.addButton}
-  onPress={handleAddQualificationField}
-  disabled={isSubmitting}
->
-  <Icon name="plus" size={20} color="#fff" />
-  <Text style={styles.addButtonText}>Add Qualification</Text>
-</TouchableOpacity>
+          <TouchableOpacity
+            style={styles.addButton}
+            onPress={handleAddQualificationField}
+            disabled={isSubmitting}
+          >
+            <Icon name="plus" size={20} color="#fff" />
+            <Text style={styles.addButtonText}>Add Qualification</Text>
+          </TouchableOpacity>
 
           <Text style={styles.header}>Course Details</Text>
           {courseFields.map((course, index) => (
@@ -499,26 +573,25 @@ const AcademicDetails = ({ navigation }) => {
                   handleCourseChange(index, "coursePercentage", value)
                 }
               />
- <View style={styles.buttonsContainer}>
-              {/* Update course button */}
-            
+              <View style={styles.buttonsContainer}>
+                {/* Update course button */}
 
-              {/* Remove course button */}
-              <TouchableOpacity
-                style={styles.removeButton}
-                onPress={() => handleRemoveCourseField(index)}
-                disabled={isSubmitting}
-              >
-                <Text style={styles.removeButtonText}>Remove</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={styles.updateButton}
-                onPress={() => handleUpdateCourse(index)}
-                disabled={isSubmitting}
-              >
-                <Text style={styles.updateButtonText}>Update</Text>
-              </TouchableOpacity>
-            </View>
+                {/* Remove course button */}
+                <TouchableOpacity
+                  style={styles.removeButton}
+                  onPress={() => handleRemoveCourseField(index)}
+                  disabled={isSubmitting}
+                >
+                  <Text style={styles.removeButtonText}>Remove</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={styles.updateButton}
+                  onPress={() => handleUpdateCourse(index)}
+                  disabled={isSubmitting}
+                >
+                  <Text style={styles.updateButtonText}>Update</Text>
+                </TouchableOpacity>
+              </View>
             </View>
           ))}
 
@@ -591,7 +664,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor:"#1E6F7E",
+    backgroundColor: "#1E6F7E",
     padding: 10,
     borderRadius: 5,
     marginBottom: 20,
@@ -615,7 +688,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
   updateButton: {
-     backgroundColor:"#1E6F7E",
+    backgroundColor: "#1E6F7E",
     paddingVertical: 12,
     paddingHorizontal: 16,
     borderRadius: 8,
@@ -641,17 +714,18 @@ const styles = StyleSheet.create({
     fontSize: 18,
     textAlign: "center",
   },
-   buttonsContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+  buttonsContainer: {
+    flexDirection: "row",
+    justifyContent: "space-between",
     marginTop: 10,
-  },button: {
+  },
+  button: {
     borderRadius: 5,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
     paddingVertical: 12,
     paddingHorizontal: 20,
-    shadowColor: '#000',
+    shadowColor: "#000",
     shadowOffset: {
       width: 0,
       height: 2,
@@ -659,12 +733,12 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.25,
     shadowRadius: 3.84,
     elevation: 5,
-  }, buttonText: {
-    color: '#fff', // White text color for all buttons
-    fontWeight: 'bold',
-    textAlign: 'center',
-  }
-  
+  },
+  buttonText: {
+    color: "#fff", // White text color for all buttons
+    fontWeight: "bold",
+    textAlign: "center",
+  },
 });
 
 export default AcademicDetails;

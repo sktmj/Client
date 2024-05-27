@@ -151,6 +151,7 @@ const WorkExperience = ({ navigation }) => {
           selectedDesignation: experience.Designation, // Correct key here
           Designation: experience.Designation, // Optionally include designation name
           RefPerson: experience.RefPerson,
+          RelieveReason:experience.RelieveReason,
           PhoneNo: experience.PhoneNo,
           FrmMnth: experience.FrmMnth,
           FrmYr: experience.FrmYr,
@@ -194,7 +195,7 @@ const WorkExperience = ({ navigation }) => {
                 Designation: experience.selectedDesignation,
                 LastSalary: experience.LastSalary,
                 UANNO:experience.UANNO,
-                RelieveReason: experience.workRelieveReason,
+                RelieveReason: experience.RelieveReason,
                 RefPerson: experience.RefPerson,
                 PhoneNo: experience.PhoneNo,
                 FrmMnth: experience.FrmMnth,
