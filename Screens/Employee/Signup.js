@@ -43,7 +43,7 @@ const SignUpScreen = () => {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ MobileNo: mobileNo, AppName: appName, EnteredOTP: otp, Passwrd: password }),
+        body: JSON.stringify({ MobileNo: mobileNo, AppName: appN+me, EnteredOTP: otp, Passwrd: password }),
       });
 
       const data = await response.json();

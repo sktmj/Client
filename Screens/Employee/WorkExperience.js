@@ -155,7 +155,7 @@ const WorkExperience = ({ navigation }) => {
           PhoneNo: experience.PhoneNo,
           FrmMnth: experience.FrmMnth,
           FrmYr: experience.FrmYr,
-          RelieveReason: experience.workRelieveReason,
+          RelieveReason: experience.RelieveReason,
           ToMnth: experience.ToMnth,
           ToYr: experience.ToYr,
           InitSalary: experience.InitSalary ? String(experience.InitSalary) : "",

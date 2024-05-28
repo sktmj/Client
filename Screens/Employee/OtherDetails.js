@@ -237,6 +237,7 @@ const OtherDetails = () => {
   
   
   const handleSubmit = async () => {
+  
     try {
       const response = await axios.post(
         "http://10.0.2.2:3000/api/v1/other/others",
@@ -244,21 +245,21 @@ const OtherDetails = () => {
           CurrentSalary: CurrentSalary,
           ExpectSalary: expectSalary,
           KnowCompany: knowCompany,
-          IsCompWrkHere: isCompWrkHere,
+          IsCompWrkHere: isCompWrkHere ? "Y" : "N",
           RefPerName: refPerName,
           RefPerAdd: refPerAdd,
           RefPerPhNo: refPerPhNo,
-          FamilyReason: familyReason,
-          EarnMoney: earnMoney,
-          GainExp: gainExp,
-          SocialSts: socialSts,
-          BetterLife: betterLife,
-          WrkInt: wrkInt,
-          CompBrand: compBrand,
-          OthReason: othReason,
+          FamilyReason: familyReason ? "Y" : "N",
+          EarnMoney: earnMoney ? "Y" : "N",
+          GainExp: gainExp ? "Y" : "N",
+          SocialSts: socialSts ? "Y" : "N",
+          BetterLife: betterLife ? "Y" : "N",
+          WrkInt: wrkInt ? "Y" : "N",
+          CompBrand: compBrand ? "Y" : "N",
+          OthReason: othReason ? "Y" : "N",
           ExpDOJ: expDOJ,
-          IsAccNeed: isAccNeed,
-          SectionTrns: sectionTrns,
+          IsAccNeed: isAccNeed ? "Y" : "N",
+          SectionTrns: sectionTrns ? "Y" : "N",
           JobApplied: jobApplied,
           FactoryId: factoryId,
           NearByName1: nearByName1,
