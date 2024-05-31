@@ -6,7 +6,7 @@ import {
   TouchableOpacity,
   StyleSheet,
   Alert,
-  Image ,
+  Image,
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -14,6 +14,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 export default function LoginScreen() {
   const [phoneNumber, setPhoneNumber] = useState("");
   const [password, setPassword] = useState("");
+  const [userType, setUserType] = useState("Admin"); // Default to "Admin"
   const Navigation = useNavigation();
 
   const handleLogin = async () => {
@@ -25,13 +26,13 @@ export default function LoginScreen() {
         },
         body: JSON.stringify({ UserName: phoneNumber }),
       });
-  
+
       if (!response.ok) {
         throw new Error("Error logging in");
       }
-  
+
       const responseData = await response.json();
-  
+
       if (responseData.token && responseData.AppId) {
         await AsyncStorage.setItem("token", responseData.token);
         await AsyncStorage.setItem("AppId", JSON.stringify(responseData.AppId)); // Stringify AppId
@@ -51,21 +52,30 @@ export default function LoginScreen() {
   const handleRegister = () => {
     Navigation.navigate("Register");
   };
+  const handleSignin = ()=>{
+    Navigation.navigate("DrawerScreen")
+  }
+
+  const handleCarrier = () => {
+    setUserType("Carrier");
+  };
+
+  const handleAdmin = () => {
+    setUserType("Admin");
+  };
 
   return (
     <View style={styles.container}>
       <View style={styles.topContainer}>
-        
-        <TouchableOpacity style={styles.carrier} onPress={handleLogin}>
+        <TouchableOpacity style={styles.carrier} onPress={handleCarrier}>
           <Text style={styles.carrierText}>Carrier</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.admin} onPress={handleLogin}>
+        <TouchableOpacity style={styles.admin} onPress={handleAdmin}>
           <Text style={styles.adminText}>Admin</Text>
         </TouchableOpacity>
       </View>
       <View style={styles.mainContent}>
-      <Image  source={require('../../assets/images/logo.png')}  style={styles.image}/>
-      
+        <Image source={require('../../assets/images/daivel.png')} style={styles.image} />
         <Text style={styles.title}>Login</Text>
         <View style={styles.inputContainer}>
           <TextInput
@@ -84,14 +94,22 @@ export default function LoginScreen() {
             secureTextEntry
           />
         </View>
-        <TouchableOpacity style={styles.loginButton} onPress={handleLogin}>
-          <Text style={styles.buttonText}>Login</Text>
-        </TouchableOpacity>
-        <TouchableOpacity onPress={handleRegister}>
-          <Text style={styles.registerLink}>
-            Not registered yet? Register here
-          </Text>
-        </TouchableOpacity>
+        {userType === "Carrier" ? (
+          <>
+            <TouchableOpacity style={styles.loginButton} onPress={handleLogin}>
+              <Text style={styles.buttonText}>Login</Text>
+            </TouchableOpacity>
+            <TouchableOpacity onPress={handleRegister}>
+              <Text style={styles.registerLink}>
+                Not registered yet? Register here
+              </Text>
+            </TouchableOpacity>
+          </>
+        ) : userType === "Admin" ? (
+          <TouchableOpacity style={styles.loginButton} onPress={handleSignin}>
+            <Text style={styles.buttonText}>Sign In</Text>
+          </TouchableOpacity>
+        ) : null}
       </View>
     </View>
   );
@@ -100,7 +118,7 @@ export default function LoginScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor:"#090920",
+    backgroundColor: "#090920",
     paddingHorizontal: 20,
   },
   topContainer: {
@@ -156,26 +174,25 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     backgroundColor: '#059A5F',
     borderRadius: 8,
-    width:100,
-    marginLeft:10
-
+    width: 100,
+    marginLeft: 10
   },
   adminText: {
     color: 'white',
     fontSize: 16,
-    paddingLeft:20
+    paddingLeft: 20
   },
-  carrier:{
-    paddingVertical:10,
-    backgroundColor:"#059A5F",
+  carrier: {
+    paddingVertical: 10,
+    backgroundColor: "#059A5F",
     borderRadius: 8,
-    width:100,
-    marginLeft:10
+    width: 100,
+    marginLeft: 10
   },
   carrierText: {
     color: 'white',
     fontSize: 16,
-    paddingLeft:20
+    paddingLeft: 20
   },
   image: {
     width: 300,

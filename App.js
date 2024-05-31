@@ -2,6 +2,7 @@ import * as React from "react";
 import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { createMaterialTopTabNavigator } from "@react-navigation/material-top-tabs";
+import { createDrawerNavigator } from '@react-navigation/drawer';
 import LoginScreen from "./Screens/Employee/Login";
 import SignupScreen from "./Screens/Employee/Signup";
 import PersonalDetails from "./Screens/Employee/PersonalDetails";
@@ -21,10 +22,29 @@ import { Ionicons } from '@expo/vector-icons';
 import { Entypo } from '@expo/vector-icons';
 import { MaterialIcons } from '@expo/vector-icons';
 import { Foundation } from '@expo/vector-icons';
+import Leave from "./Screens/Admin/Leave";
+import Outpass from "./Screens/Admin/Outpass";
+import Profile from "./Screens/Admin/Profile";
 // import StartScreen from "./Screens/Employee/Start";
+import Home from './Screens/Admin/Home';
 
 const Stack = createNativeStackNavigator();
 const Tab = createMaterialTopTabNavigator();
+const Drawer = createDrawerNavigator();
+
+
+function DrawerScreen (){
+  return(
+    <Drawer.Navigator>
+      <Drawer.Screen name="Home" component={Home}/>
+      <Drawer.Screen name="Profile" component ={Profile}/>
+      <Drawer.Screen name="Leave" component={Leave}/>
+      <Drawer.Screen name="Outpass" component ={Outpass}/>
+      
+      
+    </Drawer.Navigator>
+  )
+}
 
 function TopTab() {
   return (
@@ -125,6 +145,7 @@ function App() {
           options={{ headerTitle: "Signup", headerTitleAlign: "center" }}
         />
         <Stack.Screen name="Application Form" component={TopTab} />
+        <Stack.Screen name="DrawerScreen" component = {DrawerScreen}/>
       </Stack.Navigator>
     </NavigationContainer>
   );
