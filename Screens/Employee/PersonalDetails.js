@@ -27,7 +27,7 @@ export default function PersonalDetailsForm() {
     Martialstatus: "",
     MarriageDate: "",
     Religion: "",
-    MobileNo:"",
+    MobileNo: "",
     CasteId: "",
     Nativity: "",
     ResAddress1: "",
@@ -48,12 +48,14 @@ export default function PersonalDetailsForm() {
     PerPhoneNo: "",
     LandMark: "",
     EmailId: "",
-    PANNo: "",
+    PANNO: "",
     AadharNo: "",
   });
   const Navigation = useNavigation();
   const [showMarriageDateInput, setShowMarriageDateInput] = useState(false);
   const [isDatePickerVisible, setDatePickerVisibility] = useState(false);
+  const [phoneValid, setPhoneValid] = useState(true);
+  const [mobileValid, setMobileValid] = useState(true);
   const [religion, setReligion] = useState([]);
   const [caste, setCaste] = useState([]);
   const [countries, setCountries] = useState([]);
@@ -80,45 +82,54 @@ export default function PersonalDetailsForm() {
   const [selectedPresentCity, setSelectedPresentCity] = useState("");
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [token, setToken] = useState(null);
-
-
+  const [isDOBDatePickerVisible, setDOBDatePickerVisibility] = useState(false);
+  const [isMarriageDatePickerVisible, setMarriageDatePickerVisibility] =
+    useState(false);
   useEffect(() => {
     checkAuthentication();
     fetchCountries();
     fetchReligion();
     fetchPresentCountries();
   }, []);
-  
-useEffect(() => {
-  setSelectedCountry(personalDetails.ResCountryId);
-  setSelectedState(personalDetails.ResStateId);
-  setSelectedDistrict(personalDetails.ResDistrictId);
-  setSelectedTaluk(personalDetails.ResTalukId);
-  setSelectedCity(personalDetails.ResCityId);
-}, [personalDetails]);
+  useEffect(() => {
+    setShowMarriageDateInput(
+      personalDetails.Martialstatus === "M" ||
+        personalDetails.MarriageDate !== ""
+    );
+  }, [personalDetails.Martialstatus, personalDetails.MarriageDate]);
 
   useEffect(() => {
-  if (token) {
-    fetchUserDetails();
-  }
-}, [token]);
+    setSelectedCountry(personalDetails.ResCountryId);
+    setSelectedState(personalDetails.ResStateId);
+    setSelectedDistrict(personalDetails.ResDistrictId);
+    setSelectedTaluk(personalDetails.ResTalukId);
+    setSelectedCity(personalDetails.ResCityId);
+  }, [personalDetails]);
 
+  useEffect(() => {
+    if (token) {
+      fetchUserDetails();
+    }
+  }, [token]);
+
+  useEffect(() => {
+    if (personalDetails.DOB) {
+      calculateAge(personalDetails.DOB); // Call calculateAge when personalDetails.DOB changes
+    }
+  }, [personalDetails.DOB]);
   useEffect(() => {
     if (selectedDistrict) {
       fetchTaluksByDistrict(selectedDistrict);
     }
-  },
-   [selectedDistrict]);
+  }, [selectedDistrict]);
 
   useEffect(() => {
     if (selectedPresentDistrict) {
       fetchPresentTaluksByDistrict(selectedPresentDistrict);
     }
-  },
-   [selectedPresentDistrict]);
+  }, [selectedPresentDistrict]);
 
-
-   const checkAuthentication = async () => {
+  const checkAuthentication = async () => {
     try {
       const token = await AsyncStorage.getItem("AppId");
       if (!token) {
@@ -135,38 +146,54 @@ useEffect(() => {
       console.error("Error checking authentication:", error.message);
     }
   };
-  
+
   const fetchUserDetails = async () => {
     try {
       const storedToken = token;
-      const response = await axios.get("http://10.0.2.2:3000/api/v1/prsl/getPrsl", {
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${storedToken}`,
-        },
-      });
+      const response = await axios.get(
+        "http://103.99.149.67:3000/api/v1/prsl/getPrsl",
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${storedToken}`,
+          },
+        }
+      );
       if (response.data.success) {
         console.log("User details retrieved successfully:", response.data.data);
-        console.log(setSelectedDistrict,"sssss")
-        const userData = response.data.data[0]; // Assuming the data is an array with one object
-        setPersonalDetails(userData); // Populate all personal details fields with the retrieved data
+        const userData = response.data.data[0];
+        if (response.data.success) {
+          const userData = response.data.data[0];
+
+          // Update personalDetails state with fetched user data
+          setPersonalDetails((prevDetails) => ({
+            ...prevDetails,
+            ...userData,
+            PANNO: userData.PANNO,
+          }));
+        }
+        // Format the DOB to YYYY-MM-DD
+        if (userData.DOB) {
+          userData.DOB = new Date(userData.DOB).toISOString().split("T")[0];
+        }
+        if (userData.MarriageDate) {
+          userData.MarriageDate = new Date(userData.MarriageDate)
+            .toISOString()
+            .split("T")[0];
+        }
+        setPersonalDetails(userData);
         setSelectedCountry(userData.ResCountryId);
         setSelectedState(userData.ResStateId);
         setSelectedDistrict(userData.ResDistrictId);
         setSelectedTaluk(userData.ResTalukId);
         setSelectedCity(userData.ResCityId);
-        
-      } 
-      else {
+      } else {
         console.error("User details retrieval failed:", response.data.message);
       }
     } catch (error) {
       console.error("Error fetching user details:", error.message);
     }
   };
-  
-  
-
 
   const handleLogin = async () => {
     try {
@@ -184,145 +211,148 @@ useEffect(() => {
     Navigation.navigate("Login");
   };
 
-
-
-
   /////////////////////////////////////////
   const fetchCountries = () => {
     axios
-      .get("http://10.0.2.2:3000/api/v1/prsl/getAllCountries")
+      .get("http://103.99.149.67:3000/api/v1/prsl/getAllCountries")
       .then((response) => {
         setCountries(response.data);
-     
-      
       })
       .catch((error) => console.error("Error fetching countries:", error));
   };
 
   const fetchStatesByCountry = (countryId) => {
     axios
-      .get(`http://10.0.2.2:3000/api/v1/prsl/states/${countryId}`)
+      .get(`http://103.99.149.67:3000/api/v1/prsl/states/${countryId}`)
       .then((response) => {
         setStates(response.data);
-     
       })
       .catch((error) => console.error("Error fetching states:", error));
   };
 
   const fetchDistrictsByState = (stateId) => {
     axios
-      .get(`http://10.0.2.2:3000/api/v1/prsl/districts/${stateId}`)
+      .get(`http://103.99.149.67:3000/api/v1/prsl/districts/${stateId}`)
       .then((response) => {
         setDistricts(response.data);
-    
       })
       .catch((error) => console.error("Error fetching districts:", error));
   };
 
   const fetchTaluksByDistrict = (districtId) => {
     axios
-      .get(`http://10.0.2.2:3000/api/v1/prsl/taluk/${districtId}`)
+      .get(`http://103.99.149.67:3000/api/v1/prsl/taluk/${districtId}`)
       .then((response) => {
         const formattedTaluks = response.data.map((taluk) => ({
           TalukId: taluk.TalukId,
           TalukName: taluk.TalukName,
         }));
         setTaluks(formattedTaluks);
-      
       })
       .catch((error) => console.error("Error fetching Taluks:", error));
   };
 
   const fetchCitiesByTaluk = (talukId) => {
     axios
-      .get(`http://10.0.2.2:3000/api/v1/prsl/city/${talukId}`)
+      .get(`http://103.99.149.67:3000/api/v1/prsl/city/${talukId}`)
       .then((response) => {
         setCities(response.data);
-       
       })
       .catch((error) => console.error("Error fetching Cities:", error));
   };
 
-
   //////////////////////////////////////////////////
   const fetchPresentCountries = () => {
-    console.log(setPresentCountries,"dfdfdfdf")
+    console.log(setPresentCountries, "dfdfdfdf");
     axios
-      .get("http://10.0.2.2:3000/api/v1/prsl/presentCountries")
+      .get("http://103.99.149.67:3000/api/v1/prsl/presentCountries")
       .then((response) => {
         // Assuming the response.data is an array of country objects
         setPresentCountries(response.data);
       })
-      .catch((error) => console.error("Error fetching present countries:", error));
+      .catch((error) =>
+        console.error("Error fetching present countries:", error)
+      );
   };
-  
 
   const fetchPresentStatesByCountry = (countryId) => {
     axios
-      .get(`http://10.0.2.2:3000/api/v1/prsl/PresentState/${countryId}`)
+      .get(`http://103.99.149.67:3000/api/v1/prsl/PresentState/${countryId}`)
       .then((response) => {
         setPresentStates(response.data);
-    
       })
       .catch((error) => console.error("Error fetching states:", error));
   };
   const fetchPresentDistrictsByState = (stateId) => {
     axios
-      .get(`http://10.0.2.2:3000/api/v1/prsl/districts/${stateId}`)
+      .get(`http://103.99.149.67:3000/api/v1/prsl/districts/${stateId}`)
       .then((response) => {
         setPresentDistricts(response.data);
-       
       })
       .catch((error) => console.error("Error fetching districts:", error));
   };
 
-
   const fetchPresentTaluksByDistrict = (districtId) => {
     axios
-      .get(`http://10.0.2.2:3000/api/v1/prsl/taluk/${districtId}`)
+      .get(`http://103.99.149.67:3000/api/v1/prsl/taluk/${districtId}`)
       .then((response) => {
         const formattedTaluks = response.data.map((taluk) => ({
           TalukId: taluk.TalukId,
           TalukName: taluk.TalukName,
         }));
         setPresentTaluks(formattedTaluks);
-    
       })
       .catch((error) => console.error("Error fetching Taluks:", error));
   };
 
   const fetchPresentCitiesByTaluk = (talukId) => {
     axios
-      .get(`http://10.0.2.2:3000/api/v1/prsl/city/${talukId}`)
+      .get(`http://103.99.149.67:3000/api/v1/prsl/city/${talukId}`)
       .then((response) => {
         setPresentCities(response.data);
-        
       })
       .catch((error) => console.error("Error fetching Cities:", error));
   };
-        
+
   const handleChange = (field, value) => {
+    if (field === "DOB") {
+      calculateAge(value); // Calculate age when date of birth changes
+    }
+    if (field === "ResPhoneNo") {
+      setPhoneValid(value.length >= 10);
+    }
+
+    if (field === "MobileNo") {
+      setMobileValid(value.length >= 10);
+    }
+
+    // Update the state after calculating age
     setPersonalDetails((prevDetails) => ({
       ...prevDetails,
       [field]: value,
     }));
+    // Set showMarriageDateInput based on the selected marital status
+    if (field === "Martialstatus") {
+      setShowMarriageDateInput(value === "M");
+    }
   };
-  
-  
-  
   const handlePickerChange = (field, value) => {
     setPersonalDetails((prevDetails) => ({
       ...prevDetails,
       [field]: value,
     }));
-  };      
-  
-  
-  
+  };
+  const showDOBDatePicker = () => {
+    setDOBDatePickerVisibility(true);
+  };
+
+  const showMarriageDatePicker = () => {
+    setMarriageDatePickerVisibility(true);
+  };
   const handleSubmit = async () => {
     try {
       const response = await axios.post(
-        "http://10.0.2.2:3000/api/v1/prsl/updatePersonalDetails",
+        "http://103.99.149.67:3000/api/v1/prsl/updatePersonalDetails",
         personalDetails, // Send the entire personalDetails object
         {
           headers: {
@@ -335,7 +365,10 @@ useEffect(() => {
       if (response.data.success) {
         console.log("Personal details updated successfully:", response.data);
       } else {
-        console.error("Error updating personal details:", response.data.message);
+        console.error(
+          "Error updating personal details:",
+          response.data.message
+        );
       }
     } catch (error) {
       console.error("Error handling form submission:", error.message);
@@ -357,23 +390,26 @@ useEffect(() => {
   const handleConfirm = (date) => {
     if (date) {
       const selectedDate = new Date(date);
-      const currentDate = new Date();
-      const age = currentDate.getFullYear() - selectedDate.getFullYear();
-      if (
-        currentDate.getMonth() < selectedDate.getMonth() ||
-        (currentDate.getMonth() === selectedDate.getMonth() &&
-          currentDate.getDate() < selectedDate.getDate())
-      ) {
-        personalDetails.age = age - 1; // Remove this line
-      } else {
-        personalDetails.age = age; // Remove this line
-      }
-      personalDetails.DOB = selectedDate.toISOString().split("T")[0];
-      setPersonalDetails({ ...personalDetails }); // Update the DOB field only
+      const formattedDate = selectedDate.toISOString().split("T")[0];
+      setPersonalDetails((prevDetails) => ({
+        ...prevDetails,
+        DOB: formattedDate,
+      }));
+      calculateAge(formattedDate); // Call calculateAge after setting DOB
     }
     hideDatePicker();
   };
 
+  const handleConfirmMariageDate = (date) => {
+    if (date) {
+      const formattedDate = date.toISOString().split("T")[0];
+      setPersonalDetails((prevDetails) => ({
+        ...prevDetails,
+        MarriageDate: formattedDate, // Correct the field name to "MarriageDate"
+      }));
+    }
+    hideDatePicker();
+  };
   const handleConfirmDate = (date) => {
     const formattedDate = date.toISOString().split("T")[0];
     setPersonalDetails({
@@ -382,10 +418,37 @@ useEffect(() => {
     });
     hideDatePicker();
   };
+  const calculateAge = (dob) => {
+    if (!dob) {
+      setPersonalDetails((prevDetails) => ({
+        ...prevDetails,
+        age: "", // Clear the age if date of birth is not provided
+      }));
+      return;
+    }
 
+    const birthDate = new Date(dob);
+    const today = new Date();
+    let age = today.getFullYear() - birthDate.getFullYear();
+    const monthDifference = today.getMonth() - birthDate.getMonth();
+
+    if (
+      monthDifference < 0 ||
+      (monthDifference === 0 && today.getDate() < birthDate.getDate())
+    ) {
+      age--;
+    }
+
+    console.log("Calculated ageeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee:", age);
+
+    setPersonalDetails((prevDetails) => ({
+      ...prevDetails,
+      age: age.toString(),
+    }));
+  };
   const fetchReligion = () => {
     axios
-      .get("http://10.0.2.2:3000/api/v1/prsl/getReligion")
+      .get("http://103.99.149.67:3000/api/v1/prsl/getReligion")
       .then((response) => {
         setReligion(response.data);
       })
@@ -394,7 +457,7 @@ useEffect(() => {
 
   const fetchCasteByReligion = (religion_gid) => {
     axios
-      .get(`http://10.0.2.2:3000/api/v1/prsl/caste/${religion_gid}`)
+      .get(`http://103.99.149.67:3000/api/v1/prsl/caste/${religion_gid}`)
       .then((response) => {
         setCaste(response.data); // Set the caste state with the fetched caste data
       })
@@ -432,14 +495,14 @@ useEffect(() => {
       <Text style={styles.sectionTitle}>Personal Details</Text>
       <View style={styles.formRow}>
         <View style={styles.formColumn}>
-        <Text style={styles.text}>Name :</Text>
-        <TextInput
+          <Text style={styles.text}>Name :</Text>
+          <TextInput
             style={styles.input}
             placeholder="Name"
-               value={personalDetails.AppName}
-              onChangeText={(value) => handleChange("AppName", value)}
-                      />
-<Text style={styles.text}>FATHER'S NAME:</Text>
+            value={personalDetails.AppName}
+            onChangeText={(value) => handleChange("AppName", value)}
+          />
+          <Text style={styles.text}>FATHER'S NAME:</Text>
           <TextInput
             style={styles.input}
             placeholder="Father Name"
@@ -448,7 +511,7 @@ useEffect(() => {
           />
 
           <View style={styles.inputContainer}>
-          <Text style={styles.text}>Date of birth:</Text>
+            <Text style={styles.text}>Date of birth:</Text>
             <TextInput
               style={styles.input}
               placeholder="Date of Birth (YYYY-MM-DD)"
@@ -468,17 +531,16 @@ useEffect(() => {
               onCancel={hideDatePicker}
             />
           </View>
-          <Text style={styles.text}>AGE:</Text>
           <TextInput
             style={styles.input}
             placeholder="Age"
             keyboardType="numeric"
-            value={personalDetails.age ? personalDetails.age.toString() : ""}
-            onChangeText={(value) => handleChange("age", value)}
+            value={personalDetails.age} // Display the age value from personalDetails state
+            editable={false}
           />
         </View>
         <View style={styles.inputContainer}>
-        <Text style={styles.text}>GANDER:</Text>
+          <Text style={styles.text}>GANDER:</Text>
 
           <Picker
             selectedValue={personalDetails.Gender}
@@ -497,51 +559,49 @@ useEffect(() => {
           value={personalDetails.BloodGrp}
           onChangeText={(Text) => handleChange("BloodGrp", Text)}
         />
-
       </View>
       <View style={styles.formColumn}>
-  <View style={styles.inputContainer}>
-    <Text style={styles.text}>MARITAL STATUS</Text>
-    <Picker
-      selectedValue={personalDetails.Martialstatus}
-      onValueChange={(itemValue) => {
-        handleChange("Martialstatus", itemValue);
-        setShowMarriageDateInput(itemValue === "M"); // Set showMarriageDateInput to true if marital status is "Married"
-      }}
-    >
-      <Picker.Item label="Marital Status" value="" />
-      <Picker.Item label="Single" value="S" />
-      <Picker.Item label="Married" value="M" />
-      <Picker.Item label="Divorced" value="D" />
-    </Picker>
-  </View>
-  {showMarriageDateInput && (
-    <View style={styles.inputContainer}>
-      <Text style={styles.text}>Date of Marriage:</Text>
-      <TextInput
-        style={styles.input}
-        placeholder="Date of Marriage (YYYY-MM-DD)"
-        value={personalDetails.MarriageDate}
-        onChangeText={(value) => handleChange("MarriageDate", value)}
-      />
-      <TouchableOpacity
-        style={styles.calendarIcon}
-        onPress={showDatePicker}
-      >
-        <FontAwesome name="calendar" size={24} color="black" />
-      </TouchableOpacity>
-      <DateTimePicker
-        isVisible={isDatePickerVisible}
-        mode="date"
-        onConfirm={handleConfirmDate}
-        onCancel={hideDatePicker}
-      />
-    </View>
-  )}
-
+        <View style={styles.inputContainer}>
+          <Text style={styles.text}>MARITAL STATUS</Text>
+          <Picker
+            selectedValue={personalDetails.Martialstatus}
+            onValueChange={(itemValue) => {
+              handleChange("Martialstatus", itemValue);
+              setShowMarriageDateInput(itemValue === "M"); // Set showMarriageDateInput to true if marital status is "Married"
+            }}
+          >
+            <Picker.Item label="Marital Status" value="" />
+            <Picker.Item label="Single" value="S" />
+            <Picker.Item label="Married" value="M" />
+            <Picker.Item label="Divorced" value="D" />
+          </Picker>
+        </View>
+        {showMarriageDateInput && (
+          <View style={styles.inputContainer}>
+            <Text style={styles.text}>Date of Marriage:</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="Date of Marriage (YYYY-MM-DD)"
+              value={personalDetails.MarriageDate}
+              onChangeText={(value) => handleChange("MarriageDate", value)}
+            />
+            <TouchableOpacity
+              style={styles.calendarIcon}
+              onPress={showMarriageDatePicker}
+            >
+              <FontAwesome name="calendar" size={24} color="black" />
+            </TouchableOpacity>
+            <DateTimePicker
+              isVisible={isMarriageDatePickerVisible}
+              mode="date"
+              onConfirm={handleConfirmMariageDate}
+              onCancel={() => setMarriageDatePickerVisibility(false)}
+            />
+          </View>
+        )}
 
         <View style={styles.inputContainer}>
-        <Text style={styles.text}>SELECT RELIGION :</Text>
+          <Text style={styles.text}>SELECT RELIGION :</Text>
           <Picker
             selectedValue={selectedReligion}
             onValueChange={(itemValue) => {
@@ -563,7 +623,7 @@ useEffect(() => {
         </View>
 
         <View style={styles.inputGroup}>
-        <Text style={styles.text}>SELECT CASTE :</Text>
+          <Text style={styles.text}>SELECT CASTE :</Text>
           <Picker
             selectedValue={selectedCaste}
             onValueChange={(itemValue) => {
@@ -610,14 +670,13 @@ useEffect(() => {
           value={personalDetails.ResAddress1}
           onChangeText={(value) => handleChange("ResAddress1", value)}
         />
-       <Text style={styles.text}>SELECT COUNTRY :</Text>
+        <Text style={styles.text}>SELECT COUNTRY :</Text>
         <Picker
           selectedValue={selectedCountry}
           onValueChange={(itemValue) => {
             setSelectedCountry(itemValue);
             fetchStatesByCountry(itemValue);
             setPersonalDetails({ ...personalDetails, ResCountryId: itemValue });
-
           }}
         >
           <Picker.Item label="Select Country" value="" />
@@ -634,7 +693,7 @@ useEffect(() => {
         {/* For brevity, I'll just show one */}
 
         <View style={styles.inputContainer}>
-        <Text style={styles.text}>SELECT STATE :</Text>
+          <Text style={styles.text}>SELECT STATE :</Text>
           <Picker
             selectedValue={selectedState}
             onValueChange={(itemValue) => {
@@ -677,51 +736,50 @@ useEffect(() => {
               />
             ))}
           </Picker>
-        
-          <Text style={styles.text}>SELECT TALUK :</Text>
-            <Picker
-              selectedValue={selectedTaluk}
-              onValueChange={(itemValue) => {
-                setSelectedTaluk(itemValue);
-                fetchCitiesByTaluk(itemValue); // Call fetchCitiesByTaluk when selected taluk changes
-                setPersonalDetails({
-                  ...personalDetails,
-                  ResTalukId: itemValue,
-                }); // Update personal details state
-              }}
-            >
-              <Picker.Item label="Select Taluk" value="" />
-              {taluks.map((taluk, index) => (
-                <Picker.Item
-                  key={`${taluk.TalukId}_${index}`}
-                  label={taluk.TalukName}
-                  value={taluk.TalukId}
-                />
-              ))}
-            </Picker>
 
-            <Text style={styles.text}>SELECT CITY :</Text>
-            <Picker
-              selectedValue={selectedCity}
-              onValueChange={(itemValue) => {
-                setSelectedCity(itemValue);
-                setPersonalDetails({
-                  ...personalDetails,
-                  ResCityId: itemValue,
-                }); // Update personal details state
-              }}
-              enabled={cities.length > 0} // Disable picker if cities are not fetched
-            >
-              <Picker.Item label="Select City" value="" />
-              {cities.map((city, index) => (
-                <Picker.Item
-                  key={`${city.city_gid}_${index}`}
-                  label={city.city_name}
-                  value={city.city_gid}
-                />
-              ))}
-            </Picker>
-      
+          <Text style={styles.text}>SELECT TALUK :</Text>
+          <Picker
+            selectedValue={selectedTaluk}
+            onValueChange={(itemValue) => {
+              setSelectedTaluk(itemValue);
+              fetchCitiesByTaluk(itemValue); // Call fetchCitiesByTaluk when selected taluk changes
+              setPersonalDetails({
+                ...personalDetails,
+                ResTalukId: itemValue,
+              }); // Update personal details state
+            }}
+          >
+            <Picker.Item label="Select Taluk" value="" />
+            {taluks.map((taluk, index) => (
+              <Picker.Item
+                key={`${taluk.TalukId}_${index}`}
+                label={taluk.TalukName}
+                value={taluk.TalukId}
+              />
+            ))}
+          </Picker>
+
+          <Text style={styles.text}>SELECT CITY :</Text>
+          <Picker
+            selectedValue={selectedCity}
+            onValueChange={(itemValue) => {
+              setSelectedCity(itemValue);
+              setPersonalDetails({
+                ...personalDetails,
+                ResCityId: itemValue,
+              }); // Update personal details state
+            }}
+            enabled={cities.length > 0} // Disable picker if cities are not fetched
+          >
+            <Picker.Item label="Select City" value="" />
+            {cities.map((city, index) => (
+              <Picker.Item
+                key={`${city.city_gid}_${index}`}
+                label={city.city_name}
+                value={city.city_gid}
+              />
+            ))}
+          </Picker>
         </View>
         <Text style={styles.text}>PINCODE:</Text>
         <TextInput
@@ -731,7 +789,7 @@ useEffect(() => {
           value={personalDetails.ResPincode}
           onChangeText={(value) => handleChange("ResPincode", value)}
         />
-          <Text style={styles.text}>PHONE NO :</Text>
+        <Text style={styles.text}>PHONE NO :</Text>
         <TextInput
           style={styles.input}
           placeholder="Phone No"
@@ -739,6 +797,11 @@ useEffect(() => {
           value={personalDetails.ResPhoneNo}
           onChangeText={(value) => handleChange("ResPhoneNo", value)}
         />
+        {!phoneValid && (
+          <Text style={styles.warningText}>
+            Phone number must have at least 10 digits
+          </Text>
+        )}
       </View>
 
       {/* Present Address */}
@@ -755,51 +818,50 @@ useEffect(() => {
         {/* </View> */}
         {!personalDetails.SameAsPresentAddress && (
           <View>
-              <Text style={styles.text}>ADDRESS :</Text>
+            <Text style={styles.text}>ADDRESS :</Text>
             <TextInput
               style={styles.input}
               placeholder="Address"
               value={personalDetails.PerAddress1}
               onChangeText={(value) => handleChange("PerAddress1", value)}
             />
-        <Text style={styles.text}>SELECT COUNTRY:</Text>
+            <Text style={styles.text}>SELECT COUNTRY:</Text>
             <Picker
-  selectedValue={selectedPresentCountry}
-  onValueChange={(itemValue) => {
-    setSelectedPresentCountry(itemValue); // Update selected country state
-    fetchPresentStatesByCountry(itemValue); // Fetch states based on selected country
-    setPersonalDetails({
-      ...personalDetails,
-      PerCountryId: itemValue,
-    }); 
-  }}
->
-
-  <Picker.Item label="Select Country" value="" />
-                {presentCountries.map((country, index) => (
-                  <Picker.Item
+              selectedValue={selectedPresentCountry}
+              onValueChange={(itemValue) => {
+                setSelectedPresentCountry(itemValue); // Update selected country state
+                fetchPresentStatesByCountry(itemValue); // Fetch states based on selected country
+                setPersonalDetails({
+                  ...personalDetails,
+                  PerCountryId: itemValue,
+                });
+              }}
+            >
+              <Picker.Item label="Select Country" value="" />
+              {presentCountries.map((country, index) => (
+                <Picker.Item
                   key={`${country.country_gid}_${index}`}
                   label={country.country_name}
                   value={country.country_gid}
-                  />
-                ))}
-              </Picker>
+                />
+              ))}
+            </Picker>
             {/* Repeat this pattern for other address fields */}
             {/* For brevity, I'll just show one */}
 
             <View style={styles.inputContainer}>
-            <Text style={styles.text}>SELECT STATE:</Text>
+              <Text style={styles.text}>SELECT STATE:</Text>
               <Picker
-        selectedValue={selectedPresentState}
-  onValueChange={(itemValue) => {
-    setSelectedPresentState(itemValue); // Update selected country state
-    fetchPresentDistrictsByState(itemValue); // Fetch states based on selected country
-    setPersonalDetails({
-      ...personalDetails,
-      PerStateId: itemValue,
-    }); 
-  }}
->
+                selectedValue={selectedPresentState}
+                onValueChange={(itemValue) => {
+                  setSelectedPresentState(itemValue); // Update selected country state
+                  fetchPresentDistrictsByState(itemValue); // Fetch states based on selected country
+                  setPersonalDetails({
+                    ...personalDetails,
+                    PerStateId: itemValue,
+                  });
+                }}
+              >
                 <Picker.Item label="Select State" value="" />
                 {presentStates.map((state, index) => (
                   <Picker.Item
@@ -812,16 +874,16 @@ useEffect(() => {
 
               <Text style={styles.text}>SELECT DISTRICT :</Text>
               <Picker
-        selectedValue={selectedPresentDistrict}
-  onValueChange={(itemValue) => {
-    setSelectedPresentDistrict(itemValue); // Update selected country state
-    fetchPresentTaluksByDistrict(itemValue); // Fetch states based on selected country
-    setPersonalDetails({
-      ...personalDetails,
-      PerDistrictId: itemValue,
-    }); 
-  }}
->
+                selectedValue={selectedPresentDistrict}
+                onValueChange={(itemValue) => {
+                  setSelectedPresentDistrict(itemValue); // Update selected country state
+                  fetchPresentTaluksByDistrict(itemValue); // Fetch states based on selected country
+                  setPersonalDetails({
+                    ...personalDetails,
+                    PerDistrictId: itemValue,
+                  });
+                }}
+              >
                 <Picker.Item label="Select District" value="" />
                 {presentDistricts.map((district, index) => (
                   <Picker.Item
@@ -831,51 +893,50 @@ useEffect(() => {
                   />
                 ))}
               </Picker>
-            
-              <Text style={styles.text}>SELECT TALUK:</Text>
-                <Picker
-        selectedValue={selectedPresentTaluk}
-  onValueChange={(itemValue) => {
-    setSelectedPresentTaluk(itemValue); // Update selected country state
-    fetchPresentCitiesByTaluk(itemValue); // Fetch states based on selected country
-    setPersonalDetails({
-      ...personalDetails,
-      PerTalukId: itemValue,
-    }); 
-  }}
->
-                  <Picker.Item label="Select Taluk" value="" />
-                  {presentTaluks.map((taluk, index) => (
-                    <Picker.Item
-                      key={`${taluk.TalukId}_${index}`}
-                      label={taluk.TalukName}
-                      value={taluk.TalukId}
-                    />
-                  ))}
-                </Picker>
 
-                <Text style={styles.text}>SELECT CITY :</Text>
-                <Picker
-                  selectedValue={selectedPresentCity}
-                  onValueChange={(itemValue) => {
-                    setSelectedPresentCity(itemValue);
-                    setPersonalDetails({
-                      ...personalDetails,
-                      PerCityId: itemValue,
-                    }); 
-                  }}
-                  enabled={presentCities.length > 0} // Disable picker if cities are not fetched
-                >
-                  <Picker.Item label="Select City" value="" />
-                  {presentCities.map((city, index) => (
-                    <Picker.Item
-                      key={`${city.city_gid}_${index}`}
-                      label={city.city_name}
-                      value={city.city_gid}
-                    />
-                  ))}
-                </Picker> 
-         
+              <Text style={styles.text}>SELECT TALUK:</Text>
+              <Picker
+                selectedValue={selectedPresentTaluk}
+                onValueChange={(itemValue) => {
+                  setSelectedPresentTaluk(itemValue); // Update selected country state
+                  fetchPresentCitiesByTaluk(itemValue); // Fetch states based on selected country
+                  setPersonalDetails({
+                    ...personalDetails,
+                    PerTalukId: itemValue,
+                  });
+                }}
+              >
+                <Picker.Item label="Select Taluk" value="" />
+                {presentTaluks.map((taluk, index) => (
+                  <Picker.Item
+                    key={`${taluk.TalukId}_${index}`}
+                    label={taluk.TalukName}
+                    value={taluk.TalukId}
+                  />
+                ))}
+              </Picker>
+
+              <Text style={styles.text}>SELECT CITY :</Text>
+              <Picker
+                selectedValue={selectedPresentCity}
+                onValueChange={(itemValue) => {
+                  setSelectedPresentCity(itemValue);
+                  setPersonalDetails({
+                    ...personalDetails,
+                    PerCityId: itemValue,
+                  });
+                }}
+                enabled={presentCities.length > 0} // Disable picker if cities are not fetched
+              >
+                <Picker.Item label="Select City" value="" />
+                {presentCities.map((city, index) => (
+                  <Picker.Item
+                    key={`${city.city_gid}_${index}`}
+                    label={city.city_name}
+                    value={city.city_gid}
+                  />
+                ))}
+              </Picker>
             </View>
             <Text style={styles.text}>PINCODE:</Text>
             <TextInput
@@ -885,7 +946,7 @@ useEffect(() => {
               value={personalDetails.PerPincode}
               onChangeText={(value) => handleChange("PerPincode", value)}
             />
-              <Text style={styles.text}>PHONE NO :</Text>
+            <Text style={styles.text}>PHONE NO :</Text>
             <TextInput
               style={styles.input}
               placeholder="Phone No"
@@ -901,18 +962,34 @@ useEffect(() => {
       <View style={styles.sectionContainer}>
         <Text style={styles.sectionTitle}>Other Details</Text>
         <View style={styles.inputContainer}>
-        <Text style={styles.text}>LAND MARK :</Text>
+          <Text style={styles.text}>LAND MARK :</Text>
           <TextInput
             style={styles.input}
             placeholder="Land Mark"
             value={personalDetails.LandMark}
             onChangeText={(value) => handleChange("LandMark", value)}
           />
-            <Text style={styles.text}>MOBILE NO:</Text>
-          <TextInput style={styles.input} placeholder="Mobile No" value = {personalDetails.MobileNo} onChangeText={(value) => handleChange("MobileNo", value)} />
-          
+          <Text style={styles.text}>MOBILE NO:</Text>
+          <TextInput
+            style={styles.input}
+            placeholder="Mobile No"
+            keyboardType="phone-pad"
+            value={personalDetails.MobileNo}
+            onChangeText={(value) => handleChange("MobileNo", value)}
+          />
+          {!mobileValid && (
+            <Text style={styles.warningText}>
+              Mobile number must have at least 10 digits
+            </Text>
+          )}
+
           <Text style={styles.text}>ALTERNATE NO:</Text>
-          <TextInput style={styles.input}  placeholder="Passport" value = {personalDetails.PassportNo} onChangeText={(value) => handleChange("PassportNo", value)}  />
+          <TextInput
+            style={styles.input}
+            placeholder="Passport"
+            value={personalDetails.PassportNo}
+            onChangeText={(value) => handleChange("PassportNo", value)}
+          />
           <Text style={styles.text}>EMAIL :</Text>
           <TextInput
             style={styles.input}
@@ -920,14 +997,14 @@ useEffect(() => {
             value={personalDetails.EmailId}
             onChangeText={(value) => handleChange("EmailId", value)}
           />
-            <Text style={styles.text}>PAN-NO :</Text>
+          <Text style={styles.text}>PAN-NO :</Text>
           <TextInput
             style={styles.input}
             placeholder="Pan No"
-            value={personalDetails.PANNo}
-            onChangeText={(value) => handleChange("PANNo", value)}
+            value={personalDetails.PANNO}
+            onChangeText={(value) => handleChange("PANNO", value)}
           />
-            <Text style={styles.text}>AADHAR NO:</Text>
+          <Text style={styles.text}>AADHAR NO:</Text>
           <TextInput
             style={styles.input}
             placeholder="Aadhar No"
@@ -984,11 +1061,11 @@ const styles = StyleSheet.create({
     top: 10,
     right: 10,
   },
-  text:{
+  text: {
     fontSize: 14,
     fontWeight: "bold",
-  
+
     color: "#333",
-    textTransform: "uppercase"
-  }
+    textTransform: "uppercase",
+  },
 });

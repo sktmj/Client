@@ -24,7 +24,7 @@ const Uploads = ({ navigation }) => {
       const formData = new FormData();
       formData.append("Pic", file);
       const token = await AsyncStorage.getItem("token");
-      const response = await fetch("http://10.0.2.2:3000/api/v1/uploads/profilepic", {
+      const response = await fetch("http://103.99.149.67:3000/api/v1/uploads/profilepic", {
         method: "POST",
         body: formData,
         headers: {
@@ -55,7 +55,7 @@ const Uploads = ({ navigation }) => {
       const formData = new FormData();
       formData.append("MobilePic", file);
       const token = await AsyncStorage.getItem("token");
-      const response = await fetch("http://10.0.2.2:3000/api/v1/uploads/mobilepic", {
+      const response = await fetch("http://103.99.149.67:3000/api/v1/uploads/mobilepic", {
         method: "POST",
         body: formData,
         headers: {
@@ -87,7 +87,7 @@ const Uploads = ({ navigation }) => {
       const formData = new FormData();
       formData.append("ResumeFileName", file);
       const token = await AsyncStorage.getItem("token");
-      const response = await fetch("http://10.0.2.2:3000/api/v1/uploads/resume", {
+      const response = await fetch("http://103.99.149.67:3000/api/v1/uploads/resume", {
         method: "POST",
         body: formData,
         headers: {

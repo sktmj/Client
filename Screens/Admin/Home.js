@@ -46,30 +46,26 @@ const Home = () => {
     ['26','12/5.2024','9.00',6.30],
     ['27','12/5.2024','9.00',6.30],
     ['28','12/5.2024','9.00',6.30],
-
-
-    
-
   ]);
 
   const data = [
     {
-      name: "Group A",
-      population: 123,
+      name: "WeakOff",
+      population: 2,
       color: "yellow",
       legendFontColor: "#7F7F7F",
       legendFontSize: 15,
     },
     {
-      name: "Group B",
-      population: 321,
+      name: "Present",
+      population:10,
       color: "blue",
       legendFontColor: "#7F7F7F",
       legendFontSize: 15,
     },
     {
-      name: "Group C",
-      population: 123,
+      name: "Leave",
+      population: 3,
       color: "green",
       legendFontColor: "#7F7F7F",
       legendFontSize: 15,

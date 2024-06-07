@@ -112,7 +112,7 @@ const OtherDetails = () => {
   const fetchLocation = async () => {
     try {
       const response = await axios.get(
-        "http://10.0.2.2:3000/api/v1/other/location"
+        "http://103.99.149.67:3000/api/v1/other/location"
       );
       setLocationOptions(response.data);
     } catch (error) {
@@ -122,7 +122,7 @@ const OtherDetails = () => {
   ////////////////////////////////////////////////////////
   const fetchCountries = () => {
     axios
-      .get("http://10.0.2.2:3000/api/v1/prsl/getAllCountries")
+      .get("http://103.99.149.67:3000/api/v1/prsl/getAllCountries")
       .then((response) => {
         setCountries(response.data);
       })
@@ -131,7 +131,7 @@ const OtherDetails = () => {
 
   const fetchStatesByCountry = (countryId) => {
     axios
-      .get(`http://10.0.2.2:3000/api/v1/prsl/states/${countryId}`)
+      .get(`http://103.99.149.67:3000/api/v1/prsl/states/${countryId}`)
       .then((response) => {
         setStates(response.data);
       })
@@ -140,7 +140,7 @@ const OtherDetails = () => {
 
   const fetchDistrictsByState = (stateId) => {
     axios
-      .get(`http://10.0.2.2:3000/api/v1/prsl/districts/${stateId}`)
+      .get(`http://103.99.149.67:3000/api/v1/prsl/districts/${stateId}`)
       .then((response) => {
         setDistricts(response.data);
       })
@@ -149,7 +149,7 @@ const OtherDetails = () => {
 
   const fetchTaluksByDistrict = (districtId) => {
     axios
-      .get(`http://10.0.2.2:3000/api/v1/prsl/taluk/${districtId}`)
+      .get(`http://103.99.149.67:3000/api/v1/prsl/taluk/${districtId}`)
       .then((response) => {
         const formattedTaluks = response.data.map((taluk) => ({
           TalukId: taluk.TalukId,
@@ -162,7 +162,7 @@ const OtherDetails = () => {
 
   const fetchCitiesByTaluk = (talukId) => {
     axios
-      .get(`http://10.0.2.2:3000/api/v1/prsl/city/${talukId}`)
+      .get(`http://103.99.149.67:3000/api/v1/prsl/city/${talukId}`)
       .then((response) => {
         setCities(response.data);
       })
@@ -173,7 +173,7 @@ const OtherDetails = () => {
   const fetchPresentCountries = () => {
     console.log(setPresentCountries, "dfdfdfdf");
     axios
-      .get("http://10.0.2.2:3000/api/v1/prsl/presentCountries")
+      .get("http://103.99.149.67:3000/api/v1/prsl/presentCountries")
       .then((response) => {
         // Assuming the response.data is an array of country objects
         setPresentCountries(response.data);
@@ -185,7 +185,7 @@ const OtherDetails = () => {
 
   const fetchPresentStatesByCountry = (countryId) => {
     axios
-      .get(`http://10.0.2.2:3000/api/v1/prsl/PresentState/${countryId}`)
+      .get(`http://103.99.149.67:3000/api/v1/prsl/PresentState/${countryId}`)
       .then((response) => {
         setPresentStates(response.data);
       })
@@ -193,7 +193,7 @@ const OtherDetails = () => {
   };
   const fetchPresentDistrictsByState = (stateId) => {
     axios
-      .get(`http://10.0.2.2:3000/api/v1/prsl/districts/${stateId}`)
+      .get(`http://103.99.149.67:3000/api/v1/prsl/districts/${stateId}`)
       .then((response) => {
         setPresentDistricts(response.data);
       })
@@ -202,7 +202,7 @@ const OtherDetails = () => {
 
   const fetchPresentTaluksByDistrict = (districtId) => {
     axios
-      .get(`http://10.0.2.2:3000/api/v1/prsl/taluk/${districtId}`)
+      .get(`http://103.99.149.67:3000/api/v1/prsl/taluk/${districtId}`)
       .then((response) => {
         const formattedTaluks = response.data.map((taluk) => ({
           TalukId: taluk.TalukId,
@@ -215,7 +215,7 @@ const OtherDetails = () => {
 
   const fetchPresentCitiesByTaluk = (talukId) => {
     axios
-      .get(`http://10.0.2.2:3000/api/v1/prsl/city/${talukId}`)
+      .get(`http://103.99.149.67:3000/api/v1/prsl/city/${talukId}`)
       .then((response) => {
         setPresentCities(response.data);
       })
@@ -240,7 +240,7 @@ const OtherDetails = () => {
   
     try {
       const response = await axios.post(
-        "http://10.0.2.2:3000/api/v1/other/others",
+        "http://103.99.149.67:3000/api/v1/other/others",
         {
           CurrentSalary: CurrentSalary,
           ExpectSalary: expectSalary,
@@ -306,7 +306,7 @@ const OtherDetails = () => {
   const fetchPersonalDetails = async () => {
     try {
       const response = await axios.get(
-        "http://10.0.2.2:3000/api/v1/other/getOthers",
+        "http://103.99.149.67:3000/api/v1/other/getOthers",
         {
           headers: {
             "Content-Type": "application/json",

@@ -56,7 +56,7 @@ const AcademicDetails = ({ navigation }) => {
   const fetchQualificationDetails = async () => {
     try {
       const response = await axios.get(
-        "http://10.0.2.2:3000/api/v1/Qlf/getQlf",
+        "http://103.99.149.67:3000/api/v1/Qlf/getQlf",
         {
           headers: {
             "Content-Type": "application/json",
@@ -91,7 +91,7 @@ const AcademicDetails = ({ navigation }) => {
   const fetchCourseDetails = async () => {
     try {
       const response = await axios.get(
-        "http://10.0.2.2:3000/api/v1/Qlf/getCourse",
+        "http://103.99.149.67:3000/api/v1/Qlf/getCourse",
         {
           headers: {
             "Content-Type": "application/json",
@@ -122,7 +122,7 @@ const AcademicDetails = ({ navigation }) => {
   const fetchQualifications = async () => {
     try {
       const response = await fetch(
-        "http://10.0.2.2:3000/api/v1/Qlf/qualification"
+        "http://103.99.149.67:3000/api/v1/Qlf/qualification"
       );
       if (!response.ok) {
         throw new Error("Failed to fetch qualifications");
@@ -220,7 +220,7 @@ const AcademicDetails = ({ navigation }) => {
     try {
       const course = courseFields[index];
       const response = await axios.put(
-        "http://10.0.2.2:3000/api/v1/Qlf/updateAppCourse",
+        "http://103.99.149.67:3000/api/v1/Qlf/updateAppCourse",
         {
           CourseId: course.CourseId, // Include CourseId
           Course: course.course,
@@ -258,7 +258,7 @@ const AcademicDetails = ({ navigation }) => {
     try {
       const qualification = qualificationFields[index];
       const response = await axios.put(
-        "http://10.0.2.2:3000/api/v1/Qlf/updateAppQualification",
+        "http://103.99.149.67:3000/api/v1/Qlf/updateAppQualification",
         {
           AppQualId: qualification.AppQualId,
           QualId: qualification.selectedQualification,
@@ -302,7 +302,7 @@ const AcademicDetails = ({ navigation }) => {
         if (qualification.AppQualId) {
           // Update existing qualification
           await axios.put(
-            "http://10.0.2.2:3000/api/v1/Qlf/updateAppQualification",
+            "http://103.99.149.67:3000/api/v1/Qlf/updateAppQualification",
             {
               AppQualId: qualification.AppQualId,
               QualId: qualification.selectedQualification,
@@ -323,7 +323,7 @@ const AcademicDetails = ({ navigation }) => {
         } else {
           // Insert new qualification
           const response = await axios.post(
-            "http://10.0.2.2:3000/api/v1/Qlf/insertAppQualification",
+            "http://103.99.149.67:3000/api/v1/Qlf/insertAppQualification",
             {
               QualId: qualification.selectedQualification,
               ColName: qualification.colName,
@@ -351,7 +351,7 @@ const AcademicDetails = ({ navigation }) => {
         if (course.CourseId) {
           // Update existing course
           await axios.put(
-            "http://10.0.2.2:3000/api/v1/Qlf/updateAppCourse",
+            "http://103.99.149.67:3000/api/v1/Qlf/updateAppCourse",
             {
               CourseId: course.CourseId,
               Course: course.course,
@@ -369,7 +369,7 @@ const AcademicDetails = ({ navigation }) => {
         } else {
           // Insert new course
           const response = await axios.post(
-            "http://10.0.2.2:3000/api/v1/Qlf/courses",
+            "http://103.99.149.67:3000/api/v1/Qlf/courses",
             {
               Course: course.course,
               Institute: course.institute,
