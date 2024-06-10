@@ -1,45 +1,67 @@
-import { useNavigation } from "@react-navigation/native";
-import React, { useState } from "react";
-import {
-  View,
-  Text,
-  TextInput,
-  StyleSheet,
-  TouchableOpacity,
-  ScrollView,
-  Image,
-  Button,
-} from "react-native";
+import React, { useEffect, useState } from "react";
+import { ScrollView, View, Text, Button, Image, Alert, StyleSheet, ActivityIndicator, Platform } from "react-native";
 import * as DocumentPicker from "expo-document-picker";
+import { useNavigation } from "@react-navigation/native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import * as ImagePicker from "expo-image-picker";
+
 const Uploads = ({ navigation }) => {
   const [profilePicture, setProfilePicture] = useState(null);
-  const [mobilePicture, setMobilePicture] = useState(null);
-  const [resume, setResume] = useState(null);
   const [loading, setLoading] = useState(false);
-  const Navigation = useNavigation();
+  const [token, setToken] = useState(null);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+  useEffect(() => {
+    checkAuthentication();
+  }, []);
+
+  const checkAuthentication = async () => {
+    try {
+      const storedToken = await AsyncStorage.getItem("AppId");
+      if (!storedToken) {
+        console.log("User is not authenticated. Redirecting to login screen...");
+        navigation.navigate("Login");
+      } else {
+        console.log("User is authenticated.");
+        setIsLoggedIn(true);
+        setToken(storedToken.trim());
+      }
+    } catch (error) {
+      console.error("Error checking authentication:", error.message);
+    }
+  };
 
   const handleFileUpload = async () => {
+    if (!profilePicture) {
+      Alert.alert("Error", "Please select an image to upload.");
+      return;
+    }
+  
     try {
       setLoading(true);
       const formData = new FormData();
-      formData.append("Pic", file);
-      const token = await AsyncStorage.getItem("token");
-      const response = await fetch("http://103.99.149.67:3000/api/v1/uploads/profilepic", {
+      formData.append("Pic", {
+        uri: profilePicture.uri,
+        name: profilePicture.uri.split("/").pop(),
+        type: "image/jpeg",
+      });
+  
+      const response = await fetch(`http://103.99.149.67:3000/api/v1/uploads/profilepic`, {
         method: "POST",
         body: formData,
         headers: {
-          "Content-Type": "multipart/form-data",
           Authorization: `Bearer ${token}`,
+          "Content-Type": "multipart/form-data",
         },
       });
-
+  
       if (!response.ok) {
         throw new Error("Failed to upload file");
       }
-
+  
       const data = await response.json();
       console.log(data);
-
+  
       Alert.alert("Success", "File uploaded successfully");
     } catch (error) {
       console.error("Error uploading file:", error.message);
@@ -48,242 +70,124 @@ const Uploads = ({ navigation }) => {
       setLoading(false);
     }
   };
-
-  const handleMobilepic = async () => {
-    try {
-      setLoading(true);
-      const formData = new FormData();
-      formData.append("MobilePic", file);
-      const token = await AsyncStorage.getItem("token");
-      const response = await fetch("http://103.99.149.67:3000/api/v1/uploads/mobilepic", {
-        method: "POST",
-        body: formData,
-        headers: {
-          "Content-Type": "multipart/form-data",
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to upload file");
-      }
-
-      const data = await response.json();
-      console.log(data);
-
-      Alert.alert("Success", "File uploaded successfully");
-    } catch (error) {
-      console.error("Error uploading file:", error.message);
-      Alert.alert("Error", "Failed to upload file");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-
-  const handleResume = async () => {
-    try {
-      setLoading(true);
-      const formData = new FormData();
-      formData.append("ResumeFileName", file);
-      const token = await AsyncStorage.getItem("token");
-      const response = await fetch("http://103.99.149.67:3000/api/v1/uploads/resume", {
-        method: "POST",
-        body: formData,
-        headers: {
-          "Content-Type": "multipart/form-data",
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to upload file");
-      }
-
-      const data = await response.json();
-      console.log(data);
-
-      Alert.alert("Success", "File uploaded successfully");
-    } catch (error) {
-      console.error("Error uploading file:", error.message);
-      Alert.alert("Error", "Failed to upload file");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-
-
+  
   const handleChooseFile = async () => {
     try {
-      const fileResult = await DocumentPicker.getDocumentAsync({
-        type: "image/*", // Change the type as needed
-      });
+      let fileResult;
+      if (Platform.OS === "web") {
+        fileResult = await DocumentPicker.getDocumentAsync({ type: "image/*" });
+      } else {
+        const permissionResult = await ImagePicker.requestCameraPermissionsAsync();
 
-      if (fileResult.type === "success" && fileResult.uri) {
-        const fileData = {
-          uri: fileResult.uri,
-          name: fileResult.name,
-          type: "image/jpeg", // Change the type as needed
-        };
-        setFile(fileData);
+        if (permissionResult.granted === false) {
+          Alert.alert("Permission Denied", "Camera permission is required to take photos.");
+          return;
+        }
+
+        fileResult = await ImagePicker.launchImageLibraryAsync({
+          mediaTypes: ImagePicker.MediaTypeOptions.Images,
+          allowsEditing: true,
+          aspect: [4, 3],
+          quality: 1,
+        });
+      }
+  
+      console.log("File result:", fileResult);
+  
+      if (!fileResult.cancelled && fileResult.assets && fileResult.assets.length > 0 && fileResult.assets[0].uri) {
+        setProfilePicture(fileResult.assets[0]);
+      } else {
+        Alert.alert("Error", "Failed to choose file");
       }
     } catch (error) {
       console.error("Error choosing file:", error.message);
       Alert.alert("Error", "Failed to choose file");
     }
   };
-
-  const handleProfilePictureUpload = (image) => {
-    setProfilePicture(image);
+  
+  const handleTakePhoto = async () => {
+    try {
+      console.log("Requesting camera permissions...");
+      const permissionResult = await ImagePicker.requestCameraPermissionsAsync();
+  
+      console.log("Permission result:", permissionResult);
+  
+      if (permissionResult.granted === false) {
+        Alert.alert("Permission Denied", "Camera permission is required to take photos.");
+        return;
+      }
+  
+      console.log("Launching camera...");
+      let photo = await ImagePicker.launchCameraAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsEditing: true,
+        aspect: [4, 3],
+        quality: 1,
+      });
+  
+      console.log("Photo:", photo);
+  
+      if (!photo.cancelled && photo.assets && photo.assets.length > 0 && photo.assets[0].uri) {
+        setProfilePicture(photo.assets[0]);
+      } else {
+        Alert.alert("Error", "Failed to take photo");
+      }
+    } catch (error) {
+      console.error("Error taking photo:", error.message);
+      Alert.alert("Error", "Failed to take photo");
+    }
   };
-
-  const handleMobilePictureUpload = (image) => {
-    setMobilePicture(image);
-  };
-
-  const handleResumeUpload = (document) => {
-    setResume(document);
-  };
-
-  const saveAndProceed = () => {
-    Navigation.navigate("Declaration");
-  };
-
+  
+  
   return (
     <ScrollView style={styles.container}>
       <View style={styles.formContainer}>
         <Text style={styles.sectionTitle}>Profile Picture</Text>
-        <View
-          style={{
-            flex: 1,
-            justifyContent: "center",
-            alignItems: "center",
-            marginTop: 20,
-          }}
-        >
-      
+        <View style={styles.fileInputContainer}>
           <Button
-            title="Choose File"
+            title="Choose Image"
             onPress={handleChooseFile}
             disabled={loading}
           />
           <Button
-            title="Upload File"
+            title="Take Photo"
+            onPress={handleTakePhoto}
+            disabled={loading}
+          />
+          <Button
+            title="Upload Image"
             onPress={handleFileUpload}
-            disabled={!profilePicture|| loading}
+            disabled={!profilePicture || loading}
           />
         </View>
-
-    
-      
+        {loading && <ActivityIndicator size="large" color="#0000ff" />}
         {profilePicture && (
-          <Image source={{ uri: profilePicture }} style={styles.image} />
+          <View style={styles.imageContainer}>
+            <Text>Selected Image:</Text>
+            <Image 
+              source={{ uri: profilePicture.uri }} 
+              style={styles.image} 
+              onError={(error) => console.error("Image Error:", error)} 
+              resizeMode="contain"
+            />
+          </View>
         )}
-
-        <Text style={styles.sectionTitle}>Mobile Picture</Text>
-        <View
-          style={{
-            flex: 1,
-            justifyContent: "center",
-            alignItems: "center",
-            marginTop: 20,
-          }}
-        >
-      
-          <Button
-            title="Choose File"
-            onPress={handleChooseFile}
-            disabled={loading}
-          />
-          <Button
-            title="Upload File"
-            onPress={handleMobilepic}
-            disabled={!mobilePicture|| loading}
-          />
-        </View>
-
-  
-      
-        {mobilePicture && (
-          <Image source={{ uri:mobilePicture }} style={styles.image} />
-        )}
-
-       <Text style={styles.sectionTitle}>Upload Resume</Text>
-       
-          <View
-          style={{
-            flex: 1,
-            justifyContent: "center",
-            alignItems: "center",
-            marginTop: 20,
-          }}
-        >
-      
-          <Button
-            title="Choose File"
-            onPress={handleChooseFile}
-            disabled={loading}
-          />
-          <Button
-            title="Upload File"
-            onPress={handleResume}
-            disabled={!resume|| loading}
-          />
-        </View>
-
       </View>
     </ScrollView>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    padding: 20,
-  },
-  formContainer: {
-    flex: 1,
-  },
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: "bold",
-    marginBottom: 10,
-    marginTop: 20,
-  },
-  uploadButton: {
-    backgroundColor: "#333",
-    padding: 12,
-    borderRadius: 8,
+  container: { flex: 1, padding: 20 },
+  formContainer: { marginBottom: 20 },
+  sectionTitle: { fontSize: 20, fontWeight: "bold", marginBottom: 10 },
+  fileInputContainer: {
+    flexDirection: "row",
+    justifyContent: "space-between",
     alignItems: "center",
     marginBottom: 20,
   },
-  buttonText: {
-    color: "white",
-    fontSize: 16,
-    fontWeight: "bold",
-  },
-  image: {
-    width: 200,
-    height: 200,
-    resizeMode: "cover",
-    marginBottom: 20,
-  },
-  resumeText: {
-    fontSize: 16,
-    marginBottom: 20,
-  },
-  saveButton: {
-    backgroundColor: "#059A5F",
-    padding: 15,
-    borderRadius: 8,
-    alignItems: "center",
-  },
-  saveButtonText: {
-    color: "white",
-    fontSize: 18,
-    fontWeight: "bold",
-  },
+  image: { width: 200, height: 200, marginTop: 10 },
 });
 
 export default Uploads;

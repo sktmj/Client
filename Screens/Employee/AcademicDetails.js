@@ -152,19 +152,38 @@ const AcademicDetails = ({ navigation }) => {
     setFormChanged(true);
   };
 
-  const handleRemoveQualificationField = (index) => {
+  const handleRemoveQualificationField = async (index) => {
     const fields = [...qualificationFields];
     const removedField = fields.splice(index, 1)[0]; // Remove the field and get the removed item
     setQualificationFields(fields);
     setFormChanged(true);
-
+  
     // Check if the removed field was already present in the database
     if (removedField.AppQualId) {
-      // Perform deletion operation from the database
-      // You can write the deletion logic here
-      console.log(
-        `Qualification with ID ${removedField.AppQualId} will be deleted from the database`
-      );
+      try {
+        const response = await axios.delete(
+          `http://103.99.149.67:3000/api/v1/Qlf/deleteQual/${removedField.AppQualId}`,
+          {
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+  
+        if (response.data.success) {
+          console.log(
+            `Qualification with ID ${removedField.AppQualId} deleted successfully`
+          );
+          Alert.alert("Success", "Qualification deleted successfully");
+        } else {
+          console.error("Failed to delete qualification:", response.data.message);
+          Alert.alert("Error", "Failed to delete qualification");
+        }
+      } catch (error) {
+        console.error("Error deleting qualification:", error.message);
+        Alert.alert("Error", "Failed to delete qualification");
+      }
     }
   };
 
@@ -182,19 +201,39 @@ const AcademicDetails = ({ navigation }) => {
     setFormChanged(true);
   };
 
-  const handleRemoveCourseField = (index) => {
+
+  const handleRemoveCourseField = async (index) => {
     const fields = [...courseFields];
     const removedField = fields.splice(index, 1)[0]; // Remove the field and get the removed item
     setCourseFields(fields);
     setFormChanged(true);
-
+  
     // Check if the removed field was already present in the database
-    if (removedField.CourseId) {
-      // Perform deletion operation from the database
-      // You can write the deletion logic here
-      console.log(
-        `Course with ID ${removedField.CourseId} will be deleted from the database`
-      );
+    if (removedField. CourseId) {
+      try {
+        const response = await axios.delete(
+          `http://103.99.149.67:3000/api/v1/Qlf/deletecourse/${removedField.CourseId}`,
+          {
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+  
+        if (response.data.success) {
+          console.log(
+            `Course with ID ${removedField.CourseId} deleted successfully`
+          );
+          Alert.alert("Success", "Course deleted successfully");
+        } else {
+          console.error("Failed to delete Course:", response.data.message);
+          Alert.alert("Error", "Failed to delete Course");
+        }
+      } catch (error) {
+        console.error("Error deleting Course:", error.message);
+        Alert.alert("Error", "Failed to delete Course");
+      }
     }
   };
 
@@ -579,7 +618,7 @@ const AcademicDetails = ({ navigation }) => {
                 {/* Remove course button */}
                 <TouchableOpacity
                   style={styles.removeButton}
-                  onPress={() => handleRemoveCourseField(index)}
+                  onPress={() =>handleRemoveCourseField(index)}
                   disabled={isSubmitting}
                 >
                   <Text style={styles.removeButtonText}>Remove</Text>

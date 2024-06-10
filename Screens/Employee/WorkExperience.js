@@ -72,6 +72,7 @@ const WorkExperience = ({ navigation }) => {
     setExperienceField([
       ...experienceField,
       {
+        ExpId:"null",
         CompName: "",
         Designation: "",
         LastSalary: "",
@@ -89,21 +90,41 @@ const WorkExperience = ({ navigation }) => {
     setFormChanged(true);
   };
 
-  const handleRemoveQualificationField = (index) => {
+  const handleRemoveExperienceField = async(index) => {
     const fields = [...experienceField];
     const removedField = fields.splice(index, 1)[0]; // Remove the field and get the removed item
     setExperienceField(fields);
     setFormChanged(true);
-
+  
     // Check if the removed field was already present in the database
     if (removedField.ExpId) {
-      // Perform deletion operation from the database
-      // You can write the deletion logic here
-      console.log(
-        `Qualification with ID ${removedField.ExpId} will be deleted from the database`
-      );
+      try {
+        const response = await axios.delete(
+          `http://103.99.149.67:3000/api/v1/expc/deleteExperience/${removedField.ExpId}`,
+          {
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+  
+        if (response.data.success) {
+          console.log(
+            `experience with ID ${removedField.ExpId} deleted successfully`
+          );
+          Alert.alert("Success", "experience deleted successfully");
+        } else {
+          console.error("Failed to delete experience:", response.data.message);
+          Alert.alert("Error", "Failed to delete experience");
+        }
+      } catch (error) {
+        console.error("Error deleting experience:", error.message);
+        Alert.alert("Error", "Failed to delete experience");
+      }
     }
   };
+
   const checkAuthentication = async () => {
     try {
       const storedToken = await AsyncStorage.getItem("AppId");
@@ -403,8 +424,8 @@ const WorkExperience = ({ navigation }) => {
         setWorkCompany(userData.WorkCompany);
         setWorkRelieveReason(userData.RelieveReason);
         setSelectedDesignation(userData.Designation)
-        setEPFNO(userData.EPFNO);
-        setUANNO(userData.UANNO);
+        setEPFNO(userData.EPFNo);
+        setUANNO(userData.UANNo);
         setRegExpExNo(userData.RegExpExNo);
         setSalesExp(userData.SalesExp);
         setHealthIssue(userData.HealthIssue);
@@ -566,7 +587,7 @@ const WorkExperience = ({ navigation }) => {
 
             <TouchableOpacity
               style={styles.removeButton}
-              onPress={() => handleRemoveQualificationField(index)}
+              onPress={() => handleRemoveExperienceField(index)}
             >
               <Text>Delete</Text>
             </TouchableOpacity>

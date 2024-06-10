@@ -14,20 +14,48 @@ const FamilyDetails = ({ navigation }) => {
   ]);
   const [languages, setLanguages] = useState([]);
   const [languageSections, setLanguageSections] = useState([
-    { LanId: '', LanSpeak: 'N', LanRead: 'N', LanWrite: 'N' } // Set default values to 'N'
+    { AppLanId:'',LanId: '', LanSpeak: 'N', LanRead: 'N', LanWrite: 'N' } // Set default values to 'N'
   ]);
 
   const handleAddFamily = () => {
     setFamilyDetails([...familyDetails, { FamilyId: '', relation: '', name: '', age: '', work: '', monthSalary: '', phoneNo: '' }]);
   }
-  const handleDeleteFamily = (index) => {
-    if (familyDetails.length > 1) {
-      const updatedFamilyDetails = familyDetails.filter((_, i) => i !== index);
-      setFamilyDetails(updatedFamilyDetails);
-    } else {
-      Alert.alert("Error", "Cannot delete all family details.");
+
+  const handleRemoveFamilyField = async (index) => {
+    const fields = [...familyDetails];
+    const removedField = fields.splice(index, 1)[0]; // Remove the field and get the removed item
+    setFamilyDetails(fields);
+    setFormChanged(true);
+  
+    // Check if the removed field was already present in the database
+    if (removedField.FamilyId) {
+      try {
+        const response = await axios.delete(
+          `http://103.99.149.67:3000/api/v1/fam/deletefamily/${removedField.FamilyId}`, // Ensure there is a slash before FamilyId
+          {
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+  
+        if (response.data.success) {
+          console.log(
+            `Family with ID ${removedField.FamilyId} deleted successfully`
+          );
+          Alert.alert("Success", "Family deleted successfully");
+        } else {
+          console.error("Failed to delete family:", response.data.message);
+          Alert.alert("Error", "Failed to delete family");
+        }
+      } catch (error) {
+        console.error("Error deleting family:", error.message);
+        Alert.alert("Error", "Failed to delete family");
+      }
     }
   };
+  
 
   useEffect(() => {
     fetchLanguages();
@@ -81,14 +109,44 @@ const FamilyDetails = ({ navigation }) => {
   };
 
   const handleAddLanguage = () => {
-    setLanguageSections([...languageSections, { LanId: '', LanSpeak: 'N', LanRead: 'N', LanWrite: 'N' }]);
+    setLanguageSections([...languageSections, { AppLanId:'',LanId: '', LanSpeak: 'N', LanRead: 'N', LanWrite: 'N' }]);
   };
 
-  const handleDeleteLanguage = (index) => {
-    const updatedLanguageSections = languageSections.filter((_, i) => i !== index);
-    setLanguageSections(updatedLanguageSections);
+  const handleDeleteLanguage = async (index) => {
+    const fields = [...languageSections];
+    const removedField = fields.splice(index, 1)[0]; // Remove the field and get the removed item
+    setLanguageSections(fields);
+    setFormChanged(true);
+  
+    // Check if the removed field was already present in the database
+    if (removedField.AppLanId) {
+      try {
+        const response = await axios.delete(
+          `http://103.99.149.67:3000/api/v1/fam/deleteLan/${removedField.AppLanId}`, // Ensure there is a slash before FamilyId
+          {
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+  
+        if (response.data.success) {
+          console.log(
+            `Family with ID ${removedField.AppLanId} deleted successfully`
+          );
+          Alert.alert("Success", "Family deleted successfully");
+        } else {
+          console.error("Failed to delete family:", response.data.message);
+          Alert.alert("Error", "Failed to delete family");
+        }
+      } catch (error) {
+        console.error("Error deleting family:", error.message);
+        Alert.alert("Error", "Failed to delete family");
+      }
+    }
   };
-
+  
   const handleSubmit = async () => {
     if (isSubmitting) {
       return; // Prevent multiple submissions
@@ -407,7 +465,7 @@ const FamilyDetails = ({ navigation }) => {
 
           <View style={styles.buttonsContainer}>
            
-            <TouchableOpacity style={styles.deleteButton} onPress={() => handleDeleteFamily(index)}>
+            <TouchableOpacity style={styles.deleteButton} onPress={() => handleRemoveFamilyField(index)}>
               <Text style={styles.buttonText}>Delete</Text>
             </TouchableOpacity>
             <TouchableOpacity style={styles.updateButton} onPress={() => handleUpdatefamily(index)}>
