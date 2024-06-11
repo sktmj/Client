@@ -66,7 +66,7 @@ const DeclarationComponent = () => {
   const handleUpdateDeclaration = async () => {
     try {
       const response = await fetch(
-        "http://103.99.149.67:3000/api/v1/prsl/declaration", // Correct endpoint
+        "http://10.0.2.2:3000/api/v1/prsl/declaration", // Correct endpoint
         {
           method: "POST",
           headers: {
@@ -104,7 +104,7 @@ const DeclarationComponent = () => {
 const fetchDecalrationDetails = async () => {
   try {
     const response = await axios.get(
-      "http://103.99.149.67:3000/api/v1/prsl/getDeclaration",
+      "http://10.0.2.2:3000/api/v1/prsl/getDeclaration",
       {
         headers: {
           "Content-Type": "application/json",

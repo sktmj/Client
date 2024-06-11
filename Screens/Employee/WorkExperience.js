@@ -100,7 +100,7 @@ const WorkExperience = ({ navigation }) => {
     if (removedField.ExpId) {
       try {
         const response = await axios.delete(
-          `http://103.99.149.67:3000/api/v1/expc/deleteExperience/${removedField.ExpId}`,
+          `http://10.0.2.2:3000/api/v1/expc/deleteExperience/${removedField.ExpId}`,
           {
             headers: {
               "Content-Type": "application/json",
@@ -146,7 +146,7 @@ const WorkExperience = ({ navigation }) => {
   const fetchDesignationOptions = async () => {
     try {
       const response = await axios.get(
-        "http://103.99.149.67:3000/api/v1/expc/designation"
+        "http://10.0.2.2:3000/api/v1/expc/designation"
       );
       setDesignationOptions(response.data);
     } catch (error) {
@@ -156,7 +156,7 @@ const WorkExperience = ({ navigation }) => {
   const fetchExperienceDetails = async () => {
     try {
       const response = await axios.get(
-        "http://103.99.149.67:3000/api/v1/expc/getExpc",
+        "http://10.0.2.2:3000/api/v1/expc/getExpc",
         {
           headers: {
             "Content-Type": "application/json",
@@ -204,7 +204,7 @@ const WorkExperience = ({ navigation }) => {
         if (!experience.ExpId) {
           // Only add new qualifications
           const ExperienceResponse = await fetch(
-            "http://103.99.149.67:3000/api/v1/expc/experience",
+            "http://10.0.2.2:3000/api/v1/expc/experience",
             {
               method: "POST",
               headers: {
@@ -244,7 +244,7 @@ const WorkExperience = ({ navigation }) => {
         }
       }
       const WorkExperieceResponse = await axios.post(
-        "http://103.99.149.67:3000/api/v1/expc/TotalExperience",
+        "http://10.0.2.2:3000/api/v1/expc/TotalExperience",
         {
           WorkCompany: WorkCompany,
           RelieveReason: workRelieveReason,
@@ -287,7 +287,7 @@ const WorkExperience = ({ navigation }) => {
       const formData = new FormData();
       formData.append("CarLicenseDoc", file);
 
-      const response = await fetch("http://103.99.149.67:3000/api/v1/expc/upload", {
+      const response = await fetch("http://10.0.2.2:3000/api/v1/expc/upload", {
         method: "POST",
         body: formData,
         headers: {
@@ -366,7 +366,7 @@ const WorkExperience = ({ navigation }) => {
     try {
       const experience = experienceField[index];
       const response = await axios.put(
-        "http://103.99.149.67:3000/api/v1/expc/updateExpc",
+        "http://10.0.2.2:3000/api/v1/expc/updateExpc",
         {
           ExpId: experience.ExpId, // Pass the experience ID
           CompName: experience.CompName, // Pass the updated values
@@ -408,7 +408,7 @@ const WorkExperience = ({ navigation }) => {
   const fetchUserDetails = async () => {
     try {
       const response = await axios.get(
-        "http://103.99.149.67:3000/api/v1/expc/getExperience",
+        "http://10.0.2.2:3000/api/v1/expc/getExperience",
         {
           headers: {
             "Content-Type": "application/json",
