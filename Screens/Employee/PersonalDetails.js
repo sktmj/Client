@@ -151,7 +151,7 @@ export default function PersonalDetailsForm() {
     try {
       const storedToken = token;
       const response = await axios.get(
-        "http://10.0.2.2:3000/api/v1/prsl/getPrsl",
+        "http://103.99.149.67:3000/api/v1/prsl/getPrsl",
         {
           headers: {
             "Content-Type": "application/json",
@@ -214,7 +214,7 @@ export default function PersonalDetailsForm() {
   /////////////////////////////////////////
   const fetchCountries = () => {
     axios
-      .get("http://10.0.2.2:3000/api/v1/prsl/getAllCountries")
+      .get("http://103.99.149.67:3000/api/v1/prsl/getAllCountries")
       .then((response) => {
         setCountries(response.data);
       })
@@ -223,7 +223,7 @@ export default function PersonalDetailsForm() {
 
   const fetchStatesByCountry = (countryId) => {
     axios
-      .get(`http://10.0.2.2:3000/api/v1/prsl/states/${countryId}`)
+      .get(`http://103.99.149.67:3000/api/v1/prsl/states/${countryId}`)
       .then((response) => {
         setStates(response.data);
       })
@@ -232,7 +232,7 @@ export default function PersonalDetailsForm() {
 
   const fetchDistrictsByState = (stateId) => {
     axios
-      .get(`http://10.0.2.2:3000/api/v1/prsl/districts/${stateId}`)
+      .get(`http://103.99.149.67:3000/api/v1/prsl/districts/${stateId}`)
       .then((response) => {
         setDistricts(response.data);
       })
@@ -241,7 +241,7 @@ export default function PersonalDetailsForm() {
 
   const fetchTaluksByDistrict = (districtId) => {
     axios
-      .get(`http://10.0.2.2:3000/api/v1/prsl/taluk/${districtId}`)
+      .get(`http://103.99.149.67:3000/api/v1/prsl/taluk/${districtId}`)
       .then((response) => {
         const formattedTaluks = response.data.map((taluk) => ({
           TalukId: taluk.TalukId,
@@ -254,7 +254,7 @@ export default function PersonalDetailsForm() {
 
   const fetchCitiesByTaluk = (talukId) => {
     axios
-      .get(`http://10.0.2.2:3000/api/v1/prsl/city/${talukId}`)
+      .get(`http://103.99.149.67:3000/api/v1/prsl/city/${talukId}`)
       .then((response) => {
         setCities(response.data);
       })
@@ -265,7 +265,7 @@ export default function PersonalDetailsForm() {
   const fetchPresentCountries = () => {
     console.log(setPresentCountries, "dfdfdfdf");
     axios
-      .get("http://10.0.2.2:3000/api/v1/prsl/presentCountries")
+      .get("http://103.99.149.67:3000/api/v1/prsl/presentCountries")
       .then((response) => {
         // Assuming the response.data is an array of country objects
         setPresentCountries(response.data);
@@ -277,7 +277,7 @@ export default function PersonalDetailsForm() {
 
   const fetchPresentStatesByCountry = (countryId) => {
     axios
-      .get(`http://10.0.2.2:3000/api/v1/prsl/PresentState/${countryId}`)
+      .get(`http://103.99.149.67:3000/api/v1/prsl/PresentState/${countryId}`)
       .then((response) => {
         setPresentStates(response.data);
       })
@@ -285,7 +285,7 @@ export default function PersonalDetailsForm() {
   };
   const fetchPresentDistrictsByState = (stateId) => {
     axios
-      .get(`http://10.0.2.2:3000/api/v1/prsl/districts/${stateId}`)
+      .get(`http://103.99.149.67:3000/api/v1/prsl/districts/${stateId}`)
       .then((response) => {
         setPresentDistricts(response.data);
       })
@@ -294,7 +294,7 @@ export default function PersonalDetailsForm() {
 
   const fetchPresentTaluksByDistrict = (districtId) => {
     axios
-      .get(`http://10.0.2.2:3000/api/v1/prsl/taluk/${districtId}`)
+      .get(`http://103.99.149.67:3000/api/v1/prsl/taluk/${districtId}`)
       .then((response) => {
         const formattedTaluks = response.data.map((taluk) => ({
           TalukId: taluk.TalukId,
@@ -307,7 +307,7 @@ export default function PersonalDetailsForm() {
 
   const fetchPresentCitiesByTaluk = (talukId) => {
     axios
-      .get(`http://10.0.2.2:3000/api/v1/prsl/city/${talukId}`)
+      .get(`http://103.99.149.67:3000/api/v1/prsl/city/${talukId}`)
       .then((response) => {
         setPresentCities(response.data);
       })
@@ -352,7 +352,7 @@ export default function PersonalDetailsForm() {
   const handleSubmit = async () => {
     try {
       const response = await axios.post(
-        "http://10.0.2.2:3000/api/v1/prsl/updatePersonalDetails",
+        "http://103.99.149.67:3000/api/v1/prsl/updatePersonalDetails",
         personalDetails, // Send the entire personalDetails object
         {
           headers: {
@@ -448,7 +448,7 @@ export default function PersonalDetailsForm() {
   };
   const fetchReligion = () => {
     axios
-      .get("http://10.0.2.2:3000/api/v1/prsl/getReligion")
+      .get("http://103.99.149.67:3000/api/v1/prsl/getReligion")
       .then((response) => {
         setReligion(response.data);
       })
@@ -457,7 +457,7 @@ export default function PersonalDetailsForm() {
 
   const fetchCasteByReligion = (religion_gid) => {
     axios
-      .get(`http://10.0.2.2:3000/api/v1/prsl/caste/${religion_gid}`)
+      .get(`http://103.99.149.67:3000/api/v1/prsl/caste/${religion_gid}`)
       .then((response) => {
         setCaste(response.data); // Set the caste state with the fetched caste data
       })

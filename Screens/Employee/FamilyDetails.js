@@ -31,7 +31,7 @@ const FamilyDetails = ({ navigation }) => {
     if (removedField.FamilyId) {
       try {
         const response = await axios.delete(
-          `http://10.0.2.2:3000/api/v1/fam/deletefamily/${removedField.FamilyId}`, // Ensure there is a slash before FamilyId
+          `http://103.99.149.67:3000/api/v1/fam/deletefamily/${removedField.FamilyId}`, // Ensure there is a slash before FamilyId
           {
             headers: {
               "Content-Type": "application/json",
@@ -100,7 +100,7 @@ const FamilyDetails = ({ navigation }) => {
 
   const fetchLanguages = async () => {
     try {
-      const response = await axios.get("http://10.0.2.2:3000/api/v1/fam/languages");
+      const response = await axios.get("http://103.99.149.67:3000/api/v1/fam/languages");
       setLanguages(response.data);
     } catch (error) {
       console.error("Error fetching Languages:", error.message);
@@ -122,7 +122,7 @@ const FamilyDetails = ({ navigation }) => {
     if (removedField.AppLanId) {
       try {
         const response = await axios.delete(
-          `http://10.0.2.2:3000/api/v1/fam/deleteLan/${removedField.AppLanId}`, // Ensure there is a slash before FamilyId
+          `http://103.99.149.67:3000/api/v1/fam/deleteLan/${removedField.AppLanId}`, // Ensure there is a slash before FamilyId
           {
             headers: {
               "Content-Type": "application/json",
@@ -163,7 +163,7 @@ const FamilyDetails = ({ navigation }) => {
       // Handle new family entries
       const newFamilyResponses = await Promise.all(newFamilies.map(async (family) => {
         return await axios.post(
-          "http://10.0.2.2:3000/api/v1/fam/family",
+          "http://103.99.149.67:3000/api/v1/fam/family",
           {
             Relation: family.relation,
             Name: family.name,
@@ -186,7 +186,7 @@ const FamilyDetails = ({ navigation }) => {
       // Handle existing family entries
       const updateFamilyResponses = await Promise.all(existingFamilies.map(async (family) => {
         return await axios.put(
-          "http://10.0.2.2:3000/api/v1/fam/updatefam",
+          "http://103.99.149.67:3000/api/v1/fam/updatefam",
           {
             FamilyId: family.FamilyId,
             Relation: family.relation,
@@ -214,7 +214,7 @@ const FamilyDetails = ({ navigation }) => {
         // Handle new language entries
         const newLanguageResponses = await Promise.all(newLanguages.map(async (language) => {
           return await axios.post(
-            "http://10.0.2.2:3000/api/v1/fam/postLng",
+            "http://103.99.149.67:3000/api/v1/fam/postLng",
             {
               LanId: language.LanId,
               LanSpeak: language.LanSpeak,
@@ -235,7 +235,7 @@ const FamilyDetails = ({ navigation }) => {
         // Handle existing language entries
         const updateLanguageResponses = await Promise.all(existingLanguages.map(async (language) => {
           return await axios.put(
-            "http://10.0.2.2:3000/api/v1/fam/updateLan",
+            "http://103.99.149.67:3000/api/v1/fam/updateLan",
             {
               AppLanId: language.AppLanId,
               LanId: language.LanId,
@@ -277,7 +277,7 @@ const FamilyDetails = ({ navigation }) => {
   const fetchFamilyDetails = async () => {
     try {
       const response = await axios.get(
-        "http://10.0.2.2:3000/api/v1/fam/getFam",
+        "http://103.99.149.67:3000/api/v1/fam/getFam",
         {
           headers: {
             "Content-Type": "application/json",
@@ -311,7 +311,7 @@ const FamilyDetails = ({ navigation }) => {
     try {
       const family = familyDetails[index];
       const response = await axios.put(
-        "http://10.0.2.2:3000/api/v1/fam/updatefam",
+        "http://103.99.149.67:3000/api/v1/fam/updatefam",
         {
           FamilyId: family.FamilyId, // Include FamilyId for update
           Relation: family.relation,
@@ -346,7 +346,7 @@ const FamilyDetails = ({ navigation }) => {
   const fetchLanguageDetails = async () => {
     try {
       const response = await axios.get(
-        "http://10.0.2.2:3000/api/v1/fam/getLan",
+        "http://103.99.149.67:3000/api/v1/fam/getLan",
         {
           headers: {
             "Content-Type": "application/json",
@@ -378,7 +378,7 @@ const FamilyDetails = ({ navigation }) => {
     try {
       const language = languageSections[index];
       const response = await axios.put(
-        "http://10.0.2.2:3000/api/v1/fam/updateLan",
+        "http://103.99.149.67:3000/api/v1/fam/updateLan",
         {
           AppLanId:language.AppLanId,
           LanId: language.LanId,

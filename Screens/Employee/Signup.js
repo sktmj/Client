@@ -14,7 +14,7 @@ const SignUpScreen = () => {
 
   const handleSendOTP = async () => {
     try {
-      const response = await fetch('http://10.0.2.2:3000/api/v1/auth/signUp', {
+      const response = await fetch('http://103.99.149.67:3000/api/v1/auth/signUp', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -38,7 +38,7 @@ const SignUpScreen = () => {
 
   const handleVerifyOTP = async () => {
     try {
-      const response = await fetch('http://10.0.2.2:3000/api/v1/auth/verifyOTP', {
+      const response = await fetch('http://103.99.149.67:3000/api/v1/auth/verifyOTP', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -62,7 +62,7 @@ const SignUpScreen = () => {
 
   const handleSignup = async () => {
     try {
-      const response = await fetch('http://10.0.2.2:3000/api/v1/auth/signUp', {
+      const response = await fetch('http://103.99.149.67:3000/api/v1/auth/signUp', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

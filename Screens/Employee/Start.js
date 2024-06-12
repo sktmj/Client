@@ -34,7 +34,7 @@ const start = () => {
   const handleSubmit = async () => {
     try {
        console.log(token,"sssssss")
-      const response = await fetch('http://10.0.2.2:3000/api/v1/Qlf/InsertQlCT', {
+      const response = await fetch('http://103.99.149.67:3000/api/v1/Qlf/InsertQlCT', {
         method: 'POST',
         headers: {
           "Content-Type": "application/json",
