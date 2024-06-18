@@ -134,6 +134,7 @@ const fetchDecalrationDetails = async () => {
 
   return (
     <View style={styles.container}>
+         <Text style={styles.sectionTitle}>Declaration</Text>
       <Text style={styles.text}>
         Your Thoghts About The Chennai Silks Group?
       </Text>
@@ -231,5 +232,10 @@ const styles = StyleSheet.create({
     textAlign: "center",
     fontSize: 16,
     width: 400,
+  },
+  sectionTitle: {
+    fontWeight: "bold",
+    fontSize: 20,
+    marginBottom: 10,
   },
 });

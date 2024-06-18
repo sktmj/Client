@@ -4,7 +4,10 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
 import { Picker } from "@react-native-picker/picker";
 import Icon from 'react-native-vector-icons/FontAwesome'; // Import the icon library
-const FamilyDetails = ({ navigation }) => {
+import { useNavigation } from "@react-navigation/native";
+const FamilyDetails = () => {
+  const Navigation = useNavigation();
+  
   const [token, setToken] = useState(null);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -58,7 +61,7 @@ const FamilyDetails = ({ navigation }) => {
   
 
   useEffect(() => {
-    fetchLanguages();
+    
     checkAuthentication();
   }, []);
 
@@ -66,6 +69,7 @@ const FamilyDetails = ({ navigation }) => {
     if (token) {
       fetchFamilyDetails();
       fetchLanguageDetails();
+      fetchLanguages();
     }
   }, [token]);
   
@@ -259,6 +263,7 @@ const FamilyDetails = ({ navigation }) => {
           await AsyncStorage.setItem("addedLanguageIds", JSON.stringify(addedLanguageIds));
   
           Alert.alert("Success", "Family and Language details added and updated successfully");
+          Navigation.navigate("OtherDetails")
         } else {
           Alert.alert("Error", "Failed to add or update language details");
         }
@@ -498,7 +503,7 @@ const FamilyDetails = ({ navigation }) => {
                 color={language.LanSpeak === 'Y' ? 'green' : 'gray'} // Change the color based on checked state
               />
             </TouchableOpacity>
-            <Text style={styles.checkboxText}>LanSpeak</Text>
+            <Text style={styles.checkboxText}>Speak</Text>
             <TouchableOpacity onPress={() => handleLanguageChange(index, 'LanRead', language.LanRead === 'Y' ? 'N' : 'Y')}>
               <Icon
                 name={language.LanRead === 'Y' ? 'check-square-o' : 'square-o'} // Use FontAwesome icons for checked and unchecked states
@@ -506,7 +511,7 @@ const FamilyDetails = ({ navigation }) => {
                 color={language.LanRead === 'Y' ? 'green' : 'gray'} // Change the color based on checked state
               />
             </TouchableOpacity>
-            <Text style={styles.checkboxText}>LanRead</Text>
+            <Text style={styles.checkboxText}>Read</Text>
             <TouchableOpacity onPress={() => handleLanguageChange(index, 'LanWrite', language.LanWrite === 'Y' ? 'N' : 'Y')}>
               <Icon
                 name={language.LanWrite === 'Y' ? 'check-square-o' : 'square-o'} // Use FontAwesome icons for checked and unchecked states
@@ -514,7 +519,7 @@ const FamilyDetails = ({ navigation }) => {
                 color={language.LanWrite === 'Y' ? 'green' : 'gray'} // Change the color based on checked state
               />
             </TouchableOpacity>
-            <Text style={styles.checkboxText}>LanWrite</Text>
+            <Text style={styles.checkboxText}>Write</Text>
           </View>
           <View style={styles.buttonsContainer}>
             <TouchableOpacity style={styles.deleteButton} onPress={() => handleDeleteLanguage(index)}>

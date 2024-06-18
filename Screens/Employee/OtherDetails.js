@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
   Alert,
 } from "react-native";
+import { useNavigation } from "@react-navigation/native";
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import Icon from "react-native-vector-icons/FontAwesome";
@@ -16,6 +17,7 @@ import { Picker } from "@react-native-picker/picker";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const OtherDetails = () => {
+  const Navigation = useNavigation();
   const [CurrentSalary, setCurrentSalary] = useState("");
   const [expectSalary, setExpectSalary] = useState("");
   const [knowCompany, setKnowCompany] = useState("");
@@ -223,10 +225,10 @@ const OtherDetails = () => {
   };
   ////////////////////////////////////////////////////////
   const handleDateConfirm = (date) => {
-    setExpDOJ(date.toISOString());
-    hideDatePicker();
+    const formattedDate = date.toISOString().split("T")[0]; // Format as YYYY-MM-DD
+    setExpDOJ(formattedDate);
+    setDatePickerVisibility(false);
   };
-
   const showDatePicker = () => {
     setDatePickerVisibility(true);
   };
@@ -290,6 +292,7 @@ const OtherDetails = () => {
       );
       if (response.data.success) {
         Alert.alert("Success", "Other fields added successfully");
+        Navigation.navigate("Uploads")
         console.log(response.data);
         // Navigate to next screen or perform any other action
       } else {
@@ -557,37 +560,18 @@ const OtherDetails = () => {
             </View>
 
             {/* Add some margin between rows */}
-            <View style={{ marginTop: 10, marginTop: 30 }} />
-
-            {/* Styling for "I'm Fresher" text */}
-            
-            <Text style={styles.text}> Expecting Joining date : </Text>
-            <View style={styles.inputContainer}>
-              <TextInput
-                style={styles.input}
-                placeholder="Expecting Joining Date (YYYY-MM-DD)"
-                value={expDOJ}
-                onChangeText={setExpDOJ}
-              />
-              <TouchableOpacity
-                style={styles.calendarIcon}
-                onPress={showDatePicker}
-              >
-                <FontAwesome name="calendar" size={24} color="black" />
-              </TouchableOpacity>
-            </View>
-
-            {/* Date picker */}
-            <DateTimePicker
-              isVisible={isDatePickerVisible}
-              mode="date"
-              onConfirm={handleDateConfirm}
-              onCancel={hideDatePicker}
-            />
-          </View>
-          <View style={styles.checkboxContainer}>
-            {/* Add some margin between rows */}
-            <View style={{ marginTop: 10, marginTop: 30 }} />
+            <Text style={styles.label}>Expected Date of Joining:</Text>
+      <TouchableOpacity onPress={() => setDatePickerVisibility(true)}>
+        <Text style={styles.input}>
+          {expDOJ ? expDOJ : "Select a date"}
+        </Text>
+      </TouchableOpacity>
+      <DateTimePicker
+        isVisible={isDatePickerVisible}
+        mode="date"
+        onConfirm={handleDateConfirm}
+        onCancel={() => setDatePickerVisibility(false)}
+      />
 
             <TouchableOpacity
               style={styles.checkboxContainer}

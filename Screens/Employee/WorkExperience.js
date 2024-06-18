@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { useNavigation } from "@react-navigation/native";
 import {
   ScrollView,
   Text,
@@ -8,6 +9,9 @@ import {
   StyleSheet,
   Alert,
   Button,
+  Image,
+  Platform ,
+  ActivityIndicator
 } from "react-native";
 import axios from "axios";
 import { Picker } from "@react-native-picker/picker";
@@ -15,8 +19,10 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as DocumentPicker from "expo-document-picker";
 import Icon from "react-native-vector-icons/FontAwesome";
 import { FontAwesome } from "@expo/vector-icons";
+import * as ImagePicker from "expo-image-picker";
 
-const WorkExperience = ({ navigation }) => {
+const WorkExperience = () => {
+  const Navigation = useNavigation(); 
   const [experiences, setExperiences] = useState([]);
   const [isFresher, setIsFresher] = useState(false);
   const [CompName, setCompName] = useState("");
@@ -54,19 +60,19 @@ const WorkExperience = ({ navigation }) => {
   const [experienceField, setExperienceField] = useState([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formChanged, setFormChanged] = useState(false);
+  const [licensePic,setLicensePic]=useState(null)
 
   useEffect(() => {
     checkAuthentication();
   }, []);
-
-  useEffect(
-    (token) => {
+  useEffect(() => {
+    if (token) {
       fetchExperienceDetails(); // Call the function when the component mounts
       fetchDesignationOptions();
       fetchUserDetails();
-    },
-    [token]
-  );
+    }
+  }, [token]);
+
 
   const handleExperienceField = () => {
     setExperienceField([
@@ -100,7 +106,7 @@ const WorkExperience = ({ navigation }) => {
     if (removedField.ExpId) {
       try {
         const response = await axios.delete(
-          `http://10.0.2.2:3000/api/v1/expc/deleteExperience/${removedField.ExpId}`,
+          `http://103.99.149.67:3000/api/v1/expc/deleteExperience/${removedField.ExpId}`,
           {
             headers: {
               "Content-Type": "application/json",
@@ -146,7 +152,7 @@ const WorkExperience = ({ navigation }) => {
   const fetchDesignationOptions = async () => {
     try {
       const response = await axios.get(
-        "http://10.0.2.2:3000/api/v1/expc/designation"
+        "http://103.99.149.67:3000/api/v1/expc/designation"
       );
       setDesignationOptions(response.data);
     } catch (error) {
@@ -156,7 +162,7 @@ const WorkExperience = ({ navigation }) => {
   const fetchExperienceDetails = async () => {
     try {
       const response = await axios.get(
-        "http://10.0.2.2:3000/api/v1/expc/getExpc",
+        "http://103.99.149.67:3000/api/v1/expc/getExpc",
         {
           headers: {
             "Content-Type": "application/json",
@@ -204,7 +210,7 @@ const WorkExperience = ({ navigation }) => {
         if (!experience.ExpId) {
           // Only add new qualifications
           const ExperienceResponse = await fetch(
-            "http://10.0.2.2:3000/api/v1/expc/experience",
+            "http://103.99.149.67:3000/api/v1/expc/experience",
             {
               method: "POST",
               headers: {
@@ -244,7 +250,7 @@ const WorkExperience = ({ navigation }) => {
         }
       }
       const WorkExperieceResponse = await axios.post(
-        "http://10.0.2.2:3000/api/v1/expc/TotalExperience",
+        "http://103.99.149.67:3000/api/v1/expc/TotalExperience",
         {
           WorkCompany: WorkCompany,
           RelieveReason: workRelieveReason,
@@ -271,7 +277,8 @@ const WorkExperience = ({ navigation }) => {
           WorkExperieceResponse.data.message || "Failed to add course"
         );
       }
-      Alert.alert("Success", "Courses added successfully");
+      Alert.alert("Success", "Experience added successfully");
+      Navigation.navigate("familyDetails")
       setFormChanged(false); // Reset form change tracking
     } catch (error) {
       console.error("Error adding courses:", error.message);
@@ -281,57 +288,7 @@ const WorkExperience = ({ navigation }) => {
     }
   };
 
-  const handleFileUpload = async () => {
-    try {
-      setLoading(true);
-      const formData = new FormData();
-      formData.append("CarLicenseDoc", file);
-
-      const response = await fetch("http://10.0.2.2:3000/api/v1/expc/upload", {
-        method: "POST",
-        body: formData,
-        headers: {
-          "Content-Type": "multipart/form-data",
-          // You may need to include other headers such as authorization token
-        },
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to upload file");
-      }
-
-      const data = await response.json();
-      console.log(data);
-
-      Alert.alert("Success", "File uploaded successfully");
-    } catch (error) {
-      console.error("Error uploading file:", error.message);
-      Alert.alert("Error", "Failed to upload file");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleChooseFile = async () => {
-    try {
-      const fileResult = await DocumentPicker.getDocumentAsync({
-        type: "image/*", // Change the type as needed
-      });
-
-      if (fileResult.type === "success" && fileResult.uri) {
-        const fileData = {
-          uri: fileResult.uri,
-          name: fileResult.name,
-          type: "image/jpeg", // Change the type as needed
-        };
-        setFile(fileData);
-      }
-    } catch (error) {
-      console.error("Error choosing file:", error.message);
-      Alert.alert("Error", "Failed to choose file");
-    }
-  };
-
+ 
   const handleCheckboxToggle = (fieldName) => {
     switch (fieldName) {
       case "EPFNO":
@@ -366,7 +323,7 @@ const WorkExperience = ({ navigation }) => {
     try {
       const experience = experienceField[index];
       const response = await axios.put(
-        "http://10.0.2.2:3000/api/v1/expc/updateExpc",
+        "http://103.99.149.67:3000/api/v1/expc/updateExpc",
         {
           ExpId: experience.ExpId, // Pass the experience ID
           CompName: experience.CompName, // Pass the updated values
@@ -392,14 +349,16 @@ const WorkExperience = ({ navigation }) => {
       );
   
       if (!response.data.success) {
-        throw new Error(response.data.message || "Failed to update Course");
+        throw new Error(response.data.message || "Failed to update Experiece ");
       }
-  
-      Alert.alert("Success", "Course updated successfully");
+     
+      Alert.alert("Success", "Experiece updated successfully");
+   
+     
       setFormChanged(false); // Reset form change tracking
     } catch (error) {
-      console.error("Error updating Course:", error.message);
-      Alert.alert("Error", "Failed to update Course");
+      console.error("Error updating Experiece :", error.message);
+      Alert.alert("Error", "Failed to updateExperiece ");
     } finally {
       setIsSubmitting(false);
     }
@@ -408,7 +367,7 @@ const WorkExperience = ({ navigation }) => {
   const fetchUserDetails = async () => {
     try {
       const response = await axios.get(
-        "http://10.0.2.2:3000/api/v1/expc/getExperience",
+        "http://103.99.149.67:3000/api/v1/expc/getExperience",
         {
           headers: {
             "Content-Type": "application/json",
@@ -424,7 +383,7 @@ const WorkExperience = ({ navigation }) => {
         setWorkCompany(userData.WorkCompany);
         setWorkRelieveReason(userData.RelieveReason);
         setSelectedDesignation(userData.Designation)
-        setEPFNO(userData.EPFNo);
+        setEPFNO(userData.EPFNO);
         setUANNO(userData.UANNo);
         setRegExpExNo(userData.RegExpExNo);
         setSalesExp(userData.SalesExp);
@@ -440,6 +399,114 @@ const WorkExperience = ({ navigation }) => {
       console.error("Error fetching user details:", error.message);
     }
   };
+
+  const handleLicenseUpload = async () => {
+    if (!licensePic) {
+      Alert.alert("Error", "Please select an image to upload.");
+      return;
+    }
+  
+    try {
+      setLoading(true);
+      const formData = new FormData();
+      formData.append("CarLicenseDoc", {
+        uri: licensePic.uri,
+        name: licensePic.uri.split("/").pop(),
+        type: "image/jpeg",
+      });
+  
+      const response = await fetch(`http://103.99.149.67:3000/api/v1/expc/licdoc`, {
+        method: "POST",
+        body: formData,
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "multipart/form-data",
+        },
+      });
+  
+      if (!response.ok) {
+        throw new Error("Failed to upload file");
+      }
+  
+      const data = await response.json();
+      console.log(data);
+  
+      Alert.alert("Success", "File uploaded successfully");
+    } catch (error) {
+      console.error("Error uploading file:", error.message);
+      Alert.alert("Error", "Failed to upload file");
+    } finally {
+      setLoading(false);
+    }
+  };
+   
+  const handleLicChooseFile = async () => {
+    try {
+      let fileResult;
+      if (Platform.OS === "web") {
+        fileResult = await DocumentPicker.getDocumentAsync({ type: "image/*" });
+      } else {
+        const permissionResult = await ImagePicker.requestCameraPermissionsAsync();
+
+        if (permissionResult.granted === false) {
+          Alert.alert("Permission Denied", "Camera permission is required to take photos.");
+          return;
+        }
+
+        fileResult = await ImagePicker.launchImageLibraryAsync({
+          mediaTypes: ImagePicker.MediaTypeOptions.Images,
+          allowsEditing: true,
+          aspect: [4, 3],
+          quality: 1,
+        });
+      }
+  
+      console.log("File result:", fileResult);
+  
+      if (!fileResult.cancelled && fileResult.assets && fileResult.assets.length > 0 && fileResult.assets[0].uri) {
+        setLicensePic(fileResult.assets[0]);
+      } else {
+        Alert.alert("Error", "Failed to choose file");
+      }
+    } catch (error) {
+      console.error("Error choosing file:", error.message);
+      Alert.alert("Error", "Failed to choose file");
+    }
+  };
+  const handleLicTakePhoto = async () => {
+    try {
+      console.log("Requesting camera permissions...");
+      const permissionResult = await ImagePicker.requestCameraPermissionsAsync();
+  
+      console.log("Permission result:", permissionResult);
+  
+      if (permissionResult.granted === false) {
+        Alert.alert("Permission Denied", "Camera permission is required to take photos.");
+        return;
+      }
+  
+      console.log("Launching camera...");
+      let photo = await ImagePicker.launchCameraAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsEditing: true,
+        aspect: [4, 3],
+        quality: 1,
+      });
+  
+      console.log("Photo:", photo);
+  
+      if (!photo.cancelled && photo.assets && photo.assets.length > 0 && photo.assets[0].uri) {
+        setLicensePic(photo.assets[0]);
+      } else {
+        Alert.alert("Error", "Failed to take photo");
+      }
+    } catch (error) {
+      console.error("Error taking photo:", error.message);
+      Alert.alert("Error", "Failed to take photo");
+    }
+  };
+  
+  
   
   return (
     <ScrollView style={styles.container}>
@@ -561,7 +628,7 @@ const WorkExperience = ({ navigation }) => {
                 handleExperienceChange(index, "PhoneNo", value)
               }
             />
-             <Text style={styles.label}>Is this your last degree?</Text>
+             <Text style={styles.label}>Is this your last Company?</Text>
               <Picker
                 style={styles.picker}
                 selectedValue={experience.LastCompany ? "Y" : "N"}
@@ -642,11 +709,11 @@ const WorkExperience = ({ navigation }) => {
 
         {epfNoVisible && (
           <TextInput
-            style={styles.input}
-            placeholder="Enter EPF NO"
-            value={epfNo}
-            onChangeText={setEpfNo}
-          />
+          style={styles.input}
+          placeholder="Enter EPF"
+          value={EPFNO}
+          onChangeText={setEPFNO}
+        />
         )}
         <Text style={styles.text}>UAN NO</Text>
         <TextInput style={styles.input} value={UANNO} onChangeText={setUANNO} />
@@ -661,13 +728,13 @@ const WorkExperience = ({ navigation }) => {
             color="black"
           />
 
-          <Text style={styles.text}>RegExpExNo</Text>
+          <Text style={styles.text}>Having Emp Regn No?</Text>
         </TouchableOpacity>
         {/* Input field for RegExpExNo */}
         {regExpExNoVisible && (
           <TextInput
             style={styles.input}
-            placeholder="Enter RegExpExNo"
+            placeholder="Enter Reg Num"
             value={regExpExNo}
             onChangeText={setRegExpExNo}
           />
@@ -719,6 +786,20 @@ const WorkExperience = ({ navigation }) => {
             />
           )}
         </View>
+        <View>
+          {/* Checkbox for IsCompWrkHere */}
+          <TouchableOpacity
+            style={styles.checkboxContainer}
+            onPress={() => setCarLicense(!CarLicense)}
+          >
+            <Icon
+              name={CarLicense ? "check-square-o" : "square-o"}
+              size={20}
+              color="black"
+            />
+            <Text style={styles.text}> Ready To Work In All Branches?</Text>
+          </TouchableOpacity>
+        </View>
         {/* Checkbox for IsCompWrkHere */}
         <View>
           {/* Checkbox for IsCompWrkHere */}
@@ -731,38 +812,52 @@ const WorkExperience = ({ navigation }) => {
               size={20}
               color="black"
             />
-            <Text style={styles.text}> Ready To Work In All Branches?</Text>
+            <Text style={styles.text}> Do you Drive Car?</Text>
           </TouchableOpacity>
         </View>
+       
       </View>
 
-      <View
-        style={{
-          flex: 1,
-          justifyContent: "center",
-          alignItems: "center",
-          marginTop: 20,
-        }}
-      >
-        <Text style={styles.text}> License DOC</Text>
-        <Button
-          title="Choose File"
-          onPress={handleChooseFile}
-          disabled={loading}
-        />
-        <Button
-          title="Upload File"
-          onPress={handleFileUpload}
-          disabled={!file || loading}
-        />
-        
+      <View style={styles.formContainer}>
+        <Text style={styles.sectionTitle}>License Doucment</Text>
+        <View style={styles.fileInputContainer}>
+          <Button
+            title="Choose Image"
+            onPress={() => handleLicChooseFile(setLicensePic)}
+            disabled={loading}
+          />
+          <Button
+            title="Take Photo"
+            onPress={() => handleLicTakePhoto(setLicensePic)}
+            disabled={loading}
+          />
+          <Button
+            title="Upload Image"
+            onPress={() => handleLicenseUpload("CarLicenseDoc", licensePic, "licdoc")}
+            disabled={!licensePic || loading}
+          />
+        </View>
+        {loading && <ActivityIndicator size="large" color="#0000ff" />}
+        {licensePic && (
+          <View style={styles.imageContainer}>
+            <Text>Selected Image:</Text>
+            <Image 
+              source={{ uri: licensePic.uri }} 
+              style={styles.image} 
+              onError={(error) => console.error("Image Error:", error)} 
+              resizeMode="contain"
+            />
+          </View>
+        )}
       </View>
+
       <View style={styles.submitButtonContainer}>
   <TouchableOpacity style={styles.submitButton} onPress={handlesubmit}>
     <Text style={styles.submitButtonText}>Submit</Text>
   </TouchableOpacity>
 </View>
-      {/* Add other input fields similarly */}
+     
+     
      
     </ScrollView>
   );
@@ -857,6 +952,20 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     marginTop: 10,
   },
+  formContainer: {
+  marginBottom: 20 },
+  sectionTitle: { 
+    fontSize: 20,
+    fontWeight: "bold",
+     marginBottom: 10 },
+  fileInputContainer: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 20,
+  },
+  image: { width: 200, height: 200, marginTop: 10 },
 });
+
 
 export default WorkExperience;

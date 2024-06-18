@@ -27,7 +27,6 @@ import Outpass from "./Screens/Admin/Outpass";
 import Profile from "./Screens/Admin/Profile";
 // import StartScreen from "./Screens/Employee/Start";
 import Home from './Screens/Admin/Home';
-import { NativeBaseProvider } from 'native-base';
 const Stack = createNativeStackNavigator();
 const Tab = createMaterialTopTabNavigator();
 const Drawer = createDrawerNavigator();
@@ -132,7 +131,7 @@ function TopTab() {
 
 function App() {
   return (
-    <NativeBaseProvider>
+    
     <NavigationContainer>
       <Stack.Navigator>
         <Stack.Screen
@@ -149,7 +148,7 @@ function App() {
         <Stack.Screen name="DrawerScreen" component = {DrawerScreen}/>
       </Stack.Navigator>
     </NavigationContainer>
-    </NativeBaseProvider>
+    
   );
 }
 

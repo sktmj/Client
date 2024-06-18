@@ -27,13 +27,13 @@ export default function Profile() {
       >
         <Box>
           <AspectRatio w="100%" ratio={16 / 9}>
-            <Image
+            {/* <Image
               source={require('../../assets/images/ktm.jpg')}
               alt="image"
               resizeMode="cover"
               width="100%"
               height="100%"
-            />
+            /> */}
           </AspectRatio>
           <Center
             bg="violet.500"

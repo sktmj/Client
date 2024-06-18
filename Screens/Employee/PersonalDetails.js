@@ -13,7 +13,6 @@ import {
   TouchableOpacity,
   ScrollView,
   StyleSheet,
-  Switch,
   Alert,
 } from "react-native";
 
@@ -159,19 +158,11 @@ export default function PersonalDetailsForm() {
           },
         }
       );
+
       if (response.data.success) {
         console.log("User details retrieved successfully:", response.data.data);
         const userData = response.data.data[0];
-        if (response.data.success) {
-          const userData = response.data.data[0];
 
-          // Update personalDetails state with fetched user data
-          setPersonalDetails((prevDetails) => ({
-            ...prevDetails,
-            ...userData,
-            PANNO: userData.PANNO,
-          }));
-        }
         // Format the DOB to YYYY-MM-DD
         if (userData.DOB) {
           userData.DOB = new Date(userData.DOB).toISOString().split("T")[0];
@@ -181,7 +172,17 @@ export default function PersonalDetailsForm() {
             .toISOString()
             .split("T")[0];
         }
-        setPersonalDetails(userData);
+        // Ensure correct field name for PANNO
+        if (userData.PANNO) {
+          userData.PANNO = userData.PANNO; // Ensure correct field name used
+        }
+        // Update state with retrieved user details
+        setPersonalDetails((prevDetails) => ({
+          ...prevDetails,
+          ...userData, // Update all fields from userData
+        }));
+
+        // Set other state variables as needed (selectedCountry, selectedState, etc.)
         setSelectedCountry(userData.ResCountryId);
         setSelectedState(userData.ResStateId);
         setSelectedDistrict(userData.ResDistrictId);
@@ -225,20 +226,18 @@ export default function PersonalDetailsForm() {
     axios
       .get(`http://103.99.149.67:3000/api/v1/prsl/states/${countryId}`)
       .then((response) => {
-        setStates(response.data);
+        setStates(response.data); // Assuming the response.data is an array of state objects
       })
       .catch((error) => console.error("Error fetching states:", error));
   };
-
   const fetchDistrictsByState = (stateId) => {
     axios
       .get(`http://103.99.149.67:3000/api/v1/prsl/districts/${stateId}`)
       .then((response) => {
-        setDistricts(response.data);
+        setDistricts(response.data); // Assuming the response.data is an array of district objects
       })
       .catch((error) => console.error("Error fetching districts:", error));
   };
-
   const fetchTaluksByDistrict = (districtId) => {
     axios
       .get(`http://103.99.149.67:3000/api/v1/prsl/taluk/${districtId}`)
@@ -247,7 +246,7 @@ export default function PersonalDetailsForm() {
           TalukId: taluk.TalukId,
           TalukName: taluk.TalukName,
         }));
-        setTaluks(formattedTaluks);
+        setTaluks(formattedTaluks); // Assuming the response.data is an array of taluk objects
       })
       .catch((error) => console.error("Error fetching Taluks:", error));
   };
@@ -256,11 +255,10 @@ export default function PersonalDetailsForm() {
     axios
       .get(`http://103.99.149.67:3000/api/v1/prsl/city/${talukId}`)
       .then((response) => {
-        setCities(response.data);
+        setCities(response.data); // Assuming the response.data is an array of city objects
       })
       .catch((error) => console.error("Error fetching Cities:", error));
   };
-
   //////////////////////////////////////////////////
   const fetchPresentCountries = () => {
     console.log(setPresentCountries, "dfdfdfdf");
@@ -315,6 +313,7 @@ export default function PersonalDetailsForm() {
   };
 
   const handleChange = (field, value) => {
+    console.log(field, value, "gggggggggggg");
     if (field === "DOB") {
       calculateAge(value); // Calculate age when date of birth changes
     }
@@ -364,10 +363,16 @@ export default function PersonalDetailsForm() {
 
       if (response.data.success) {
         console.log("Personal details updated successfully:", response.data);
+        Alert.alert("Success", "Personal details saved successfully.");
+        Navigation.navigate("AcademicDetails")
       } else {
         console.error(
           "Error updating personal details:",
           response.data.message
+        );
+        Alert.alert(
+          "Error",
+          "An error occurred while updating personal details."
         );
       }
     } catch (error) {
@@ -531,6 +536,7 @@ export default function PersonalDetailsForm() {
               onCancel={hideDatePicker}
             />
           </View>
+          <Text style={styles.text}>Age</Text>
           <TextInput
             style={styles.input}
             placeholder="Age"
@@ -546,12 +552,14 @@ export default function PersonalDetailsForm() {
             selectedValue={personalDetails.Gender}
             onValueChange={(itemValue) => handleChange("Gender", itemValue)}
           >
+
             <Picker.Item label="Select Gender" value="" />
             <Picker.Item label="Male" value="M" />
             <Picker.Item label="Female" value="F" />
             <Picker.Item label="Others" value="O" />
           </Picker>
         </View>
+
         <Text style={styles.text}>BLOOD GROUP :</Text>
         <TextInput
           style={styles.input}
@@ -559,10 +567,12 @@ export default function PersonalDetailsForm() {
           value={personalDetails.BloodGrp}
           onChangeText={(Text) => handleChange("BloodGrp", Text)}
         />
+
       </View>
       <View style={styles.formColumn}>
         <View style={styles.inputContainer}>
           <Text style={styles.text}>MARITAL STATUS</Text>
+
           <Picker
             selectedValue={personalDetails.Martialstatus}
             onValueChange={(itemValue) => {
@@ -570,6 +580,7 @@ export default function PersonalDetailsForm() {
               setShowMarriageDateInput(itemValue === "M"); // Set showMarriageDateInput to true if marital status is "Married"
             }}
           >
+            
             <Picker.Item label="Marital Status" value="" />
             <Picker.Item label="Single" value="S" />
             <Picker.Item label="Married" value="M" />
@@ -986,7 +997,7 @@ export default function PersonalDetailsForm() {
           <Text style={styles.text}>ALTERNATE NO:</Text>
           <TextInput
             style={styles.input}
-            placeholder="Passport"
+            placeholder="ALTERNATE NO"
             value={personalDetails.PassportNo}
             onChangeText={(value) => handleChange("PassportNo", value)}
           />
@@ -997,13 +1008,14 @@ export default function PersonalDetailsForm() {
             value={personalDetails.EmailId}
             onChangeText={(value) => handleChange("EmailId", value)}
           />
-          <Text style={styles.text}>PAN-NO :</Text>
+          <Text style={styles.text}>PAN NO :</Text>
           <TextInput
             style={styles.input}
             placeholder="Pan No"
             value={personalDetails.PANNO}
             onChangeText={(value) => handleChange("PANNO", value)}
           />
+
           <Text style={styles.text}>AADHAR NO:</Text>
           <TextInput
             style={styles.input}

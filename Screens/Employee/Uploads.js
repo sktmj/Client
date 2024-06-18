@@ -5,6 +5,7 @@ import { useNavigation } from "@react-navigation/native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as ImagePicker from "expo-image-picker";
 
+
 const Uploads = ({ navigation }) => {
   const [profilePicture, setProfilePicture] = useState(null);
   const [MobilePicture,setMobilePicture] = useState(null)
@@ -104,7 +105,7 @@ const Uploads = ({ navigation }) => {
       const data = await response.json();
       console.log(data);
   
-      Alert.alert("Success", "File uploaded successfully");
+      Alert.alert("Success", "Mobile pic uploaded successfully");
     } catch (error) {
       console.error("Error uploading file:", error.message);
       Alert.alert("Error", "Failed to upload file");
@@ -281,6 +282,45 @@ const Uploads = ({ navigation }) => {
     }
   };
   
+  const handleResumeUpload = async () => {
+    if (!resume) {
+      Alert.alert("Error", "Please select an resume to upload.");
+      return;
+    }
+  
+    try {
+      setLoading(true);
+      const formData = new FormData();
+      formData.append("ResumeFileName", {
+        uri: resume.uri,
+        name: resume.uri.split("/").pop(),
+        type: "*/*",
+      });
+  
+      const response = await fetch(`http://103.99.149.67:3000/api/v1/uploads/resume`, {
+        method: "POST",
+        body: formData,
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "multipart/form-data",
+        },
+      });
+  
+      if (!response.ok) {
+        throw new Error("Failed to upload resume");
+      }
+  
+      const data = await response.json();
+      console.log(data);
+  
+      Alert.alert("Success", "resume uploaded successfully");
+    } catch (error) {
+      console.error("Error uploading file:", error.message);
+      Alert.alert("Error", "Failed to upload file");
+    } finally {
+      setLoading(false);
+    }
+  };
   
   
   return (
@@ -290,17 +330,17 @@ const Uploads = ({ navigation }) => {
         <View style={styles.fileInputContainer}>
           <Button
             title="Choose Image"
-            onPress={handleChooseFile}
+            onPress={() => handleChooseFile(setProfilePicture)}
             disabled={loading}
           />
           <Button
             title="Take Photo"
-            onPress={handleTakePhoto}
+            onPress={() => handleTakePhoto(setProfilePicture)}
             disabled={loading}
           />
           <Button
             title="Upload Image"
-            onPress={handleFileUpload}
+            onPress={() => handleFileUpload("Pic", profilePicture, "profilepic")}
             disabled={!profilePicture || loading}
           />
         </View>
@@ -318,23 +358,22 @@ const Uploads = ({ navigation }) => {
         )}
       </View>
 
-
       <View style={styles.formContainer}>
         <Text style={styles.sectionTitle}>Mobile Picture</Text>
         <View style={styles.fileInputContainer}>
           <Button
             title="Choose Image"
-            onPress={handleMobleChooseFile}
+            onPress={() => handleMobleChooseFile(setMobilePicture)}
             disabled={loading}
           />
           <Button
             title="Take Photo"
-            onPress={handleMobileTakePhoto}
+            onPress={() => handleMobileTakePhoto(setMobilePicture)}
             disabled={loading}
           />
           <Button
             title="Upload Image"
-            onPress={handleMobileUpload }
+            onPress={() => handleMobileUpload("MobilePic", MobilePicture, "mobilepic")}
             disabled={!MobilePicture || loading}
           />
         </View>
@@ -343,7 +382,37 @@ const Uploads = ({ navigation }) => {
           <View style={styles.imageContainer}>
             <Text>Selected Image:</Text>
             <Image 
-              source={{ uri:MobilePicture.uri }} 
+              source={{ uri: MobilePicture.uri }} 
+              style={styles.image} 
+              onError={(error) => console.error("Image Error:", error)} 
+              resizeMode="contain"
+            />
+          </View>
+        )}
+      </View>
+
+
+      <View style={styles.formContainer}>
+        <Text style={styles.sectionTitle}>Resume</Text>
+        <View style={styles.fileInputContainer}>
+          <Button
+            title="Choose Resume"
+            onPress={() => handleChooseResumeFile(setResume)}
+            disabled={loading}
+          />
+          
+          <Button
+            title="Upload Image"
+            onPress={() => handleResumeUpload("ResumeFileName", resume, "resume")}
+            disabled={!resume || loading}
+          />
+        </View>
+        {loading && <ActivityIndicator size="large" color="#0000ff" />}
+        {resume && (
+          <View style={styles.imageContainer}>
+            <Text>Selected Image:</Text>
+            <Image 
+              source={{ uri: resume.uri }} 
               style={styles.image} 
               onError={(error) => console.error("Image Error:", error)} 
               resizeMode="contain"

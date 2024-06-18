@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, TextInput, TouchableOpacity, Alert, Text, StyleSheet } from 'react-native';
+import { View, TextInput, TouchableOpacity, Alert, Text, StyleSheet,Image } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 const SignUpScreen = () => {
@@ -43,7 +43,7 @@ const SignUpScreen = () => {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ MobileNo: mobileNo, AppName: appN+me, EnteredOTP: otp, Passwrd: password }),
+        body: JSON.stringify({ MobileNo: mobileNo, AppName: appName, EnteredOTP: otp, Passwrd: password }),
       });
 
       const data = await response.json();
@@ -85,6 +85,8 @@ const SignUpScreen = () => {
   };
   return (
     <View style={styles.container}>
+      <Image source={require('../../assets/images/daivel1.png')} style={styles.image} />
+      <Text style={styles.title}>SignUp</Text>
       <TextInput
         style={styles.input}
         placeholder="Mobile Number"
@@ -187,6 +189,17 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     borderRadius: 5,
     marginTop: 10,
+  },
+  image: {
+    width: 400,
+    height: 80,
+    marginBottom: 20,
+  },
+  title: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    marginBottom: 20,
+    color: 'white',
   },
 });
 

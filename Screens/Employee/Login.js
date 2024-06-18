@@ -53,7 +53,7 @@ export default function LoginScreen() {
     Navigation.navigate("Register");
   };
   const handleSignin = ()=>{
-    Navigation.navigate("DrawerScreen")
+    Alert.alert("Oops...You are not an Admin");
   }
 
   const handleCarrier = () => {
@@ -75,7 +75,7 @@ export default function LoginScreen() {
         </TouchableOpacity>
       </View>
       <View style={styles.mainContent}>
-        <Image source={require('../../assets/images/daivel.png')} style={styles.image} />
+        <Image source={require('../../assets/images/daivel1.png')} style={styles.image} />
         <Text style={styles.title}>Login</Text>
         <View style={styles.inputContainer}>
           <TextInput
@@ -195,7 +195,7 @@ const styles = StyleSheet.create({
     paddingLeft: 20
   },
   image: {
-    width: 300,
+    width: 400,
     height: 80,
     marginBottom: 20,
   },

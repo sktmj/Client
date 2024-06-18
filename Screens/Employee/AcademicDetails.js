@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useNavigation } from "@react-navigation/native";
 import {
   ScrollView,
   Text,
@@ -13,8 +14,9 @@ import axios from "axios";
 import { Picker } from "@react-native-picker/picker";
 import Icon from "react-native-vector-icons/FontAwesome";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-  
-const AcademicDetails = ({ navigation }) => {
+
+const AcademicDetails = () => {
+  const Navigation = useNavigation();
   const [qualifications, setQualifications] = useState([]);
   const [qualificationFields, setQualificationFields] = useState([]);
   const [courseFields, setCourseFields] = useState([]);
@@ -42,7 +44,7 @@ const AcademicDetails = ({ navigation }) => {
         console.log(
           "User is not authenticated. Redirecting to login screen..."
         );
-        navigation.navigate("Login");
+        Navigation.navigate("Login");
       } else {
         console.log("User is authenticated.");
         setIsLoggedIn(true);
@@ -55,15 +57,12 @@ const AcademicDetails = ({ navigation }) => {
 
   const fetchQualificationDetails = async () => {
     try {
-      const response = await axios.get(
-        "http://103.99.149.67:3000/api/v1/Qlf/getQlf",
-        {
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`, // Use the token from the state
-          },
-        }
-      );
+      const response = await axios.get("http://103.99.149.67:3000/api/v1/Qlf/getQlf", {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`, // Use the token from the state
+        },
+      });
       if (response.data.success) {
         console.log(
           "Qualifications retrieved successfully:",
@@ -122,7 +121,7 @@ const AcademicDetails = ({ navigation }) => {
   const fetchQualifications = async () => {
     try {
       const response = await fetch(
-        "http://103.99.149.67:3000/api/v1/Qlf/getQlf"
+        "http://103.99.149.67:3000/api/v1/Qlf/qualification"
       );
       if (!response.ok) {
         throw new Error("Failed to fetch qualifications");
@@ -157,7 +156,7 @@ const AcademicDetails = ({ navigation }) => {
     const removedField = fields.splice(index, 1)[0]; // Remove the field and get the removed item
     setQualificationFields(fields);
     setFormChanged(true);
-  
+
     // Check if the removed field was already present in the database
     if (removedField.AppQualId) {
       try {
@@ -170,14 +169,17 @@ const AcademicDetails = ({ navigation }) => {
             },
           }
         );
-  
+
         if (response.data.success) {
           console.log(
             `Qualification with ID ${removedField.AppQualId} deleted successfully`
           );
           Alert.alert("Success", "Qualification deleted successfully");
         } else {
-          console.error("Failed to delete qualification:", response.data.message);
+          console.error(
+            "Failed to delete qualification:",
+            response.data.message
+          );
           Alert.alert("Error", "Failed to delete qualification");
         }
       } catch (error) {
@@ -201,15 +203,14 @@ const AcademicDetails = ({ navigation }) => {
     setFormChanged(true);
   };
 
-
   const handleRemoveCourseField = async (index) => {
     const fields = [...courseFields];
     const removedField = fields.splice(index, 1)[0]; // Remove the field and get the removed item
     setCourseFields(fields);
     setFormChanged(true);
-  
+
     // Check if the removed field was already present in the database
-    if (removedField. CourseId) {
+    if (removedField.CourseId) {
       try {
         const response = await axios.delete(
           `http://103.99.149.67:3000/api/v1/Qlf/deletecourse/${removedField.CourseId}`,
@@ -220,7 +221,7 @@ const AcademicDetails = ({ navigation }) => {
             },
           }
         );
-  
+
         if (response.data.success) {
           console.log(
             `Course with ID ${removedField.CourseId} deleted successfully`
@@ -383,7 +384,7 @@ const AcademicDetails = ({ navigation }) => {
           qualificationFields[i].AppQualId = response.data.AppQualId;
         }
       }
-  
+
       // Update or insert courses
       for (let i = 0; i < courseFields.length; i++) {
         const course = courseFields[i];
@@ -426,8 +427,12 @@ const AcademicDetails = ({ navigation }) => {
           courseFields[i].CourseId = response.data.CourseId;
         }
       }
-  
-      Alert.alert("Success", "Qualifications and Courses submitted successfully");
+
+      Alert.alert(
+        "Success",
+        "Qualifications and Courses submitted successfully"
+      );
+      Navigation.navigate("WorkExperience")
       setFormChanged(false); // Reset form change tracking
     } catch (error) {
       console.error("Error adding/updating qualifications and courses:", error);
@@ -436,7 +441,7 @@ const AcademicDetails = ({ navigation }) => {
       setIsSubmitting(false);
     }
   };
-  
+
   const handleSubmit = async () => {
     if (isSubmitting) {
       return; // Prevent multiple submissions
@@ -487,7 +492,15 @@ const AcademicDetails = ({ navigation }) => {
                 ))}
               </Picker>
 
-              <Text style={styles.label}>College Name:</Text>
+              <Text style={styles.label}>Degree:</Text>
+              <TextInput
+                style={styles.input}
+                value={qualification.degree}
+                onChangeText={(value) =>
+                  handleQualificationChange(index, "degree", value)
+                }
+              />
+              <Text style={styles.label}>College/School name:</Text>
               <TextInput
                 style={styles.input}
                 value={qualification.colName}
@@ -512,15 +525,6 @@ const AcademicDetails = ({ navigation }) => {
                 value={qualification.percentage}
                 onChangeText={(value) =>
                   handleQualificationChange(index, "percentage", value)
-                }
-              />
-
-              <Text style={styles.label}>Degree:</Text>
-              <TextInput
-                style={styles.input}
-                value={qualification.degree}
-                onChangeText={(value) =>
-                  handleQualificationChange(index, "degree", value)
                 }
               />
 
@@ -618,7 +622,7 @@ const AcademicDetails = ({ navigation }) => {
                 {/* Remove course button */}
                 <TouchableOpacity
                   style={styles.removeButton}
-                  onPress={() =>handleRemoveCourseField(index)}
+                  onPress={() => handleRemoveCourseField(index)}
                   disabled={isSubmitting}
                 >
                   <Text style={styles.removeButtonText}>Remove</Text>
